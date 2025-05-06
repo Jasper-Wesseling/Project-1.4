@@ -1,3 +1,5 @@
+import React, { useEffect, useState } from 'react';
+
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -6,7 +8,27 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+
+
+
+
+
 export default function HomeScreen() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://192.168.2.7:8000/user/') // Use your actual local IP and Symfony endpoint
+      .then(res => res.json())
+      .then(data => {
+        setData(data); // Adjust to your actual response shape
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Fetch error:', error);
+      });
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -17,7 +39,7 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">{!loading ? data.message : 'loading'}</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
