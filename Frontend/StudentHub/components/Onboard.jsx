@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar, Button, StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StatusBar, Button, StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function Onboard({ navigation }) {
   const [activeCarousel, setActiveCarousel] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+
 
   const incrementCarousel = () => {
     setActiveCarousel((prevActiveCarousel) => {
@@ -14,6 +16,10 @@ export default function Onboard({ navigation }) {
       }
     });
   };
+
+  useEffect(() => {
+  setModalVisible(activeCarousel === 2);
+  }, [activeCarousel])
 
   // const [data, setData] = useState(null);
 
@@ -45,9 +51,38 @@ export default function Onboard({ navigation }) {
     },
   ];
 
+  function PopUp() {
+    return (
+      <Modal 
+        animationType='slide'
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => {
+          setModalVisible(false)
+        }}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setModalVisible(false);
+            // incrementCarousel();
+          }}
+        >
+          <View style={{flex: 1}}>
+            <View style={{height: 100, width:100, position: 'absolute', backgroundColor: 'white', left: 100, top: 200}}>
+              <Text>moi</Text>
+            </View>
+          </View>
+          
+        </TouchableWithoutFeedback>
+        
+      </Modal>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
+      <PopUp />
       <View style={styles.header}>
         <Text style={styles.title}>{onboardPages[activeCarousel-1].title}</Text>
         <Text style={styles.subtitle}>{onboardPages[activeCarousel-1].subtitle}</Text>
