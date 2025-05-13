@@ -2,22 +2,21 @@
 
 namespace App\Entity;
 
-use App\Repository\ProductsRepository;
+use App\Repository\PostsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: ProductsRepository::class)]
-class Products
+#[ORM\Entity(repositoryClass: PostsRepository::class)]
+class Posts
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'products_user')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Users $user_id = null;
+    #[ORM\ManyToOne(inversedBy: 'user_Posts')]
+    private ?User $user_id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
@@ -25,22 +24,13 @@ class Products
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column]
-    private ?int $price = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $study_tag = null;
+    #[ORM\Column(length: 255)]
+    private ?string $type = null;
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $wishlist = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $photo = null;
-
-    #[ORM\Column]
     private ?\DateTime $created_at = null;
 
     #[ORM\Column(nullable: true)]
@@ -51,19 +41,12 @@ class Products
         return $this->id;
     }
 
-    public function setId(Uuid $id): static
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getUserId(): ?Users
+    public function getUserId(): ?User
     {
         return $this->user_id;
     }
 
-    public function setUserId(?Users $user_id): static
+    public function setUserId(?User $user_id): static
     {
         $this->user_id = $user_id;
 
@@ -94,26 +77,14 @@ class Products
         return $this;
     }
 
-    public function getPrice(): ?int
+    public function getType(): ?string
     {
-        return $this->price;
+        return $this->type;
     }
 
-    public function setPrice(int $price): static
+    public function setType(string $type): static
     {
-        $this->price = $price;
-
-        return $this;
-    }
-
-    public function getStudyTag(): ?string
-    {
-        return $this->study_tag;
-    }
-
-    public function setStudyTag(?string $study_tag): static
-    {
-        $this->study_tag = $study_tag;
+        $this->type = $type;
 
         return $this;
     }
@@ -130,36 +101,12 @@ class Products
         return $this;
     }
 
-    public function isWishlist(): ?bool
-    {
-        return $this->wishlist;
-    }
-
-    public function setWishlist(?bool $wishlist): static
-    {
-        $this->wishlist = $wishlist;
-
-        return $this;
-    }
-
-    public function getPhoto(): ?string
-    {
-        return $this->photo;
-    }
-
-    public function setPhoto(?string $photo): static
-    {
-        $this->photo = $photo;
-
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTime
     {
         return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTime $created_at): static
+    public function setCreatedAt(?\DateTime $created_at): static
     {
         $this->created_at = $created_at;
 
