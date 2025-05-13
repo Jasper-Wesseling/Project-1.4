@@ -53,8 +53,8 @@ class ProductsController extends AbstractController
         $product->setStatus($data['status']);
         $product->setWishlist($data['wishlist']);
         $product->setPhoto($data['photo']);
-        $product->setCreatedAt($data['created_at']);
-        $product->setUpdatedAt($data['created_at']);
+        $product->setCreatedAt(new \Datetime($data['created_at'], new \DateTimeZone('Europe/Amsterdam')));
+        $product->setUpdatedAt(new \Datetime($data['created_at'], new \DateTimeZone('Europe/Amsterdam')));
 
         $entityManager->persist($product);
         $entityManager->flush();
