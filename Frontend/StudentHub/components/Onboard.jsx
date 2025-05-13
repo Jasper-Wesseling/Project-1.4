@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StatusBar, Button, StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function Onboard({ navigation }) {
