@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProductsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -40,22 +42,26 @@ class Products
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $created_at = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTime $updated_at = null;
 
+    /**
+     * @var Collection<int, Reviews>
+     */
+    #[ORM\OneToMany(targetEntity: Reviews::class, mappedBy: 'product_id')]
+    private Collection $reviews_product;
+
+    public function __construct()
+    {
+        $this->reviews_product = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function setId(Uuid $id): static
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getUserId(): ?Users
@@ -174,6 +180,36 @@ class Products
     public function setUpdatedAt(?\DateTime $updated_at): static
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reviews>
+     */
+    public function getReviewsProduct(): Collection
+    {
+        return $this->reviews_product;
+    }
+
+    public function addReviewsProduct(Reviews $reviewsProduct): static
+    {
+        if (!$this->reviews_product->contains($reviewsProduct)) {
+            $this->reviews_product->add($reviewsProduct);
+            $reviewsProduct->setProductId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReviewsProduct(Reviews $reviewsProduct): static
+    {
+        if ($this->reviews_product->removeElement($reviewsProduct)) {
+            // set the owning side to null (unless already changed)
+            if ($reviewsProduct->getProductId() === $this) {
+                $reviewsProduct->setProductId(null);
+            }
+        }
 
         return $this;
     }
