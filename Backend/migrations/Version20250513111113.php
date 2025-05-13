@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250506162646 extends AbstractMigration
+final class Version20250513111113 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -21,6 +21,12 @@ final class Version20250506162646 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS locations (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS translation (id VARCHAR(255) NOT NULL, language VARCHAR(255) NOT NULL, content_type VARCHAR(255) NOT NULL, content_id BINARY(16) NOT NULL COMMENT '(DC2Type:uuid)', field VARCHAR(255) NOT NULL, translated_text LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE IF NOT EXISTS user (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL COMMENT '(DC2Type:json)', password VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
     }
@@ -28,6 +34,12 @@ final class Version20250506162646 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql(<<<'SQL'
+            DROP TABLE locations
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE translation
+        SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE user
         SQL);
