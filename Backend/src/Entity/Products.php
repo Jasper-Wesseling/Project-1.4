@@ -51,13 +51,6 @@ class Products
         return $this->id;
     }
 
-    public function setId(Uuid $id): static
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
     public function getUserId(): ?Users
     {
         return $this->user_id;
