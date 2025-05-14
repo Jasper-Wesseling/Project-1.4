@@ -69,9 +69,7 @@ export default function Products() {
         return () => scrollY.removeListener(listener);
     }, [scrollY]);
 
-    if (loading) return (
-        <LoadingScreen />
-    );
+
 
 
     return (
@@ -107,6 +105,7 @@ export default function Products() {
                 </ScrollView>
             </Animated.View>
             {/* Scrollable Content */}
+            {!loading ? 
             <Animated.ScrollView
                 contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
                 onScroll={Animated.event(
@@ -115,10 +114,13 @@ export default function Products() {
                 )}
                 scrollEventThrottle={16}
             >
-                {products.map((product, i) => (
+                {products.map((product) => (
                 <ProductPreview key={product.id} product={product} />
                 ))}
             </Animated.ScrollView>
+            :
+            <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
+            
         </View>
     );
 }
