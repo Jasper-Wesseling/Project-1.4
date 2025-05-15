@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\TranslationRepository;
+use App\Repository\TranslationsRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: TranslationRepository::class)]
-class Translation
+#[ORM\Entity(repositoryClass: TranslationsRepository::class)]
+class Translations
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
