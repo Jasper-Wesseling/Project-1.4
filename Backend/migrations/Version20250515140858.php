@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250514111539 extends AbstractMigration
+final class Version20250515140858 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -42,10 +42,7 @@ final class Version20250514111539 extends AbstractMigration
             CREATE TABLE translation (id VARCHAR(255) NOT NULL, language VARCHAR(255) NOT NULL, content_type VARCHAR(255) NOT NULL, content_id BINARY(16) NOT NULL COMMENT '(DC2Type:uuid)', field VARCHAR(255) NOT NULL, translated_text LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL COMMENT '(DC2Type:json)', password VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
-        SQL);
-        $this->addSql(<<<'SQL'
-            CREATE TABLE users (id INT AUTO_INCREMENT NOT NULL, location_id_id INT DEFAULT NULL, email VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, role VARCHAR(255) NOT NULL, full_name VARCHAR(255) NOT NULL, bio LONGTEXT DEFAULT NULL, avatar_url VARCHAR(255) DEFAULT NULL, interests LONGTEXT DEFAULT NULL, study_program VARCHAR(255) DEFAULT NULL, language VARCHAR(255) DEFAULT NULL, theme VARCHAR(255) DEFAULT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME DEFAULT NULL, INDEX IDX_1483A5E9918DB72 (location_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE users (id INT AUTO_INCREMENT NOT NULL, location_id_id INT DEFAULT NULL, user_id_id INT DEFAULT NULL, email VARCHAR(255) NOT NULL, roles JSON NOT NULL COMMENT '(DC2Type:json)', password VARCHAR(255) NOT NULL, role VARCHAR(255) NOT NULL, full_name VARCHAR(255) NOT NULL, bio LONGTEXT DEFAULT NULL, avatar_url VARCHAR(255) DEFAULT NULL, interests LONGTEXT DEFAULT NULL, study_program VARCHAR(255) DEFAULT NULL, language VARCHAR(255) DEFAULT NULL, theme VARCHAR(255) DEFAULT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME DEFAULT NULL, INDEX IDX_1483A5E9918DB72 (location_id_id), INDEX IDX_1483A5E99D86650F (user_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE companies ADD CONSTRAINT FK_8244AA3A918DB72 FOREIGN KEY (location_id_id) REFERENCES locations (id)
@@ -54,7 +51,7 @@ final class Version20250514111539 extends AbstractMigration
             ALTER TABLE events ADD CONSTRAINT FK_5387574A38B53C32 FOREIGN KEY (company_id_id) REFERENCES companies (id)
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE posts ADD CONSTRAINT FK_885DBAFA9D86650F FOREIGN KEY (user_id_id) REFERENCES user (id)
+            ALTER TABLE posts ADD CONSTRAINT FK_885DBAFA9D86650F FOREIGN KEY (user_id_id) REFERENCES users (id)
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE products ADD CONSTRAINT FK_B3BA5A5A9D86650F FOREIGN KEY (user_id_id) REFERENCES users (id)
@@ -70,6 +67,9 @@ final class Version20250514111539 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE users ADD CONSTRAINT FK_1483A5E9918DB72 FOREIGN KEY (location_id_id) REFERENCES locations (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE users ADD CONSTRAINT FK_1483A5E99D86650F FOREIGN KEY (user_id_id) REFERENCES users (id)
         SQL);
     }
 
@@ -101,6 +101,9 @@ final class Version20250514111539 extends AbstractMigration
             ALTER TABLE users DROP FOREIGN KEY FK_1483A5E9918DB72
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE users DROP FOREIGN KEY FK_1483A5E99D86650F
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE companies
         SQL);
         $this->addSql(<<<'SQL'
@@ -120,9 +123,6 @@ final class Version20250514111539 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE translation
-        SQL);
-        $this->addSql(<<<'SQL'
-            DROP TABLE user
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE users
