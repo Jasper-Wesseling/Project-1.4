@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PostsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -35,6 +37,17 @@ class Posts
 
     #[ORM\Column(nullable: true)]
     private ?\DateTime $updated_at = null;
+
+    /**
+     * @var Collection<int, Reviews>
+     */
+    #[ORM\OneToMany(targetEntity: Reviews::class, mappedBy: 'post_id')]
+    private Collection $reviews_post;
+
+    public function __construct()
+    {
+        $this->reviews_post = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -121,6 +134,36 @@ class Posts
     public function setUpdatedAt(?\DateTime $updated_at): static
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reviews>
+     */
+    public function getReviewsPost(): Collection
+    {
+        return $this->reviews_post;
+    }
+
+    public function addReviewsPost(Reviews $reviewsPost): static
+    {
+        if (!$this->reviews_post->contains($reviewsPost)) {
+            $this->reviews_post->add($reviewsPost);
+            $reviewsPost->setPostId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReviewsPost(Reviews $reviewsPost): static
+    {
+        if ($this->reviews_post->removeElement($reviewsPost)) {
+            // set the owning side to null (unless already changed)
+            if ($reviewsPost->getPostId() === $this) {
+                $reviewsPost->setPostId(null);
+            }
+        }
 
         return $this;
     }

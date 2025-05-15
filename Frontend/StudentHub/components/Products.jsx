@@ -3,6 +3,9 @@ import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import ProductPreview from "./ProductPreview";
 import LoadingScreen from "./LoadingScreen";
+import { API_URL } from '@env';
+
+const apiUrl = API_URL;
 
 export default function Products() {
 

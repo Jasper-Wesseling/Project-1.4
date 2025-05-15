@@ -74,12 +74,21 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Products::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $products_user;
 
+
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
     private ?Users $user_id = null;
+
+    /**
+     * @var Collection<int, Reviews>
+     */
+    #[ORM\OneToMany(targetEntity: Reviews::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $reviews_user;
+
 
     public function __construct()
     {
         $this->products_user = new ArrayCollection();
+        $this->reviews_user = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -294,6 +303,36 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($productsUser->getUserId() === $this) {
                 $productsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reviews>
+     */
+    public function getReviewsUser(): Collection
+    {
+        return $this->reviews_user;
+    }
+
+    public function addReviewsUser(Reviews $reviewsUser): static
+    {
+        if (!$this->reviews_user->contains($reviewsUser)) {
+            $this->reviews_user->add($reviewsUser);
+            $reviewsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReviewsUser(Reviews $reviewsUser): static
+    {
+        if ($this->reviews_user->removeElement($reviewsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($reviewsUser->getUserId() === $this) {
+                $reviewsUser->setUserId(null);
             }
         }
 

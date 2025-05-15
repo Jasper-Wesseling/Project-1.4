@@ -24,9 +24,16 @@ class Locations
     #[ORM\OneToMany(targetEntity: Users::class, mappedBy: 'location_id')]
     private Collection $location_users;
 
+    /**
+     * @var Collection<int, Companies>
+     */
+    #[ORM\OneToMany(targetEntity: Companies::class, mappedBy: 'location_id', orphanRemoval: true)]
+    private Collection $description;
+
     public function __construct()
     {
         $this->location_users = new ArrayCollection();
+        $this->description = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -77,6 +84,36 @@ class Locations
             // set the owning side to null (unless already changed)
             if ($locationUser->getLocationId() === $this) {
                 $locationUser->setLocationId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Companies>
+     */
+    public function getDescription(): Collection
+    {
+        return $this->description;
+    }
+
+    public function addDescription(Companies $description): static
+    {
+        if (!$this->description->contains($description)) {
+            $this->description->add($description);
+            $description->setLocationId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDescription(Companies $description): static
+    {
+        if ($this->description->removeElement($description)) {
+            // set the owning side to null (unless already changed)
+            if ($description->getLocationId() === $this) {
+                $description->setLocationId(null);
             }
         }
 
