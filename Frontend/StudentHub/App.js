@@ -12,7 +12,6 @@ export default function App() {
       <Stack.Navigator screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen name="Products" component={Products}/>
         <Stack.Screen name="LightDarkSwitch" component={LightDarkSwitch}/>
       </Stack.Navigator>
     </NavigationContainer>
