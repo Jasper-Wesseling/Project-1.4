@@ -3,6 +3,9 @@ import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import ProductPreview from "./ProductPreview";
 import LoadingScreen from "./LoadingScreen";
+import { API_URL } from '@env';
+
+const apiUrl = API_URL;
 
 export default function Products() {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -12,7 +15,7 @@ export default function Products() {
 
     useEffect(() => {
         // Login and fetch products ONCE
-        fetch('http://192.168.2.7:8000/api/login', {
+        fetch(apiUrl + '/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -25,7 +28,7 @@ export default function Products() {
         .then(data => {
             const token = data.token || data.access_token;
             if (token) {
-                fetch('http://192.168.2.7:8000/api/products/get', {
+                fetch(apiUrl + '/api/products/get', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
