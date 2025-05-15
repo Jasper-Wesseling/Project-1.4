@@ -9,8 +9,6 @@ const apiUrl = API_URL;
 
 export default function Products() {
 
-    const ip = '192.168.2.7';
-
     const scrollY = useRef(new Animated.Value(0)).current;
 
     const [products, setProducts] = useState([]);
@@ -21,7 +19,7 @@ export default function Products() {
     async function fetchAll() {
         try {
             // Login and get token
-            const loginRes = await fetch(`http://${ip}:8000/api/login`, {
+            const loginRes = await fetch(API_URL + '/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -37,11 +35,11 @@ export default function Products() {
 
             // Fetch products and user in parallel
             const [productsRes, userRes] = await Promise.all([
-                fetch(`http://${ip}:8000/api/products/get`, {
+                fetch(API_URL + '/api/products/get', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                fetch(`http://${ip}:8000/api/users/get`, {
+                fetch(API_URL + '/api/users/get', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 })

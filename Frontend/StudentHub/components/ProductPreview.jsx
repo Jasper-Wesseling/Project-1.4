@@ -6,7 +6,6 @@ export default function ProductPreview({ product }) {
     const subStringLength = 20
 
     let price = product.price.toString();
-    price = '1'
     if (price.length > 2) {
         // Convert price string like "1234" to "12,34"
         const euros = price.slice(0, -2);
