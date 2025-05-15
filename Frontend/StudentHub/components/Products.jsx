@@ -5,38 +5,61 @@ import ProductPreview from "./ProductPreview";
 import LoadingScreen from "./LoadingScreen";
 
 export default function Products() {
+
+    const ip = '192.168.2.7';
+
     const scrollY = useRef(new Animated.Value(0)).current;
 
     const [products, setProducts] = useState([]);
+    const [user, setUser] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Login and fetch products ONCE
-        fetch('http://192.168.2.7:8000/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                "username": "jasper.wesseling@student.nhlstenden.com",
-                "password": "wesselingjasper",
-                "full_name": "Jasper Wesseling"
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            const token = data.token || data.access_token;
-            if (token) {
-                fetch('http://192.168.2.7:8000/api/products/get', {
+    async function fetchAll() {
+        try {
+            // Login and get token
+            const loginRes = await fetch(`http://${ip}:8000/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "username": "jasper.wesseling@student.nhlstenden.com",
+                    "password": "wesselingjasper",
+                    "full_name": "Jasper Wesseling"
+                })
+            });
+            if (!loginRes.ok) throw new Error("Login failed");
+            const loginData = await loginRes.json();
+            const token = loginData.token || loginData.access_token;
+            if (!token) throw new Error("No token received");
+
+            // Fetch products and user in parallel
+            const [productsRes, userRes] = await Promise.all([
+                fetch(`http://${ip}:8000/api/products/get`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`http://${ip}:8000/api/users/get`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
-                .then(res => res.json())
-                .then(products => {
-                    setProducts(products);
-                    setLoading(false);
-                });
-            }
-        });
-    }, []);
+            ]);
+
+            if (!productsRes.ok) throw new Error("Products fetch failed");
+            if (!userRes.ok) throw new Error("User fetch failed");
+
+            const products = await productsRes.json();
+            const users = await userRes.json();
+
+            setProducts(products);
+            setUser(users);
+            setLoading(false);
+        } catch (err) {
+            console.error("API error:", err);
+            setLoading(false);
+        }
+    }
+    fetchAll();
+}, []);
 
 
     // Animated header height (from 150 to 0)
@@ -70,14 +93,14 @@ export default function Products() {
     }, [scrollY]);
 
 
-
+    const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
     return (
         <View style={styles.container}>
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>Hey, Username</Text>
+                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{!loading ? `Hey, ${name}` : null}</Text>
                     <View style={{ flexDirection: 'row' }}>
                         <Text style={{ color: "#fff" }}>Icon1</Text>
                         <Text style={{ color: "#fff" }}>Icon2</Text>
