@@ -155,6 +155,11 @@ class Users
         return $this;
     }
 
+    public function getFirstName(): ?string
+    {
+        return explode(' ', $this->full_name)[0];
+    }
+
     public function getBio(): ?string
     {
         return $this->bio;
