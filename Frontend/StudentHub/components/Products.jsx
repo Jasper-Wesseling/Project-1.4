@@ -1,66 +1,69 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
-import LoadingScreen from "./LoadingScreen";
 import { API_URL } from '@env';
+import { useFocusEffect } from "@react-navigation/native";
+import { Icon } from "react-native-elements";
+import SearchBar from "./SearchBar";
 
-const apiUrl = API_URL;
 
-export default function Products() {
+export default function Products({ navigation }) {
 
     const scrollY = useRef(new Animated.Value(0)).current;
-
     const [products, setProducts] = useState([]);
     const [user, setUser] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [searchModalVisible, setSearchModalVisible] = useState(false);
 
-    useEffect(() => {
-    async function fetchAll() {
-        try {
-            // Login and get token
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
-            // Fetch products and user in parallel
-            const [productsRes, userRes] = await Promise.all([
-                fetch(API_URL + '/api/products/get', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(API_URL + '/api/users/get', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
-
-            if (!productsRes.ok) throw new Error("Products fetch failed");
-            if (!userRes.ok) throw new Error("User fetch failed");
-
-            const products = await productsRes.json();
-            const users = await userRes.json();
-
-            setProducts(products);
-            setUser(users);
-            setLoading(false);
-        } catch (err) {
-            console.error("API error:", err);
-            setLoading(false);
+    useFocusEffect(
+        useCallback(() => {
+        async function fetchAll() {
+            try {
+                // Login and get token
+                const loginRes = await fetch(API_URL + '/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        "username": "jasper.wesseling@student.nhlstenden.com",
+                        "password": "wesselingjasper",
+                        "full_name": "Jasper Wesseling"
+                    })
+                });
+                if (!loginRes.ok) throw new Error("Login failed");
+                const loginData = await loginRes.json();
+                const token = loginData.token || loginData.access_token;
+                if (!token) throw new Error("No token received");
+    
+                // Fetch products and user in parallel
+                const [productsRes, userRes] = await Promise.all([
+                    fetch(API_URL + '/api/products/get', {
+                        method: 'GET',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch(API_URL + '/api/users/get', {
+                        method: 'GET',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+    
+                if (!productsRes.ok) throw new Error("Products fetch failed");
+                if (!userRes.ok) throw new Error("User fetch failed");
+    
+                const products = await productsRes.json();
+                const users = await userRes.json();
+    
+                setProducts(products);
+                setUser(users);
+                setLoading(false);
+            } catch (err) {
+                console.error("API error:", err);
+                setLoading(false);
+            }
         }
-    }
-    fetchAll();
-}, []);
+        fetchAll();
+        }, [])
+    );
 
 
     // Animated header height (from 150 to 0)
@@ -96,15 +99,32 @@ export default function Products() {
 
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
+    const filters = ['Boeken', 'Electra', 'Huis en tuin'];
+
+    const [activeFilter, setActiveFilter] = useState(null);
+
+
+
     return (
         <View style={styles.container}>
+            <SearchBar
+            visible={searchModalVisible}
+            value={search}
+            onChange={setSearch}
+            onClose={() => setSearchModalVisible(false)}
+c            />
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                     <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{!loading ? `Hey, ${name}` : null}</Text>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Text style={{ color: "#fff" }}>Icon1</Text>
-                        <Text style={{ color: "#fff" }}>Icon2</Text>
+                    <View style={{ flexDirection: 'row', width: 125, justifyContent: 'space-around', alignContent: 'center'}}>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
+                            <Icon name="plus" type="feather" size={34} color="#fff"/>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
+                            <Icon name="search" size={34} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity><Icon name="bag-outline" type="ionicon" size={32} color="#fff"/></TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -113,7 +133,7 @@ export default function Products() {
                 <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontSize: 64}}>Shop</Animated.Text>
                 <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontSize: 64}}>By Catagory</Animated.Text>
             </Animated.View>
-            {/* Sticky Filter Row */}
+            {/* Sticky Filter Row  */}
             <Animated.View style={[
                 styles.filterRow,
                 { top: filterTop, height: 50 }
@@ -123,8 +143,13 @@ export default function Products() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={{ alignItems: "center" }}
                 >
-                    {Array.from({ length: 80 }).map((_, i) => (
-                        <Text style={styles.filter} key={i}>doei</Text>
+                    {filters.map((filter, i) => (
+                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}
+                        >
+                            <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
+                                {filter}
+                            </Text>
+                        </TouchableOpacity>
                     ))}
                 </ScrollView>
             </Animated.View>
@@ -138,13 +163,17 @@ export default function Products() {
                 )}
                 scrollEventThrottle={16}
             >
-                {products.map((product) => (
-                <ProductPreview key={product.id} product={product} />
+                {products
+                    .filter(product =>
+                        (!activeFilter || product.study_tag === activeFilter) &&
+                        product.title.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .map(product => (
+                        <ProductPreview key={product.id} product={product} />
                 ))}
             </Animated.ScrollView>
             :
             <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
-            
         </View>
     );
 }
@@ -192,10 +221,13 @@ const styles = StyleSheet.create({
     },
     filter: {
         paddingHorizontal: 10,
-        marginHorizontal: 10,
-        paddingVertical: 5,
+        marginHorizontal: 8,
+        paddingVertical: 7,
         borderWidth: 1,
         borderColor: 'grey',
-        borderRadius: 10,
+        borderRadius: 100,
+    },
+    activeFilter: {
+        backgroundColor: '#FFC83A'
     },
 });
