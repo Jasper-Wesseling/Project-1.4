@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 
 export default function AddProduct({ navigation }) {
@@ -25,7 +26,16 @@ export default function AddProduct({ navigation }) {
         const result = await ImagePicker.launchImageLibraryAsync({mediaType: 'image'});
 
         if (result.assets && result.assets.length > 0) {
-            setPhoto(result.assets[0]);
+            const manipResult = await ImageManipulator.manipulateAsync(
+                result.assets[0].uri,
+                [{ resize: { width: 1200 } }],
+                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            setPhoto({
+                uri: manipResult.uri,
+                fileName: result.assets[0].fileName || 'photo.jpg',
+                type: 'image/jpeg',
+            });
         }
     };
 
@@ -49,19 +59,15 @@ export default function AddProduct({ navigation }) {
                 return;
             }
         }
-
+        let priceToDb = price;
         console.log('here');
-        setPrice(price.trim().replace(",",""));
-        console.log('here');
-        setPrice(price * 100);
-        console.log('here');
+        priceToDb = parseInt(priceToDb.trim().replace(",","")+"00")
         
-
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('studyTag', value);
-        formData.append('price', price);
+        formData.append('price', priceToDb);
         formData.append('photo', {
             uri: photo.uri,
             name: photo.fileName || 'photo.jpg',
