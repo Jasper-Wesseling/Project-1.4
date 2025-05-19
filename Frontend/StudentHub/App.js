@@ -4,6 +4,7 @@ import Onboard from './components/Onboard';
 import Products from './components/Products';
 import LightDarkSwitch from './components/LightDarkMode';
 import AddProduct from './components/AddProduct';
+import FaqPage from './components/FaqPage';
 
 
 const Stack = createStackNavigator();
@@ -14,9 +15,7 @@ export default function App() {
           headerShown: false,
         }}>
 
-        <Stack.Screen name="LightDarkSwitch" component={LightDarkSwitch}/>
-        <Stack.Screen name="Product" component={Products}/>
-        <Stack.Screen name="AddProduct" component={AddProduct} />
+        <Stack.Screen name="products" component={FaqPage}/>
 
       </Stack.Navigator>
     </NavigationContainer>
