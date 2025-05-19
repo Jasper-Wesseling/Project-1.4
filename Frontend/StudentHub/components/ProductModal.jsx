@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView } from "react-native";
 
 export default function ProductModal({ visible, product, onClose }) {
     if (!product) return null;
@@ -11,7 +11,7 @@ export default function ProductModal({ visible, product, onClose }) {
             animationType="slide"
             onRequestClose={onClose}
         >
-            <View style={styles.overlay}>
+            <SafeAreaView style={styles.overlay}>
                 <View style={styles.card}>
                     {/* Back Arrow Button */}
                     <TouchableOpacity style={styles.backButton} onPress={onClose}>
@@ -56,7 +56,7 @@ export default function ProductModal({ visible, product, onClose }) {
                         <Text style={styles.sectionArrow}>▼</Text>
                     </View>
                 </View>
-            </View>
+            </SafeAreaView>
         </Modal>
     );
 }
@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '92%',
+        height: '100%',
         backgroundColor: '#fff',
         borderRadius: 28,
         padding: 24,
