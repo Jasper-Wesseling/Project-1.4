@@ -3,18 +3,31 @@
 namespace App\Controller;
 
 use App\Entity\Users;
+use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('api/users')]
 class UsersController extends AbstractController
 {
+
+    private $jwtManager;
+    private $tokenStorageInterface;
+
+    public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
+    {
+        $this->jwtManager = $jwtManager;
+        $this->tokenStorageInterface = $tokenStorageInterface;
+    }
+    
     #[Route('/register', name: 'api_users_register', methods: ['POST'])]
     public function register(
         Request $request,
@@ -103,4 +116,36 @@ class UsersController extends AbstractController
     {
         return new JsonResponse(['message' => 'test'], 201);
     }
+
+    #[Route('/get', name: 'api_users_get', methods: ['GET'])]
+    public function get(UsersRepository $usersRepository): Response
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 400);
+        }
+        $usersData = [
+            'id' => $user->getId() ? $user->getId() : null,
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            'role' => $user->getRole(),
+            'full_name' => $user->getFullName(),
+            'bio' => $user->getBio(),
+            'avatar_url' => $user->getAvatarUrl(),
+            'interests' => $user->getInterests(),
+            'study_program' => $user->getStudyProgram(),
+            'language' => $user->getLanguage(),
+            'theme' => $user->getTheme(),
+            'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
+        ];
+
+        return new JsonResponse($usersData, 200);
+    }
+
+
 }
