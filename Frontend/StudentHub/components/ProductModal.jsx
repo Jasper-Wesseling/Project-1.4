@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView } from "react-native";
+import { API_URL } from '@env';
 
 export default function ProductModal({ visible, product, onClose }) {
     if (!product) return null;
@@ -22,7 +23,7 @@ export default function ProductModal({ visible, product, onClose }) {
                     {/* Placeholder Image */}
                     <View style={styles.imageContainer}>
                         <Image
-                            source={product.photo ? { uri: product.photo } : { uri: 'https://placecats.com/300/200' }}
+                            source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
                             style={styles.image}
                             resizeMode="cover"
                         />

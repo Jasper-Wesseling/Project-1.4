@@ -20,7 +20,7 @@ export default function ProductPreview({ product }) {
         <View style={{ height: 200, width: '90%', alignSelf: 'center', backgroundColor: '#F8F9FB', marginVertical: 20, flexDirection: 'row', borderRadius: 20, borderColor: '#E7ECF0', borderWidth: 2, overflow: 'hidden' }}>
             <Image 
                 // if env file contains url with / or product is empty prefent error 
-                source={product.photo ? { uri: product.photo } : { uri: 'https://placecats.com/300/200' }}
+                source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
                 style={{ height: '100%', width: '50%' }}
                 resizeMode="cover"
             />
