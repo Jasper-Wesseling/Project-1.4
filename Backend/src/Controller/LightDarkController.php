@@ -26,7 +26,7 @@ class LightDarkController extends AbstractController
     }
 
     #[Route('/gettheme', methods: ['GET'])]
-    public function getTheme(UsersRepository $usersRepository, Request $request): JsonResponse
+    public function getTheme(UsersRepository $usersRepository): JsonResponse
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken['username']]);
@@ -35,8 +35,14 @@ class LightDarkController extends AbstractController
     }
 
     #[Route('/settheme', methods: ['PUT'])]
-    public function setTheme(Users $user, Request $request, EntityManagerInterface $em): JsonResponse
+    public function setTheme(UsersRepository $usersRepository, Request $request, EntityManagerInterface $em): JsonResponse 
     {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken['username']]);
+        if (!$user) {
+            return $this->json(['error' => 'User not found'], 404);
+        }
+
         $data = json_decode($request->getContent(), true);
         $theme = $data['theme'] ?? null;
         if (!in_array($theme, ['light', 'dark', null], true)) {

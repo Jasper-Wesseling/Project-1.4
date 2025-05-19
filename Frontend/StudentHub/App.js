@@ -13,8 +13,11 @@ export default function App() {
       <Stack.Navigator screenOptions={{
           headerShown: false,
         }}>
+
+        <Stack.Screen name="LightDarkSwitch" component={LightDarkSwitch}/>
         <Stack.Screen name="Product" component={Products}/>
         <Stack.Screen name="AddProduct" component={AddProduct} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
