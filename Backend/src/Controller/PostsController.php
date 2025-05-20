@@ -27,15 +27,40 @@ class PostsController extends AbstractController
     }
 
     #[Route('/get', name: 'api_posts_get', methods: ['GET'])]
-    public function getPreviewposts(Request $request, PostsRepository $postsRepository): Response
+    public function getPreviewposts(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository): Response
     {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
-        // Order by created_at DESC for most recent first
-        $posts = $postsRepository->findBy([], ['created_at' => 'DESC'], $limit, $offset);
+        $search = $request->query->get('search', '');
+        $type = $request->query->get('type', null);
 
+        $qb = $postsRepository->createQueryBuilder('p')
+            ->where('p.user_id = :user_id')
+            ->setParameter('user_id', $user->getId())
+            ->orderBy('p.created_at', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        if ($type) {
+            $qb->andWhere('p.type = :type')
+               ->setParameter('type', $type);
+        }
+        if ($search) {
+            $qb->andWhere('LOWER(p.title) LIKE :search OR LOWER(p.description) LIKE :search')
+            ->setParameter('search', '%' . strtolower($search) . '%');
+        }
+
+        $posts = $qb->getQuery()->getResult();
+
+        $postsArray = [];
         foreach ($posts as $post) {
             $postsArray[] = [
                 'id' => $post->getId(),

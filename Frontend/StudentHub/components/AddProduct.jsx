@@ -120,54 +120,52 @@ export default function AddProduct({ navigation }) {
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
                 <View>
-                    <TouchableOpacity style={{ display: 'flex', flexDirection: "row", justifyContent: "flex-start", alignItems: 'center'}} onPress={() => navigation.goBack()}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="arrow-left" type="feather" size={24} color="#fff"/>
-                        <Text style={{ color: "#fff", fontSize: 24, paddingLeft: 8  }}>Go back</Text>
+                        <Text style={styles.backButtonText}>Go back</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 16, display: 'flex', justifyContent: "space-between" }}>
-                <View style={{display: 'flex', gap:20}}>
+            <View style={styles.formWrapper}>
+                <View style={styles.formFields}>
                     <TextInput
-                    style={styles.input}
-                    onChangeText={onChangeTitle}
-                    value={title}
-                    placeholder="Title"
+                        style={styles.input}
+                        onChangeText={onChangeTitle}
+                        value={title}
+                        placeholder="Title"
                     />
                     <TextInput
-                    multiline
-                    style={[styles.input, {height: 100}]}
-                    onChangeText={onChangeDescription}
-                    value={description}
-                    placeholder="Description"
+                        multiline
+                        style={[styles.input, styles.inputDescription]}
+                        onChangeText={onChangeDescription}
+                        value={description}
+                        placeholder="Description"
                     />
                     <DropDownPicker
-                    open={open}
-                    value={value}
-                    items={items}
-                    setOpen={setOpen}
-                    setValue={setValue}
-                    setItems={setItems}
-                    placeholder="Select a category"
-                    style={styles.input}
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                        placeholder="Select a category"
+                        style={styles.input}
                     />
-
                     <TextInput
-                    style={styles.input}
-                    onChangeText={setPrice}
-                    value={price}
-                    placeholder="Price"
-                    keyboardType="numeric"
+                        style={styles.input}
+                        onChangeText={setPrice}
+                        value={price}
+                        placeholder="Price"
+                        keyboardType="numeric"
                     />
-
                     {photo && (
-                    <Image
-                    source={{uri: photo.uri}}
-                    style={{width: 200,height: 200,marginVertical: 10,borderRadius: 10, alignSelf: 'center'}}
-                    />
-                )}
+                        <Image
+                            source={{uri: photo.uri}}
+                            style={styles.photo}
+                        />
+                    )}
                 </View>
-                <View>
+                <View style={styles.buttonRow}>
                     <Button title="Pick Image" onPress={pickImage} />
                     <Button title="Upload" onPress={uploadProduct} />
                 </View>
@@ -193,6 +191,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         zIndex: 20,
     },
+    backButton: {
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: 'center',
+    },
+    backButtonText: {
+        color: "#fff",
+        fontSize: 24,
+        paddingLeft: 8,
+    },
+    formWrapper: {
+        flex: 1,
+        paddingTop: 100,
+        paddingHorizontal: 16,
+        justifyContent: "space-between",
+    },
+    formFields: {
+        display: 'flex',
+        gap: 20,
+    },
     input: {
         borderColor: 'grey', 
         borderWidth: 1,
@@ -202,4 +220,14 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         textAlignVertical: 'top',
     },
-})
+    inputDescription: {
+        height: 100,
+    },
+    photo: {
+        width: 200,
+        height: 200,
+        marginVertical: 10,
+        borderRadius: 10,
+        alignSelf: 'center',
+    },
+});

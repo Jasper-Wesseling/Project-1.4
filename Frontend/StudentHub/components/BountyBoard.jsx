@@ -8,107 +8,117 @@ import { TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
 
-
-
 export default function BountyBoard({ navigation }) {
-    
     const scrollY = useRef(new Animated.Value(0)).current;
-    const [posts, setposts] = useState([]);
+    const [posts, setPosts] = useState([]);
     const [user, setUser] = useState();
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
-    
+    const [page, setPage] = useState(1);
+    const [hasMorePages, setHasMorePages] = useState(true);
+    const filters = ['Local', 'Remote'];
+    const [activeFilter, setActiveFilter] = useState(null);
+
+    const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
+        try {
+            // Login and get token
+            const loginRes = await fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "username": "jasper.wesseling@student.nhlstenden.com",
+                    "password": "wesselingjasper",
+                    "full_name": "Jasper Wesseling"
+                })
+            });
+            if (!loginRes.ok) throw new Error("Login failed");
+            const loginData = await loginRes.json();
+            const token = loginData.token || loginData.access_token;
+            if (!token) throw new Error("No token received");
+
+            // Build query params for search and filter
+            let query = `?page=${pageToLoad}`;
+            if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
+            if (filterValue) query += `&type=${encodeURIComponent(filterValue)}`;
+
+            // Fetch posts and user in parallel
+            const [postsRes, userRes] = await Promise.all([
+                fetch(API_URL + `/api/posts/get${query}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(API_URL + '/api/users/get', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+            ]);
+
+            if (!postsRes.ok) throw new Error("posts fetch failed");
+            if (!userRes.ok) throw new Error("User fetch failed");
+
+            const postsData = await postsRes.json();
+            const users = await userRes.json();
+
+            setHasMorePages(postsData.length === 20);
+            setPosts(prev =>
+                append
+                    ? [...prev, ...postsData.filter(p => !prev.some(existing => existing.id === p.id))]
+                    : postsData
+            );
+            setUser(users);
+            setLoading(false);
+        } catch (err) {
+            console.error("API error:", err);
+            setLoading(false);
+        }
+    };
+
     useFocusEffect(
         useCallback(() => {
-        async function fetchAll() {
-            try {
-                // Login and get token
-                const loginRes = await fetch(API_URL + '/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        "username": "jasper.wesseling@student.nhlstenden.com",
-                        "password": "wesselingjasper",
-                        "full_name": "Jasper Wesseling"
-                    })
-                });
-                if (!loginRes.ok) throw new Error("Login failed");
-                const loginData = await loginRes.json();
-                const token = loginData.token || loginData.access_token;
-                if (!token) throw new Error("No token received");
-    
-                // Fetch posts and user in parallel
-                const [postsRes, userRes] = await Promise.all([
-                    fetch(API_URL + '/api/posts/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch(API_URL + '/api/users/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                ]);
-    
-                if (!postsRes.ok) throw new Error("posts fetch failed");
-                if (!userRes.ok) throw new Error("User fetch failed");
-    
-                const posts = await postsRes.json();
-                const users = await userRes.json();
-    
-                setposts(posts);
-                setUser(users);
-                setLoading(false);
-            } catch (err) {
-                console.error("API error:", err);
-                setLoading(false);
-            }
-        }
-        fetchAll();
-        }, [])
+            setPage(1);
+            fetchAll(1, false, search, activeFilter);
+        }, [search, activeFilter])
     );
 
+    const loadMore = () => {
+        if (hasMorePages && !loading) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            fetchAll(nextPage, true, search, activeFilter);
+        }
+    };
 
-            // Animated header height (from 150 to 0)
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [150, 0],
         extrapolate: "clamp",
     });
-
-    // Animated filter row top position (starts at 100+150, ends at 100)
     const filterTop = scrollY.interpolate({
         inputRange: [0, 100],
-        outputRange: [250, 100], // 100 is top bar height, 150 is max header height
+        outputRange: [250, 100],
         extrapolate: "clamp",
     });
-
     const headerOpacity = scrollY.interpolate({
         inputRange: [0, 40],
         outputRange: [1, 0],
         extrapolate: "clamp",
     });
-
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
-    
-    const filters = ['Local', 'Remote'];
-    
-    const [activeFilter, setActiveFilter] = useState(null);
-
 
     return(
         <SafeAreaView style={styles.container} >
             <SearchBar
-            visible={searchModalVisible}
-            value={search}
-            onChange={setSearch}
-            onClose={() => setSearchModalVisible(false)}
+                visible={searchModalVisible}
+                value={search}
+                onChange={setSearch}
+                onClose={() => setSearchModalVisible(false)}
             />
             {/* Static Top Bar */}
             <View style={styles.topBar}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{!loading ? `Hey, ${name}` : 'hoi'}</Text>
-                    <View style={{ flexDirection: 'row', width: 125, justifyContent: 'space-around', alignContent: 'center'}}>
+                <View style={styles.topBarRow}>
+                    <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'hoi'}</Text>
+                    <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
                             <Icon name="plus" type="feather" size={34} color="#fff"/>
                         </TouchableOpacity>
@@ -126,11 +136,10 @@ export default function BountyBoard({ navigation }) {
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ alignItems: "center" }}
+                    contentContainerStyle={styles.filterScrollContent}
                 >
                     {filters.map((filter, i) => (
-                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}
-                        >
+                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
                             <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
                                 {filter}
                             </Text>
@@ -139,21 +148,19 @@ export default function BountyBoard({ navigation }) {
                 </ScrollView>
             </Animated.View>
             {/* Animated Header */}
-            <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontSize: 56, marginTop: -20, fontWeight: 300}}>Step up,</Animated.Text>
-                <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontSize: 56, fontWeight: 'bold', width: 400}}>Take a bounty</Animated.Text>
+            <Animated.View style={[styles.header, { height: headerHeight }]}> 
+                <Animated.Text style={[styles.headerText, {opacity: headerOpacity, marginTop: -20, fontWeight: '300'}]}>Step up,</Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, {opacity: headerOpacity}]}>Take a bounty</Animated.Text>
             </Animated.View>
-
-
-
             {!loading ? 
             <Animated.ScrollView
-                contentContainerStyle={{ paddingTop: 250 }} // 100(topBar) + 150(header) + 50(filterRow)
+                contentContainerStyle={styles.scrollViewContent}
                 onScroll={Animated.event(
                     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                     { useNativeDriver: false }
                 )}
                 scrollEventThrottle={16}
+                onScrollEndDrag={loadMore}
             >
                 {posts
                     .filter(post =>
@@ -162,11 +169,10 @@ export default function BountyBoard({ navigation }) {
                     )
                     .map(post => (
                         <PostPreview key={post.id} post={post} />
-                        
                 ))}
             </Animated.ScrollView>
             :
-            <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
+            <Text style={styles.loadingText}>Loading...</Text>}
         </SafeAreaView>                      
     );
 }
@@ -188,6 +194,21 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         zIndex: 20,
     },
+    topBarRow: {
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },
+    topBarText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "bold"
+    },
+    topBarIcons: {
+        flexDirection: 'row',
+        width: 125,
+        justifyContent: 'space-around',
+        alignContent: 'center'
+    },
     header: {
         position: "absolute",
         top: 100, // below topBar
@@ -198,6 +219,15 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         paddingHorizontal: 16,
         zIndex: 10,
+    },
+    headerText: {
+        alignSelf: 'flex-start',
+        color: "white",
+        fontSize: 60,
+    },
+    headerTextBold: {
+        fontWeight: 'bold',
+        width: 400,
     },
     filterRow: {
         position: "absolute",
@@ -212,6 +242,9 @@ const styles = StyleSheet.create({
         gap: 10,
         flex: 1,
     },
+    filterScrollContent: {
+        alignItems: "center"
+    },
     filter: {
         paddingHorizontal: 10,
         marginHorizontal: 8,
@@ -223,4 +256,14 @@ const styles = StyleSheet.create({
     activeFilter: {
         backgroundColor: '#FFC83A'
     },
+    scrollViewContent: {
+        paddingTop: 250,
+        paddingBottom: 80,
+    },
+    loadingText: {
+        paddingTop: 300,
+        fontSize: 64,
+        color: 'black',
+        alignSelf: 'center'
+    }
 });
