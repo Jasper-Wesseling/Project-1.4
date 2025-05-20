@@ -11,6 +11,9 @@ export default function Products() {
     const [loading, setLoading] = useState(true);
     const [selectedFilter, setSelectedFilter] = useState(null); // for filter selection
 
+    // State for event
+    const [event, setEvent] = useState(null);
+
     useEffect(() => {
         // Login and fetch products ONCE
         fetch('http://192.168.2.7:8000/api/login', {
@@ -34,6 +37,18 @@ export default function Products() {
                 .then(products => {
                     setProducts(products);
                     setLoading(false);
+                });
+
+                // Fetch one event (first event)
+                fetch('http://192.168.2.7:8000/api/events', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(res => res.json())
+                .then(events => {
+                    if (Array.isArray(events) && events.length > 0) {
+                        setEvent(events[0]);
+                    }
                 });
             }
         });
@@ -106,6 +121,14 @@ export default function Products() {
                         </View>
                     ))}
                 </Animated.View>
+                {/* Event Box from DB */}
+                {event && (
+                    <View style={styles.eventBoxDb}>
+                        <Text style={styles.eventTitle}>{event.title}</Text>
+                        <Text style={styles.eventDate}>{event.date}</Text>
+                        <Text style={styles.eventDescription}>{event.description}</Text>
+                    </View>
+                )}
                 {/* Scrollable Content */}
                 {!loading ? 
                 <Animated.ScrollView
@@ -238,14 +261,34 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 3, // For Android shadow
     },
+    eventBoxDb: {
+        width: '90%',
+        alignSelf: 'center',
+        backgroundColor: '#e0eaff',
+        padding: 18,
+        marginTop: 16,
+        marginBottom: 8,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 6,
+        elevation: 4,
+    },
     eventTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#2A4BA0',
+    },
+    eventDate: {
+        fontSize: 14,
+        color: '#555',
+        marginTop: 2,
+        marginBottom: 4,
     },
     eventDescription: {
         fontSize: 14,
-        color: '#555',
+        color: '#333',
         marginTop: 5,
     },
 });
