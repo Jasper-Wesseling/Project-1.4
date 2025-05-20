@@ -36,7 +36,7 @@ class ProductsController extends AbstractController
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
-        $products = $productsRepository->findBy([], null, $limit, $offset);
+        $products = $productsRepository->findBy([], ['created_at' => 'DESC'], $limit, $offset);
 
         $productsArray = [];
         foreach ($products as $product) {
