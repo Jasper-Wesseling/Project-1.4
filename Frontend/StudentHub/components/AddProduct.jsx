@@ -6,8 +6,8 @@ import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-
-export default function AddProduct({ navigation }) {
+// Accept token as prop
+export default function AddProduct({ navigation, token }) {
     
     const [title, onChangeTitle] = useState('');
     const [description, onChangeDescription] = useState('');
@@ -76,26 +76,16 @@ export default function AddProduct({ navigation }) {
         console.log('here');
 
         try {
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
-
+            // Use token prop for authentication
+            if (!token) {
+                Alert.alert('Niet ingelogd', 'Je bent niet ingelogd.');
+                return;
+            }
             const response = await fetch(API_URL + '/api/products/new', {
                 method: 'POST',
                 headers: {
-                    // Do NOT set Content-Type for FormData; let fetch set it
                     'Authorization': `Bearer ${token}`
+                    // Do NOT set Content-Type for FormData; let fetch set it
                 },
                 body: formData,
             });

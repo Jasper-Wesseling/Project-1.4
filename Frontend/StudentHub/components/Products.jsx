@@ -7,12 +7,11 @@ import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 
-
-export default function Products({ navigation }) {
+// Accept token and user as props
+export default function Products({ navigation, token, user }) {
 
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
-    const [user, setUser] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -21,51 +20,28 @@ export default function Products({ navigation }) {
 
     useFocusEffect(
         useCallback(() => {
-        async function fetchAll() {
-            try {
-                // Login and get token
-                const loginRes = await fetch(API_URL + '/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        "username": "jasper.wesseling@student.nhlstenden.com",
-                        "password": "wesselingjasper",
-                        "full_name": "Jasper Wesseling"
-                    })
-                });
-                if (!loginRes.ok) throw new Error("Login failed");
-                const loginData = await loginRes.json();
-                const token = loginData.token || loginData.access_token;
-                if (!token) throw new Error("No token received");
-    
-                // Fetch products and user in parallel
-                const [productsRes, userRes] = await Promise.all([
-                    fetch(API_URL + '/api/products/get', {
+            async function fetchAll() {
+                if (!token) {
+                    setLoading(false);
+                    return;
+                }
+                try {
+                    // Only fetch products, not user
+                    const productsRes = await fetch(API_URL + '/api/products/get', {
                         method: 'GET',
                         headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch(API_URL + '/api/users/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                ]);
-    
-                if (!productsRes.ok) throw new Error("Products fetch failed");
-                if (!userRes.ok) throw new Error("User fetch failed");
-    
-                const products = await productsRes.json();
-                const users = await userRes.json();
-    
-                setProducts(products);
-                setUser(users);
-                setLoading(false);
-            } catch (err) {
-                console.error("API error:", err);
-                setLoading(false);
+                    });
+                    if (!productsRes.ok) throw new Error("Products fetch failed");
+                    const products = await productsRes.json();
+                    setProducts(products);
+                    setLoading(false);
+                } catch (err) {
+                    console.error("API error:", err);
+                    setLoading(false);
+                }
             }
-        }
-        fetchAll();
-        }, [])
+            fetchAll();
+        }, [token])
     );
 
 
