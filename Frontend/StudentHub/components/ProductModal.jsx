@@ -1,8 +1,12 @@
-import React from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView } from "react-native";
+import React, { useState } from "react";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { API_URL } from '@env';
 
 export default function ProductModal({ visible, product, onClose }) {
+    const [showOverige, setShowOverige] = useState(false);
+    const [showReviews, setShowReviews] = useState(false);
+    const [fullscreenImg, setFullscreenImg] = useState(false);
+
     if (!product) return null;
 
     return (
@@ -20,43 +24,90 @@ export default function ProductModal({ visible, product, onClose }) {
                             <Text style={styles.backArrow}>←</Text>
                         </View>
                     </TouchableOpacity>
-                    {/* Placeholder Image */}
-                    <View style={styles.imageContainer}>
+                    <ScrollView
+                        style={{ width: '100%' }}
+                        contentContainerStyle={{ paddingBottom: 32 }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {/* Placeholder Image */}
+                        <View style={styles.imageContainer}>
+                            <TouchableOpacity onPress={() => setFullscreenImg(true)} activeOpacity={0.8}>
+                                <Image
+                                    source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
+                                    style={styles.image}
+                                    resizeMode="cover"
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        {/* Title and Price */}
+                        <Text style={styles.title}>{product.title}</Text>
+                        <View style={styles.priceRow}>
+                            <Text style={styles.price}>€{product.price}</Text>
+                            <View style={styles.badge}><Text style={styles.badgeText}>20 days ago</Text></View>
+                        </View>
+                        {/* Stars and Reviews */}
+                        <View style={styles.starsRow}>
+                            <Text style={styles.stars}>★★★★★</Text>
+                            <Text style={styles.reviewCount}>110 Reviews</Text>
+                        </View>
+                        {/* Buttons */}
+                        <View style={styles.buttonRow}>
+                            <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.filledButton}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                        </View>
+                        {/* Details */}
+                        <Text style={styles.sectionTitle}>Details</Text>
+                        <Text style={styles.details}>{product.description}</Text>
+                        {/* Overige (expandable) */}
+                        <TouchableOpacity
+                            style={styles.sectionRow}
+                            onPress={() => setShowOverige(!showOverige)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={styles.sectionTitle}>overige</Text>
+                            <Text style={styles.sectionArrow}>{showOverige ? "▲" : "▼"}</Text>
+                        </TouchableOpacity>
+                        {showOverige && (
+                            <Text style={styles.details}>
+                                {/* Replace this with your actual "overige" content */}
+                                Hier komt overige informatie over het product.
+                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsam corporis vitae natus fuga ratione quasi laudantium deleniti non repellendus aperiam modi atque, suscipit aliquid veniam architecto. Voluptatem natus fugiat magni.
+                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis minima quam praesentium esse ab saepe, nam voluptate minus eum corporis similique in laboriosam expedita cum, sed asperiores nulla velit neque?
+                                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Odit earum minima, deleniti, dolore cumque rem fugiat officia excepturi eligendi rerum laborum provident temporibus necessitatibus, deserunt veritatis maxime illum magnam dolor.
+                            </Text>
+                        )}
+                        {/* Reviews (expandable) */}
+                        <TouchableOpacity
+                            style={styles.sectionRow}
+                            onPress={() => setShowReviews(!showReviews)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={styles.sectionTitle}>Reviews</Text>
+                            <Text style={styles.sectionArrow}>{showReviews ? "▲" : "▼"}</Text>
+                        </TouchableOpacity>
+                        {showReviews && (
+                            <Text style={styles.details}>
+                                {/* Replace this with your actual reviews */}
+                                Hier komen de reviews van het product.
+                            </Text>
+                        )}
+                    </ScrollView>
+                </View>
+                {/* Fullscreen Image Modal */}
+                <Modal
+                    visible={fullscreenImg}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setFullscreenImg(false)}
+                >
+                    <TouchableOpacity style={styles.fullscreenOverlay} activeOpacity={1} onPress={() => setFullscreenImg(false)}>
                         <Image
                             source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
-                            style={styles.image}
-                            resizeMode="cover"
+                            style={styles.fullscreenImage}
+                            resizeMode="contain"
                         />
-                    </View>
-                    {/* Title and Price */}
-                    <Text style={styles.title}>{product.title}</Text>
-                    <View style={styles.priceRow}>
-                        <Text style={styles.price}>€{product.price}</Text>
-                        <View style={styles.badge}><Text style={styles.badgeText}>20 days ago</Text></View>
-                    </View>
-                    {/* Stars and Reviews */}
-                    <View style={styles.starsRow}>
-                        <Text style={styles.stars}>★★★★★</Text>
-                        <Text style={styles.reviewCount}>110 Reviews</Text>
-                    </View>
-                    {/* Buttons */}
-                    <View style={styles.buttonRow}>
-                        <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
-                        <TouchableOpacity style={styles.filledButton}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
-                    </View>
-                    {/* Details */}
-                    <Text style={styles.sectionTitle}>Details</Text>
-                    <Text style={styles.details}>{product.description}</Text>
-                    {/* Overige and Reviews (expandable, just static for now) */}
-                    <View style={styles.sectionRow}>
-                        <Text style={styles.sectionTitle}>overige</Text>
-                        <Text style={styles.sectionArrow}>▼</Text>
-                    </View>
-                    <View style={styles.sectionRow}>
-                        <Text style={styles.sectionTitle}>Reviews</Text>
-                        <Text style={styles.sectionArrow}>▼</Text>
-                    </View>
-                </View>
+                    </TouchableOpacity>
+                </Modal>
             </SafeAreaView>
         </Modal>
     );
@@ -103,17 +154,18 @@ const styles = StyleSheet.create({
     imageContainer: {
         marginTop: 24,
         marginBottom: 16,
-        width: 140,
-        height: 140,
-        borderRadius: 70,
+        width: 200,           // increased from 140
+        height: 200,          // increased from 140
+        borderRadius: 100,    // half of width/height
         backgroundColor: '#f4f5f7',
         justifyContent: 'center',
         alignItems: 'center',
+        alignSelf: 'center',
     },
     image: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        width: 170,           // increased from 120
+        height: 170,          // increased from 120
+        borderRadius: 85,     // half of width/height
     },
     title: {
         fontSize: 22,
@@ -220,5 +272,16 @@ const styles = StyleSheet.create({
     sectionArrow: {
         fontSize: 18,
         color: '#8a94a6',
+    },
+    fullscreenOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenImage: {
+        width: '95%',
+        height: '80%',
+        borderRadius: 16,
     },
 });
