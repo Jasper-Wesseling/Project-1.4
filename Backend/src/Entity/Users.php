@@ -92,6 +92,12 @@ class Users
     #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'reciever_id', orphanRemoval: true)]
     private Collection $mesages_user;
 
+    /**
+     * @var Collection<int, Widgets>
+     */
+    #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $widgets_user;
+
     public function __construct()
     {
         $this->products_user = new ArrayCollection();
@@ -100,6 +106,7 @@ class Users
         $this->tips_user = new ArrayCollection();
         $this->messages_user = new ArrayCollection();
         $this->mesages_user = new ArrayCollection();
+        $this->widgets_user = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -442,6 +449,36 @@ class Users
             // set the owning side to null (unless already changed)
             if ($mesagesUser->getRecieverId() === $this) {
                 $mesagesUser->setRecieverId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Widgets>
+     */
+    public function getWidgetsUser(): Collection
+    {
+        return $this->widgets_user;
+    }
+
+    public function addWidgetsUser(Widgets $widgetsUser): static
+    {
+        if (!$this->widgets_user->contains($widgetsUser)) {
+            $this->widgets_user->add($widgetsUser);
+            $widgetsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWidgetsUser(Widgets $widgetsUser): static
+    {
+        if ($this->widgets_user->removeElement($widgetsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($widgetsUser->getUserId() === $this) {
+                $widgetsUser->setUserId(null);
             }
         }
 
