@@ -58,6 +58,8 @@ export default function Login({ navigation, onLogin }) {
                 secureTextEntry
             />
             <Button title={loading ? "Logging in..." : "Login"} onPress={handleLogin} disabled={loading} />
+            <View style={{ height: 16 }} />
+            <Button title="Register" onPress={() => navigation.navigate('Register')} />
         </SafeAreaView>
     );
 }

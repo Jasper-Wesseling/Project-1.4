@@ -9,6 +9,7 @@ import Login from './components/Login';
 import { Icon } from "react-native-elements";
 import * as Keychain from 'react-native-keychain';
 import LoadingScreen from './components/LoadingScreen';
+import Register from './components/Register';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -81,9 +82,14 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!token ? (
-          <Stack.Screen name="Login">
-            {props => <Login {...props} onLogin={handleLogin} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen name="Login">
+              {props => <Login {...props} onLogin={handleLogin} />}
+            </Stack.Screen>
+            <Stack.Screen name="Register">
+              {props => <Register {...props} onLogin={handleLogin} />}
+            </Stack.Screen>
+          </>
         ) : (
           <Stack.Screen name="Main">
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
