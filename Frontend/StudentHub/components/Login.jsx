@@ -55,7 +55,7 @@ export default function Login({ navigation, onLogin }) {
                 </View>
             </SafeAreaView>
             <View style={styles.bottomHalf}>
-                <Text style={styles.title}>Create your own pasword</Text>
+                <Text style={styles.title}>Login</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Email"
@@ -78,7 +78,7 @@ export default function Login({ navigation, onLogin }) {
                     onPress={handleLogin}
                     disabled={loading}
                 >
-                    <Text style={styles.buttonText}>{loading ? "Logging in..." : "contunuu"}</Text>
+                    <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
                     <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
                 </TouchableOpacity>
                 <TouchableOpacity
