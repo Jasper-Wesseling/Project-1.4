@@ -36,36 +36,31 @@ export default function Onboard({ navigation }) {
 
 
   return (
-    <SafeAreaView  style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.container}>
-      {/* Header tekst */}
+        {/* Header tekst */}
         <View style={styles.header}>
           <Text style={styles.title}>{onboardPages[activeCarousel-1].title}</Text>
           <Text style={styles.subtitle}>{onboardPages[activeCarousel-1].subtitle}</Text>
-
           {/* Carousel */}
-          <View  style={styles.indicators}>
-            <View style={activeCarousel == 1 ?  styles.activeIndicator : styles.indicator}></View>
-            <View style={activeCarousel == 2 ?  styles.activeIndicator : styles.indicator}></View>
-            <View style={activeCarousel == 3 ?  styles.activeIndicator : styles.indicator}></View>
+          <View style={styles.indicators}>
+            <View style={activeCarousel == 1 ? styles.activeIndicator : styles.indicator}></View>
+            <View style={activeCarousel == 2 ? styles.activeIndicator : styles.indicator}></View>
+            <View style={activeCarousel == 3 ? styles.activeIndicator : styles.indicator}></View>
           </View>
         </View>
-
         {/* Image */}
-        <View>
+        <View style={styles.imageWrapper}>
           <Image 
             source={onboardPages[activeCarousel-1].image}
-            style={{ height: 200, width: 200,}}
+            style={styles.image}
           />
         </View>
-
         {/* Button */}
-        <View>
+        <View style={styles.buttonWrapper}>
           <TouchableOpacity style={styles.button} onPress={incrementCarousel}>
             <Text>Ga van start{activeCarousel}</Text>
-            <FontAwesome5Icon 
-
-            />
+            <FontAwesome5Icon />
           </TouchableOpacity>
         </View>
       </View>
@@ -82,7 +77,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 26,
   },
-  header : {
+  header: {
     marginTop: 40,
   },
   title: {
@@ -100,7 +95,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
-  indicator : {
+  indicator: {
     width: 20,
     height: 4, 
     borderRadius: 2, 
@@ -109,6 +104,12 @@ const styles = StyleSheet.create({
   activeIndicator: {
     backgroundColor: '#E7ECF0',
     width: 40,
+    height: 4,
+    borderRadius: 2,
+  },
+  image: {
+    height: 200,
+    width: 200,
   },
   button: {
     width: 200,

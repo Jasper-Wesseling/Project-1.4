@@ -10,6 +10,8 @@ import { Icon } from "react-native-elements";
 import * as Keychain from 'react-native-keychain';
 import LoadingScreen from './components/LoadingScreen';
 import Register from './components/Register';
+import BountyBoard from './components/BountyBoard';
+import AddPost from './components/AddPost';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -95,6 +97,14 @@ export default function App() {
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
           </Stack.Screen>
         )}
+//         dit is van bouty board ding
+      <Stack.Navigator screenOptions={{
+          headerShown: false,
+        }}>
+        {/* <Stack.Screen name="Product" component={Products}/>
+        <Stack.Screen name="AddProduct" component={AddProduct} /> */}
+        <Stack.Screen name="BountyBoard" component={BountyBoard} />
+        <Stack.Screen name="AddPost" component={AddPost} />
       </Stack.Navigator>
     </NavigationContainer>
   );
