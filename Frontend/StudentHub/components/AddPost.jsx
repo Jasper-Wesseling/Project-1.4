@@ -7,73 +7,27 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 
-export default function AddProduct({ navigation }) {
+export default function AddPost({ navigation }) {
     
     const [title, onChangeTitle] = useState('');
     const [description, onChangeDescription] = useState('');
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState('');
+    const [type, setType] = useState('');
     const [items, setItems] = useState([
-        { label: 'Boeken', value: 'Boeken' },
-        { label: 'Electra', value: 'Electra' },
-        { label: 'Huis en tuin', value: 'Huis en tuin' }
+        { label: 'Local', value: 'Local' },
+        { label: 'Remote', value: 'Remote' },
     ]);
-    const [price, setPrice] = useState('');
-    const [photo, setPhoto] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({mediaType: 'image'});
 
-        if (result.assets && result.assets.length > 0) {
-            const manipResult = await ImageManipulator.manipulateAsync(
-                result.assets[0].uri,
-                [{ resize: { width: 1200 } }],
-                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-            );
-            setPhoto({
-                uri: manipResult.uri,
-                fileName: result.assets[0].fileName || 'photo.jpg',
-                type: 'image/jpeg',
-            });
-        }
-    };
-
-    const uploadProduct = async () => {
-        console.log(price)
-        if (!photo || !title || !description || !value || !price)
+    const uploadPost = async () => {
+        if (!title || !description || !type)
         {
-            console.log(!photo, !title, !description, !value, !price)
-            Alert.alert('Error', 'Alle velden invullen AUB');
-            return;
-        }
-        if (price.charAt(0) === '0' && price.length > 1)
-        {
-            Alert.alert('Prijs mag niet beginnen met 0');
+            Alert.alert('Error', 'Fill in all fields');
             return;
         }
 
-        if (price.includes(",")) {
-            if ((price.split(",").length - 1) > 1 || price.split(",")[1]?.length !== 2 ) {
-                Alert.alert('Vul een valide prijs in!');
-                return;
-            }
-        }
-        let priceToDb = price;
-        console.log('here');
-        priceToDb = parseInt(priceToDb.trim().replace(",","")+"00")
-        
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('studyTag', value);
-        formData.append('price', priceToDb);
-        formData.append('photo', {
-            uri: photo.uri,
-            name: photo.fileName || 'photo.jpg',
-            type: photo.type || 'image/jpeg',
-        });
-        console.log('here');
+
 
         try {
             const loginRes = await fetch(API_URL + '/api/login', {
@@ -82,7 +36,6 @@ export default function AddProduct({ navigation }) {
                 body: JSON.stringify({
                     "username": "jasper.wesseling@student.nhlstenden.com",
                     "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
                 })
             });
             if (!loginRes.ok) throw new Error("Login failed");
@@ -91,32 +44,30 @@ export default function AddProduct({ navigation }) {
             if (!token) throw new Error("No token received");
 
 
-            const response = await fetch(API_URL + '/api/products/new', {
+            const response = await fetch(API_URL + '/api/posts/new', {
                 method: 'POST',
                 headers: {
                     // Do NOT set Content-Type for FormData; let fetch set it
                     'Authorization': `Bearer ${token}`
                 },
-                body: formData,
+                body: JSON.stringify({
+                    "title": title,
+                    "description": description,
+                    "type": type,
+                }),
             });
-
-            const data = await response.text();
             setLoading(false);
+            Alert.alert('Succesfully Created!', '', [{
+                text: 'OK',
+                onPress : () => navigation.goBack()
+            }]);
         } catch (error) {
             console.error(error);
-            Alert.alert('Upload Gefaald', 'Probeer opnieuw');
+            Alert.alert('Upload Failed', 'Try again');
         }
     }
-    
 
-    if (!loading) {
-        Alert.alert('Success', '', [{
-            text: 'OK',
-            onPress : () => navigation.goBack()
-        }]);
-    }
-
-    return(
+    return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
                 <View>
@@ -143,31 +94,17 @@ export default function AddProduct({ navigation }) {
                     />
                     <DropDownPicker
                         open={open}
-                        value={value}
+                        value={type}
                         items={items}
                         setOpen={setOpen}
-                        setValue={setValue}
+                        setValue={setType}
                         setItems={setItems}
                         placeholder="Select a category"
                         style={styles.input}
                     />
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setPrice}
-                        value={price}
-                        placeholder="Price"
-                        keyboardType="numeric"
-                    />
-                    {photo && (
-                        <Image
-                            source={{uri: photo.uri}}
-                            style={styles.photo}
-                        />
-                    )}
                 </View>
-                <View style={styles.buttonRow}>
-                    <Button title="Pick Image" onPress={pickImage} />
-                    <Button title="Upload" onPress={uploadProduct} />
+                <View style={styles.uploadButtonWrapper}>
+                    <Button title="Upload" onPress={uploadPost} color={'white'}/>
                 </View>
             </View>
         </SafeAreaView>
@@ -208,11 +145,10 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     formFields: {
-        display: 'flex',
         gap: 20,
     },
     input: {
-        borderColor: 'grey', 
+        borderColor: 'grey',
         borderWidth: 1,
         borderRadius: 16,
         fontSize: 24,
@@ -223,11 +159,12 @@ const styles = StyleSheet.create({
     inputDescription: {
         height: 100,
     },
-    photo: {
+    uploadButtonWrapper: {
+        marginBottom: 50,
+        padding: 20,
+        backgroundColor: "#2A4BA0",
         width: 200,
-        height: 200,
-        marginVertical: 10,
-        borderRadius: 10,
-        alignSelf: 'center',
+        alignSelf: "center",
+        borderRadius: 100,
     },
 });
