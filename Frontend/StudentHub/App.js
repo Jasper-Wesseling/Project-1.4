@@ -97,12 +97,7 @@ export default function App() {
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
           </Stack.Screen>
         )}
-//         dit is van bouty board ding
-      <Stack.Navigator screenOptions={{
-          headerShown: false,
-        }}>
-        {/* <Stack.Screen name="Product" component={Products}/>
-        <Stack.Screen name="AddProduct" component={AddProduct} /> */}
+        {/* BountyBoard and AddPost screens are always available in the stack */}
         <Stack.Screen name="BountyBoard" component={BountyBoard} />
         <Stack.Screen name="AddPost" component={AddPost} />
       </Stack.Navigator>

@@ -1,20 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal, Button } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
-import { useFocusEffect } from "@react-navigation/native";
 import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
-
 
 // Accept token and user as props
 export default function Products({ navigation, token, user }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
-    const scrollY = useRef(new Animated.Value(0)).current;
-    const [products, setProducts] = useState([]);
-    const [user, setUser] = useState();
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -29,43 +24,24 @@ export default function Products({ navigation, token, user }) {
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
-            // Login and get token
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
+            if (!token) {
+                setLoading(false);
+                return;
+            }
             // Build query params for search and filter
             let query = `?page=${pageToLoad}`;
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&category=${encodeURIComponent(filterValue)}`;
 
-            // Fetch products and user in parallel
-            const [productsRes, userRes] = await Promise.all([
-                fetch(API_URL + `/api/products/get${query}`, {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(API_URL + '/api/users/get', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
+            // Fetch products
+            const productsRes = await fetch(API_URL + `/api/products/get${query}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
             if (!productsRes.ok) throw new Error("Products fetch failed");
-            if (!userRes.ok) throw new Error("User fetch failed");
 
             const productsData = await productsRes.json();
-            const users = await userRes.json();
 
             setHasMorePages(productsData.length === 20); // If less than limit, no more data
             setProducts(prev =>
@@ -73,7 +49,6 @@ export default function Products({ navigation, token, user }) {
                     ? [...prev, ...productsData.filter(p => !prev.some(existing => existing.id === p.id))]
                     : productsData
             );
-            setUser(users);
             setLoading(false);
         } catch (err) {
             console.error("API error:", err);
@@ -81,34 +56,11 @@ export default function Products({ navigation, token, user }) {
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            async function fetchAll() {
-                if (!token) {
-                    setLoading(false);
-                    return;
-                }
-                try {
-                    // Only fetch products, not user
-                    const productsRes = await fetch(API_URL + '/api/products/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (!productsRes.ok) throw new Error("Products fetch failed");
-                    const products = await productsRes.json();
-                    setProducts(products);
-                    setLoading(false);
-                } catch (err) {
-                    console.error("API error:", err);
-                    setLoading(false);
-                }
-            }
-            fetchAll();
-        }, [token])
-            setPage(1);
-            fetchAll(1, false, search, activeFilter);
-        }, [search, activeFilter])
-    );
+    useEffect(() => {
+        setPage(1);
+        fetchAll(1, false, search, activeFilter);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, activeFilter, token]);
 
     const loadMore = () => {
         if (hasMorePages && !loading) {
