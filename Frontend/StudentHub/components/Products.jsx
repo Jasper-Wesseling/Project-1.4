@@ -93,7 +93,7 @@ export default function Products({ navigation, token, user }) {
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.container}>
                 <SearchBar
                     visible={searchModalVisible}
@@ -153,7 +153,16 @@ export default function Products({ navigation, token, user }) {
                 >
 
                     {products.map(product => (
-                        <ProductPreview key={product.id} product={product} />
+                        <TouchableOpacity
+                            key={product.id}
+                            activeOpacity={0.8}
+                            onPress={() => {
+                                setSelectedProduct(product);
+                                setModalVisible(true);
+                            }}
+                        >
+                            <ProductPreview product={product} />
+                        </TouchableOpacity>
                     ))}
                 </Animated.ScrollView>
                 :
@@ -164,7 +173,7 @@ export default function Products({ navigation, token, user }) {
                     onClose={() => setModalVisible(false)}
                 />
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 
