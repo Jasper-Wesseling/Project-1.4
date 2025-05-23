@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Products from './components/Products';
 import AddProduct from './components/AddProduct';
+import FaqPage from './components/FaqPage';
 import LightDarkSwitch from './components/LightDarkMode';
 import Login from './components/Login';
 import { Icon } from "react-native-elements";
