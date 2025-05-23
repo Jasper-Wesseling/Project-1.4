@@ -8,10 +8,12 @@ import { TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
 
-export default function BountyBoard({ navigation }) {
+// Accept token and user as props
+export default function BountyBoard({ navigation, token, user }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
-    const [user, setUser] = useState();
+    // Remove local user state
+    // const [user, setUser] = useState();
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -20,45 +22,27 @@ export default function BountyBoard({ navigation }) {
     const filters = ['Local', 'Remote'];
     const [activeFilter, setActiveFilter] = useState(null);
 
+    // Remove login, use token and user props
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
-            // Login and get token
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
+            if (!token) {
+                setLoading(false);
+                return;
+            }
             // Build query params for search and filter
             let query = `?page=${pageToLoad}`;
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&type=${encodeURIComponent(filterValue)}`;
 
-            // Fetch posts and user in parallel
-            const [postsRes, userRes] = await Promise.all([
-                fetch(API_URL + `/api/posts/get${query}`, {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(API_URL + '/api/users/get', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
+            // Fetch posts
+            const postsRes = await fetch(API_URL + `/api/posts/get${query}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
             if (!postsRes.ok) throw new Error("posts fetch failed");
-            if (!userRes.ok) throw new Error("User fetch failed");
 
             const postsData = await postsRes.json();
-            const users = await userRes.json();
 
             setHasMorePages(postsData.length === 20);
             setPosts(prev =>
@@ -66,7 +50,6 @@ export default function BountyBoard({ navigation }) {
                     ? [...prev, ...postsData.filter(p => !prev.some(existing => existing.id === p.id))]
                     : postsData
             );
-            setUser(users);
             setLoading(false);
         } catch (err) {
             console.error("API error:", err);
@@ -78,7 +61,7 @@ export default function BountyBoard({ navigation }) {
         useCallback(() => {
             setPage(1);
             fetchAll(1, false, search, activeFilter);
-        }, [search, activeFilter])
+        }, [search, activeFilter, token])
     );
 
     const loadMore = () => {

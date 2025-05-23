@@ -29,6 +29,8 @@ function MainTabs({ token, user, onLogout }) {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
           if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
+          if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
+          if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
         },
       })}
     >
@@ -38,6 +40,8 @@ function MainTabs({ token, user, onLogout }) {
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
+      <Tab.Screen name="BountyBoard" component={BountyBoard} />
+      <Tab.Screen name="AddPost" component={AddPost} />
       <Tab.Screen name="Profile">
         {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
       </Tab.Screen>
@@ -98,9 +102,7 @@ export default function App() {
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
           </Stack.Screen>
         )}
-        {/* BountyBoard and AddPost screens are always available in the stack */}
-        <Stack.Screen name="BountyBoard" component={BountyBoard} />
-        <Stack.Screen name="AddPost" component={AddPost} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
