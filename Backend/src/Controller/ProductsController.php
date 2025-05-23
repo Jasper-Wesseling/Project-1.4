@@ -45,8 +45,6 @@ class ProductsController extends AbstractController
         $search = $request->query->get('search', '');
 
         $qb = $productsRepository->createQueryBuilder('p')
-            ->where('p.user_id = :user_id')
-            ->setParameter('user_id', $user->getId())
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
@@ -59,6 +57,8 @@ class ProductsController extends AbstractController
             $qb->andWhere('LOWER(p.title) LIKE :search')
                ->setParameter('search', '%' . strtolower($search) . '%');
         }
+
+        
 
         $products = $qb->getQuery()->getResult();
 

@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
+import { useFocusEffect } from "@react-navigation/native";
 
 // Accept token and user as props
 export default function Products({ navigation, token, user }) {
@@ -55,12 +56,13 @@ export default function Products({ navigation, token, user }) {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        setPage(1);
-        fetchAll(1, false, search, activeFilter);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search, activeFilter, token]);
+    useFocusEffect(
+        useCallback(() => {
+            setPage(1);
+            fetchAll(1, false, search, activeFilter);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [search, activeFilter, token])
+    );
 
     const loadMore = () => {
         if (hasMorePages && !loading) {

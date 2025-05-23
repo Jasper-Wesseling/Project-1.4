@@ -15,6 +15,8 @@ export default function ProductPreview({ product }) {
     } else {
         price = price+='.-'
     }
+    
+    console.log(API_URL + product.photo);
 
     return (
         <View style={styles.card}>
