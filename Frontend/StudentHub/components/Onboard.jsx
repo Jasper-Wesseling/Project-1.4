@@ -51,6 +51,7 @@ export default function Onboard({ navigation }) {
     },
   ];
 
+
   function PopUp() {
     return (
       <Modal 
