@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EventsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -36,6 +38,17 @@ class Events
 
     #[ORM\Column(nullable: true)]
     private ?\DateTime $updated_at = null;
+
+    /**
+     * @var Collection<int, UserEvents>
+     */
+    #[ORM\OneToMany(targetEntity: UserEvents::class, mappedBy: 'event_id', orphanRemoval: true)]
+    private Collection $events_user;
+
+    public function __construct()
+    {
+        $this->events_user = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -129,6 +142,36 @@ class Events
     public function setUpdatedAt(?\DateTime $updated_at): static
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserEvents>
+     */
+    public function getEventsUser(): Collection
+    {
+        return $this->events_user;
+    }
+
+    public function addEventsUser(UserEvents $eventsUser): static
+    {
+        if (!$this->events_user->contains($eventsUser)) {
+            $this->events_user->add($eventsUser);
+            $eventsUser->setEventId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventsUser(UserEvents $eventsUser): static
+    {
+        if ($this->events_user->removeElement($eventsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($eventsUser->getEventId() === $this) {
+                $eventsUser->setEventId(null);
+            }
+        }
 
         return $this;
     }
