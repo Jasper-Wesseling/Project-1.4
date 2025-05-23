@@ -180,55 +180,13 @@ export default function Products({ navigation }) {
                 </Animated.ScrollView>
                 :
                 <Text style={styles.loadingText}>Loading...</Text>}
+                <ProductModal
+                    visible={modalVisible}
+                    product={selectedProduct}
+                    onClose={() => setModalVisible(false)}
+                />
             </View>
         </SafeAreaView>
-
-                    {filters.map((filter, i) => (
-                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}
-                        >
-                            <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </Animated.View>
-            {/* Scrollable Content */}
-            {!loading ? 
-            <Animated.ScrollView
-                contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
-                {products
-                    .filter(product =>
-                        (!activeFilter || product.study_tag === activeFilter) &&
-                        product.title.toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map(product => (
-                        <TouchableOpacity
-                            key={product.id}
-                            onPress={() => {
-                                setSelectedProduct(product);
-                                setModalVisible(true);
-                            }}
-                        >
-                            <ProductPreview product={product} />
-                        </TouchableOpacity>
-                ))}
-            </Animated.ScrollView>
-            :
-            <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
-            <ProductModal
-                visible={modalVisible}
-                product={selectedProduct}
-                onClose={() => setModalVisible(false)}
-            />
-        </View>
-
     );
 }
 
