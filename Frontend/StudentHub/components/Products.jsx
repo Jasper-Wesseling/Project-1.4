@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal, Button } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
 import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
+import ProductModal from "./ProductModal";
 
 export default function Products({ navigation }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -13,6 +14,8 @@ export default function Products({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMorePages, setHasMorePages] = useState(true);
 
@@ -170,6 +173,7 @@ export default function Products({ navigation }) {
                     scrollEventThrottle={16}
                     onScrollEndDrag={loadMore}
                 >
+
                     {products.map(product => (
                         <ProductPreview key={product.id} product={product} />
                     ))}
@@ -178,6 +182,53 @@ export default function Products({ navigation }) {
                 <Text style={styles.loadingText}>Loading...</Text>}
             </View>
         </SafeAreaView>
+
+                    {filters.map((filter, i) => (
+                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}
+                        >
+                            <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
+                                {filter}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+            </Animated.View>
+            {/* Scrollable Content */}
+            {!loading ? 
+            <Animated.ScrollView
+                contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+            >
+                {products
+                    .filter(product =>
+                        (!activeFilter || product.study_tag === activeFilter) &&
+                        product.title.toLowerCase().includes(search.toLowerCase())
+                    )
+                    .map(product => (
+                        <TouchableOpacity
+                            key={product.id}
+                            onPress={() => {
+                                setSelectedProduct(product);
+                                setModalVisible(true);
+                            }}
+                        >
+                            <ProductPreview product={product} />
+                        </TouchableOpacity>
+                ))}
+            </Animated.ScrollView>
+            :
+            <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
+            <ProductModal
+                visible={modalVisible}
+                product={selectedProduct}
+                onClose={() => setModalVisible(false)}
+            />
+        </View>
+
     );
 }
 
