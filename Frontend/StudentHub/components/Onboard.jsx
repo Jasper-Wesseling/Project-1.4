@@ -21,18 +21,6 @@ export default function Onboard({ navigation }) {
   setModalVisible(activeCarousel === 2);
   }, [activeCarousel])
 
-  // const [data, setData] = useState(null);
-
-
-  // useEffect(() => {
-  //   fetch('http://192.168.2.7:8000/user/')
-  //     .then(res => res.json())
-  //     .then(setData)
-  //     .catch(console.error);
-  // }, []);
-
-
-
   const onboardPages = [
     {
       title: 'Jouw School,\nin je zak',
