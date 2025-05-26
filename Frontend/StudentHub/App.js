@@ -13,6 +13,7 @@ import LoadingScreen from './components/LoadingScreen';
 import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
+import Frontpage from './components/Frontpage';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -102,7 +103,6 @@ export default function App() {
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
           </Stack.Screen>
         )}
-
       </Stack.Navigator>
     </NavigationContainer>
   );
