@@ -108,6 +108,12 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'receiver_id', orphanRemoval: true)]
     private Collection $messages_receiver;
 
+    /**
+     * @var Collection<int, Widgets>
+     */
+    #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $widgets_user;
+
 
     public function __construct()
     {
@@ -197,6 +203,11 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->full_name = $full_name;
 
         return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return explode(' ', $this->full_name)[0];
     }
 
     public function getBio(): ?string
@@ -481,6 +492,36 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($messagesReceiver->getReceiverId() === $this) {
                 $messagesReceiver->setReceiverId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Widgets>
+     */
+    public function getWidgetsUser(): Collection
+    {
+        return $this->widgets_user;
+    }
+
+    public function addWidgetsUser(Widgets $widgetsUser): static
+    {
+        if (!$this->widgets_user->contains($widgetsUser)) {
+            $this->widgets_user->add($widgetsUser);
+            $widgetsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWidgetsUser(Widgets $widgetsUser): static
+    {
+        if ($this->widgets_user->removeElement($widgetsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($widgetsUser->getUserId() === $this) {
+                $widgetsUser->setUserId(null);
             }
         }
 
