@@ -14,11 +14,13 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import ProductChat from "./components/ProductChat";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ token, user, onLogout }) {
+
+function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -36,7 +38,7 @@ function MainTabs({ token, user, onLogout }) {
       })}
     >
       <Tab.Screen name="Products">
-        {props => <Products {...props} token={token} user={user} />}
+        {props => <Products {...props} token={token} user={user} setUserToChat={setUserToChat}/>}
       </Tab.Screen>
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
@@ -51,6 +53,7 @@ function MainTabs({ token, user, onLogout }) {
 }
 
 export default function App() {
+  const [userToChat, setUserToChat] = useState(null);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,10 +102,16 @@ export default function App() {
             </Stack.Screen>
           </>
         ) : (
-          <Stack.Screen name="Main">
-            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen name="Main">
+              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
+            </Stack.Screen>
+            <Stack.Screen name="ProductChat">
+              {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}
+            </Stack.Screen>
+          </>
         )}
+
       </Stack.Navigator>
     </NavigationContainer>
   );

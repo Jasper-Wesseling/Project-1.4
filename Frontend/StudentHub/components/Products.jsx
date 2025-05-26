@@ -8,7 +8,7 @@ import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 
 // Accept token and user as props
-export default function Products({ navigation, token, user }) {
+export default function Products({ navigation, token, user, setUserToChat }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ export default function Products({ navigation, token, user }) {
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&category=${encodeURIComponent(filterValue)}`;
 
-            // Fetch products
+            // Fetch product
             const productsRes = await fetch(API_URL + `/api/products/get${query}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -184,6 +184,9 @@ export default function Products({ navigation, token, user }) {
                     product={selectedProduct}
                     onClose={() => setModalVisible(false)}
                     formatPrice={formatPrice}
+                    navigation={navigation}
+                    setUserToChat={setUserToChat}
+                    productUser={selectedProduct?.user_id}
                 />
             </View>
         </View>

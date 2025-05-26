@@ -36,6 +36,7 @@ class ProductsController extends AbstractController
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
+        // $userIDReciever = max(1, (int)$request->query->get('reciever', 1));
 
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
