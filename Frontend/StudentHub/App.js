@@ -8,7 +8,7 @@ import FaqPage from './components/FaqPage';
 import LightDarkSwitch from './components/LightDarkMode';
 import Login from './components/Login';
 import { Icon } from "react-native-elements";
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 import LoadingScreen from './components/LoadingScreen';
 import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
@@ -55,33 +55,44 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load token from Keychain on mount
+  // Load token from SecureStore on mount
   useEffect(() => {
     (async () => {
       try {
-        const creds = await Keychain.getGenericPassword();
-        if (creds && creds.password) {
-          setToken(creds.password);
+        const creds = await SecureStore.getItemAsync("auth");
+        if (creds) {
+          // creds format: token||userJson
+          const [savedToken, savedUserJson] = creds.split("||");
+          setToken(savedToken);
+          if (savedUserJson) setUser(JSON.parse(savedUserJson));
         }
       } catch (e) {
-        // ignore
+        console.log("Error loading credentials from SecureStore:", e);
       }
       setLoading(false);
     })();
   }, []);
 
-  // Save token and user to Keychain/state on login
+  // Save token and user to SecureStore/state on login
   const handleLogin = async (newToken, userObj) => {
     setToken(newToken);
     setUser(userObj);
-    await Keychain.setGenericPassword("auth", newToken);
+    try {
+      await SecureStore.setItemAsync("auth", `${newToken}||${JSON.stringify(userObj)}`);
+    } catch (e) {
+      console.log("Error saving token to SecureStore:", e);
+    }
   };
 
-  // Remove token and user from Keychain/state on logout
+  // Remove token and user from SecureStore/state on logout
   const handleLogout = async () => {
     setToken(null);
     setUser(null);
-    await Keychain.resetGenericPassword();
+    try {
+      await SecureStore.deleteItemAsync("auth");
+    } catch (e) {
+      console.log("Error deleting credentials from SecureStore:", e);
+    }
   };
 
   if (loading) return <LoadingScreen />;
