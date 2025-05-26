@@ -1,20 +1,25 @@
-import React, { useState } from 'react';
-import { StatusBar, Button, StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function Onboard({ navigation }) {
   const [activeCarousel, setActiveCarousel] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+
 
   const incrementCarousel = () => {
     setActiveCarousel((prevActiveCarousel) => {
       if (prevActiveCarousel >= 3) {
-        // verwijder na testen!!!
         return 1; 
       } else {
         return prevActiveCarousel + 1;
       }
     });
   };
+
+  useEffect(() => {
+  setModalVisible(activeCarousel === 2);
+  }, [activeCarousel])
 
   const onboardPages = [
     {
@@ -23,62 +28,91 @@ export default function Onboard({ navigation }) {
       image: require('../assets/adaptive-icon.png'),
     },
     {
-      title: 'Blijf georganiseerd',
-      subtitle: 'Houd je lessen, opdrachten en deadlines bij met gemak.',
-      image: require('../assets/icon.png'),
-    },
-    {
       title: 'Altijd verbonden',
       subtitle: 'Communiceer met je klasgenoten en docenten, waar je ook bent.',
       image: require('../assets/favicon.png'),
     },
+    {
+      title: 'Connecties makkelijk maken',
+      subtitle: 'Eenvouding mensen vinden voor jou doelen.',
+      image: require('../assets/icon.png'),
+    },
   ];
 
 
+  function PopUp() {
+    return (
+      <Modal 
+        animationType='slide'
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => {
+          setModalVisible(false)
+        }}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setModalVisible(false);
+            // incrementCarousel();
+          }}
+        >
+          <View style={{flex: 1}}>
+            <View style={{height: 100, width:100, position: 'absolute', backgroundColor: 'white', left: 100, top: 200}}>
+              <Text>moi</Text>
+            </View>
+          </View>
+          
+        </TouchableWithoutFeedback>
+        
+      </Modal>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.container}>
-        {/* Header tekst */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{onboardPages[activeCarousel-1].title}</Text>
-          <Text style={styles.subtitle}>{onboardPages[activeCarousel-1].subtitle}</Text>
-          {/* Carousel */}
-          <View style={styles.indicators}>
-            <View style={activeCarousel == 1 ? styles.activeIndicator : styles.indicator}></View>
-            <View style={activeCarousel == 2 ? styles.activeIndicator : styles.indicator}></View>
-            <View style={activeCarousel == 3 ? styles.activeIndicator : styles.indicator}></View>
-          </View>
+      {/* Header */}
+      <PopUp />
+      <View style={styles.header}>
+        <Text style={styles.title}>{onboardPages[activeCarousel-1].title}</Text>
+        <Text style={styles.subtitle}>{onboardPages[activeCarousel-1].subtitle}</Text>
+        <View style={styles.indicators}>
+          <View style={activeCarousel == 1 ?  styles.activeIndicator : styles.indicator}></View>
+          <View style={activeCarousel == 2 ?  styles.activeIndicator : styles.indicator}></View>
+          <View style={activeCarousel == 3 ?  styles.activeIndicator : styles.indicator}></View>
         </View>
-        {/* Image */}
-        <View style={styles.imageWrapper}>
-          <Image 
-            source={onboardPages[activeCarousel-1].image}
-            style={styles.image}
-          />
-        </View>
-        {/* Button */}
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity style={styles.button} onPress={incrementCarousel}>
-            <Text>Ga van start{activeCarousel}</Text>
-            <FontAwesome5Icon />
-          </TouchableOpacity>
-        </View>
+      </View>
+
+      {/* Image */}
+      <View style={styles.imageContainer}>
+        <Image 
+          source={onboardPages[activeCarousel-1].image}
+          style={styles.image}
+        />
+      </View>
+
+      {/* Button */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+        style={styles.button} 
+        onPress={incrementCarousel} 
+        >
+          <Text>Ga van start</Text>
+          <FontAwesome5Icon name='arrow-right' />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#2A4BA0',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 26,
   },
   header: {
     marginTop: 40,
+    paddingHorizontal: 32,
   },
   title: {
     fontSize: 16*2.5,
@@ -91,7 +125,6 @@ const styles = StyleSheet.create({
   },
   indicators: {
     marginTop: 16,
-    display: 'flex',
     flexDirection: 'row',
     gap: 10,
   },
@@ -107,19 +140,27 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
-  image: {
-    height: 200,
-    width: 200,
-  },
   button: {
     width: 200,
     height: 50,
     borderRadius: 15,
     backgroundColor: '#F9B023',
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 15,
+    alignSelf: 'center',
+  },
+  buttonContainer: {
+    marginBottom: 40,
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  image: {
+    height: 200, 
+    width: 200,
   },
 });

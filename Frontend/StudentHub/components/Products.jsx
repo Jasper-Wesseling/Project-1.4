@@ -1,20 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal, Button } from "react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
-import { useFocusEffect } from "@react-navigation/native";
 import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
-
+import { useFocusEffect } from "@react-navigation/native";
 
 // Accept token and user as props
 export default function Products({ navigation, token, user }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
-    const scrollY = useRef(new Animated.Value(0)).current;
-    const [products, setProducts] = useState([]);
-    const [user, setUser] = useState();
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -29,43 +25,24 @@ export default function Products({ navigation, token, user }) {
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
-            // Login and get token
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
+            if (!token) {
+                setLoading(false);
+                return;
+            }
             // Build query params for search and filter
             let query = `?page=${pageToLoad}`;
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&category=${encodeURIComponent(filterValue)}`;
 
-            // Fetch products and user in parallel
-            const [productsRes, userRes] = await Promise.all([
-                fetch(API_URL + `/api/products/get${query}`, {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(API_URL + '/api/users/get', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
+            // Fetch products
+            const productsRes = await fetch(API_URL + `/api/products/get${query}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
             if (!productsRes.ok) throw new Error("Products fetch failed");
-            if (!userRes.ok) throw new Error("User fetch failed");
 
             const productsData = await productsRes.json();
-            const users = await userRes.json();
 
             setHasMorePages(productsData.length === 20); // If less than limit, no more data
             setProducts(prev =>
@@ -73,41 +50,18 @@ export default function Products({ navigation, token, user }) {
                     ? [...prev, ...productsData.filter(p => !prev.some(existing => existing.id === p.id))]
                     : productsData
             );
-            setUser(users);
             setLoading(false);
         } catch (err) {
             console.error("API error:", err);
             setLoading(false);
         }
     };
-
     useFocusEffect(
         useCallback(() => {
-            async function fetchAll() {
-                if (!token) {
-                    setLoading(false);
-                    return;
-                }
-                try {
-                    // Only fetch products, not user
-                    const productsRes = await fetch(API_URL + '/api/products/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (!productsRes.ok) throw new Error("Products fetch failed");
-                    const products = await productsRes.json();
-                    setProducts(products);
-                    setLoading(false);
-                } catch (err) {
-                    console.error("API error:", err);
-                    setLoading(false);
-                }
-            }
-            fetchAll();
-        }, [token])
             setPage(1);
             fetchAll(1, false, search, activeFilter);
-        }, [search, activeFilter])
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [search, activeFilter, token])
     );
 
     const loadMore = () => {
@@ -140,8 +94,18 @@ export default function Products({ navigation, token, user }) {
 
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
+    let priceFormat = new Intl.NumberFormat('nl-NL', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2
+    });
+
+    function formatPrice(price) {
+        return price ? priceFormat.format(price / 100): '';
+    }
+
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.container}>
                 <SearchBar
                     visible={searchModalVisible}
@@ -201,60 +165,28 @@ export default function Products({ navigation, token, user }) {
                 >
 
                     {products.map(product => (
-                        <ProductPreview key={product.id} product={product} />
-                    ))}
-                </Animated.ScrollView>
-                :
-                <Text style={styles.loadingText}>Loading...</Text>}
-            </View>
-        </SafeAreaView>
-
-                    {filters.map((filter, i) => (
-                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}
-                        >
-                            <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </Animated.View>
-            {/* Scrollable Content */}
-            {!loading ? 
-            <Animated.ScrollView
-                contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
-                {products
-                    .filter(product =>
-                        (!activeFilter || product.study_tag === activeFilter) &&
-                        product.title.toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map(product => (
                         <TouchableOpacity
                             key={product.id}
+                            activeOpacity={0.8}
                             onPress={() => {
                                 setSelectedProduct(product);
                                 setModalVisible(true);
                             }}
                         >
-                            <ProductPreview product={product} />
+                            <ProductPreview product={product} formatPrice={formatPrice}/>
                         </TouchableOpacity>
-                ))}
-            </Animated.ScrollView>
-            :
-            <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
-            <ProductModal
-                visible={modalVisible}
-                product={selectedProduct}
-                onClose={() => setModalVisible(false)}
-            />
+                    ))}
+                </Animated.ScrollView>
+                :
+                <Text style={styles.loadingText}>Loading...</Text>}
+                <ProductModal
+                    visible={modalVisible}
+                    product={selectedProduct}
+                    onClose={() => setModalVisible(false)}
+                    formatPrice={formatPrice}
+                />
+            </View>
         </View>
-
     );
 }
 

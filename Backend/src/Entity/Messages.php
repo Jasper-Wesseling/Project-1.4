@@ -19,15 +19,16 @@ class Messages
     #[ORM\JoinColumn(nullable: false)]
     private ?Users $sender_id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'mesages_user')]
+    #[ORM\ManyToOne(inversedBy: 'messages_receiver')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Users $reciever_id = null;
-
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $content = null;
+    private ?Users $receiver_id = null;
 
     #[ORM\Column]
     private ?\DateTime $timestamp = null;
+
+
+    #[ORM\Column(nullable: true)]
+    private ?array $content = null;
 
     public function getId(): ?int
     {
@@ -53,26 +54,14 @@ class Messages
         return $this;
     }
 
-    public function getRecieverId(): ?Users
+    public function getReceiverId(): ?Users
     {
-        return $this->reciever_id;
+        return $this->receiver_id;
     }
 
-    public function setRecieverId(?Users $reciever_id): static
+    public function setReceiverId(?Users $receiver_id): static
     {
-        $this->reciever_id = $reciever_id;
-
-        return $this;
-    }
-
-    public function getContent(): ?string
-    {
-        return $this->content;
-    }
-
-    public function setContent(string $content): static
-    {
-        $this->content = $content;
+        $this->receiver_id = $receiver_id;
 
         return $this;
     }
@@ -85,6 +74,18 @@ class Messages
     public function setTimestamp(\DateTime $timestamp): static
     {
         $this->timestamp = $timestamp;
+
+        return $this;
+    }
+
+    public function getContent(): ?array
+    {
+        return $this->content;
+    }
+
+    public function setContent(?array $content): static
+    {
+        $this->content = $content;
 
         return $this;
     }

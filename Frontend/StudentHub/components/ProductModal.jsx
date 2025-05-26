@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { API_URL } from '@env';
 
-export default function ProductModal({ visible, product, onClose }) {
+export default function ProductModal({ visible, product, onClose, formatPrice }) {
     const [showOverige, setShowOverige] = useState(false);
     const [showReviews, setShowReviews] = useState(false);
     const [fullscreenImg, setFullscreenImg] = useState(false);
@@ -42,8 +42,8 @@ export default function ProductModal({ visible, product, onClose }) {
                         {/* Title and Price */}
                         <Text style={styles.title}>{product.title}</Text>
                         <View style={styles.priceRow}>
-                            <Text style={styles.price}>€{product.price}</Text>
-                            <View style={styles.badge}><Text style={styles.badgeText}>20 days ago</Text></View>
+                            <Text style={styles.price}>{formatPrice(product.price)}</Text>
+                            <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} days ago</Text></View>
                         </View>
                         {/* Stars and Reviews */}
                         <View style={styles.starsRow}>

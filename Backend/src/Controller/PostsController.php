@@ -38,13 +38,10 @@ class PostsController extends AbstractController
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
-
         $search = $request->query->get('search', '');
         $type = $request->query->get('type', null);
 
         $qb = $postsRepository->createQueryBuilder('p')
-            ->where('p.user_id = :user_id')
-            ->setParameter('user_id', $user->getId())
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);

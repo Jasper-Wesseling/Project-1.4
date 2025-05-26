@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Products from './components/Products';
 import AddProduct from './components/AddProduct';
+import FaqPage from './components/FaqPage';
 import LightDarkSwitch from './components/LightDarkMode';
 import Login from './components/Login';
 import { Icon } from "react-native-elements";
@@ -12,6 +13,7 @@ import LoadingScreen from './components/LoadingScreen';
 import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
+import Frontpage from './components/Frontpage';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,6 +30,8 @@ function MainTabs({ token, user, onLogout }) {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
           if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
+          if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
+          if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
         },
       })}
     >
@@ -37,6 +41,8 @@ function MainTabs({ token, user, onLogout }) {
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
+      <Tab.Screen name="BountyBoard" component={BountyBoard} />
+      <Tab.Screen name="AddPost" component={AddPost} />
       <Tab.Screen name="Profile">
         {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
       </Tab.Screen>
@@ -97,14 +103,6 @@ export default function App() {
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
           </Stack.Screen>
         )}
-//         dit is van bouty board ding
-      <Stack.Navigator screenOptions={{
-          headerShown: false,
-        }}>
-        {/* <Stack.Screen name="Product" component={Products}/>
-        <Stack.Screen name="AddProduct" component={AddProduct} /> */}
-        <Stack.Screen name="BountyBoard" component={BountyBoard} />
-        <Stack.Screen name="AddPost" component={AddPost} />
       </Stack.Navigator>
     </NavigationContainer>
   );

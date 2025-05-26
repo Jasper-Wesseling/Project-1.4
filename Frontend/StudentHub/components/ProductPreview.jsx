@@ -1,20 +1,8 @@
 import { Image, Text, View, StyleSheet } from "react-native";
 import { API_URL } from '@env';
 
-export default function ProductPreview({ product }) {
+export default function ProductPreview({ product, formatPrice }) {
     if (!product) return null;
-
-    const subStringLength = 20
-
-    let price = product.price.toString();
-    if (price.length > 2) {
-        // Convert price string like "1234" to "12,34"
-        const euros = price.slice(0, -2);
-        const cents = price.slice(-2);
-        price = euros + ',' + cents;
-    } else {
-        price = price+='.-'
-    }
 
     return (
         <View style={styles.card}>
@@ -31,7 +19,7 @@ export default function ProductPreview({ product }) {
                 </View>
                 <View style={styles.priceRow}>
                     <Text style={styles.startingFrom}>Starting from</Text>
-                    <Text style={styles.price}>€{price}</Text>
+                    <Text style={styles.price}>{formatPrice(product.price)}</Text>
                 </View>
             </View>
         </View>
