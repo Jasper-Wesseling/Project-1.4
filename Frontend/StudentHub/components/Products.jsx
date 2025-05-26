@@ -1,70 +1,76 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
-import { useFocusEffect } from "@react-navigation/native";
 import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
+import ProductModal from "./ProductModal";
+import { useFocusEffect } from "@react-navigation/native";
 
-
-export default function Products({ navigation }) {
-
+// Accept token and user as props
+export default function Products({ navigation, token, user }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
-    const [user, setUser] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMorePages, setHasMorePages] = useState(true);
 
+    // Filters should match your backend's product categories
+    const filters = ['Boeken', 'Electra', 'Huis en tuin'];
+    const [activeFilter, setActiveFilter] = useState(null);
+
+    const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
+        try {
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+            // Build query params for search and filter
+            let query = `?page=${pageToLoad}`;
+            if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
+            if (filterValue) query += `&category=${encodeURIComponent(filterValue)}`;
+
+            // Fetch products
+            const productsRes = await fetch(API_URL + `/api/products/get${query}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!productsRes.ok) throw new Error("Products fetch failed");
+
+            const productsData = await productsRes.json();
+
+            setHasMorePages(productsData.length === 20); // If less than limit, no more data
+            setProducts(prev =>
+                append
+                    ? [...prev, ...productsData.filter(p => !prev.some(existing => existing.id === p.id))]
+                    : productsData
+            );
+            setLoading(false);
+        } catch (err) {
+            console.error("API error:", err);
+            setLoading(false);
+        }
+    };
     useFocusEffect(
         useCallback(() => {
-        async function fetchAll() {
-            try {
-                // Login and get token
-                const loginRes = await fetch(API_URL + '/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        "username": "jasper.wesseling@student.nhlstenden.com",
-                        "password": "wesselingjasper",
-                        "full_name": "Jasper Wesseling"
-                    })
-                });
-                if (!loginRes.ok) throw new Error("Login failed");
-                const loginData = await loginRes.json();
-                const token = loginData.token || loginData.access_token;
-                if (!token) throw new Error("No token received");
-    
-                // Fetch products and user in parallel
-                const [productsRes, userRes] = await Promise.all([
-                    fetch(API_URL + '/api/products/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch(API_URL + '/api/users/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                ]);
-    
-                if (!productsRes.ok) throw new Error("Products fetch failed");
-                if (!userRes.ok) throw new Error("User fetch failed");
-    
-                const products = await productsRes.json();
-                const users = await userRes.json();
-    
-                setProducts(products);
-                setUser(users);
-                setLoading(false);
-            } catch (err) {
-                console.error("API error:", err);
-                setLoading(false);
-            }
-        }
-        fetchAll();
-        }, [])
+            setPage(1);
+            fetchAll(1, false, search, activeFilter);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [search, activeFilter, token])
     );
 
+    const loadMore = () => {
+        if (hasMorePages && !loading) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            fetchAll(nextPage, true, search, activeFilter);
+        }
+    };
 
     // Animated header height (from 150 to 0)
     const headerHeight = scrollY.interpolate({
@@ -86,94 +92,100 @@ export default function Products({ navigation }) {
         extrapolate: "clamp",
     });
 
-    // Helper: Only enable buttons if opacity > 0.5
-    const [buttonsEnabled, setButtonsEnabled] = useState(false);
-
-    useEffect(() => {
-        const listener = scrollY.addListener(({ value }) => {
-            setButtonsEnabled(value >= 90); // adjust threshold as needed
-        });
-        return () => scrollY.removeListener(listener);
-    }, [scrollY]);
-
-
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
-    const filters = ['Boeken', 'Electra', 'Huis en tuin'];
+    let priceFormat = new Intl.NumberFormat('nl-NL', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2
+    });
 
-    const [activeFilter, setActiveFilter] = useState(null);
-
-
+    function formatPrice(price) {
+        return price ? priceFormat.format(price / 100): '';
+    }
 
     return (
         <View style={styles.container}>
-            <SearchBar
-            visible={searchModalVisible}
-            value={search}
-            onChange={setSearch}
-            onClose={() => setSearchModalVisible(false)}
-c            />
-            {/* Static Top Bar */}
-            <View style={styles.topBar}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>{!loading ? `Hey, ${name}` : null}</Text>
-                    <View style={{ flexDirection: 'row', width: 125, justifyContent: 'space-around', alignContent: 'center'}}>
-                        <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
-                            <Icon name="plus" type="feather" size={34} color="#fff"/>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
-                            <Icon name="search" size={34} color="#fff" />
-                        </TouchableOpacity>
-                        <TouchableOpacity><Icon name="bag-outline" type="ionicon" size={32} color="#fff"/></TouchableOpacity>
+            <View style={styles.container}>
+                <SearchBar
+                    visible={searchModalVisible}
+                    value={search}
+                    onChange={setSearch}
+                    onClose={() => setSearchModalVisible(false)}
+                />
+                {/* Static Top Bar */}
+                <View style={styles.topBar}>
+                    <View style={styles.topBarRow}>
+                        <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : null}</Text>
+                        <View style={styles.topBarIcons}>
+                            <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
+                                <Icon name="plus" type="feather" size={34} color="#fff"/>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
+                                <Icon name="search" size={34} color="#fff" />
+                            </TouchableOpacity>
+                            <TouchableOpacity><Icon name="bag-outline" type="ionicon" size={32} color="#fff"/></TouchableOpacity>
+                        </View>
                     </View>
                 </View>
-            </View>
-            {/* Animated Header */}
-            <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontSize: 64}}>Shop</Animated.Text>
-                <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontSize: 64}}>By Catagory</Animated.Text>
-            </Animated.View>
-            {/* Sticky Filter Row  */}
-            <Animated.View style={[
-                styles.filterRow,
-                { top: filterTop, height: 50 }
-            ]}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ alignItems: "center" }}
+                {/* Animated Header */}
+                <Animated.View style={[styles.header, { height: headerHeight }]}>
+                    <Animated.Text style={[styles.headerText, {opacity: headerOpacity}]}>Shop</Animated.Text>
+                    <Animated.Text style={[styles.headerText, {opacity: headerOpacity}]}>By Catagory</Animated.Text>
+                </Animated.View>
+                {/* Sticky Filter Row  */}
+                <Animated.View style={[
+                    styles.filterRow,
+                    { top: filterTop, height: 50 }
+                ]}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.filterScrollContent}
+                    >
+                        {filters.map((filter, i) => (
+                            <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
+                                <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
+                                    {filter}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </Animated.View>
+                {/* Scrollable Content */}
+                {!loading ? 
+                <Animated.ScrollView
+                    contentContainerStyle={styles.scrollViewContent}
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                    onScrollEndDrag={loadMore}
                 >
-                    {filters.map((filter, i) => (
-                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}
+
+                    {products.map(product => (
+                        <TouchableOpacity
+                            key={product.id}
+                            activeOpacity={0.8}
+                            onPress={() => {
+                                setSelectedProduct(product);
+                                setModalVisible(true);
+                            }}
                         >
-                            <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter}
-                            </Text>
+                            <ProductPreview product={product} formatPrice={formatPrice}/>
                         </TouchableOpacity>
                     ))}
-                </ScrollView>
-            </Animated.View>
-            {/* Scrollable Content */}
-            {!loading ? 
-            <Animated.ScrollView
-                contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
-                {products
-                    .filter(product =>
-                        (!activeFilter || product.study_tag === activeFilter) &&
-                        product.title.toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map(product => (
-                        <ProductPreview key={product.id} product={product} />
-                ))}
-            </Animated.ScrollView>
-            :
-            <Text style={{ paddingTop: 300, fontSize: 64, color: 'black', alignSelf: 'center' }}>Loading...</Text>}
+                </Animated.ScrollView>
+                :
+                <Text style={styles.loadingText}>Loading...</Text>}
+                <ProductModal
+                    visible={modalVisible}
+                    product={selectedProduct}
+                    onClose={() => setModalVisible(false)}
+                    formatPrice={formatPrice}
+                />
+            </View>
         </View>
     );
 }
@@ -195,9 +207,24 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         zIndex: 20,
     },
+    topBarRow: {
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },
+    topBarText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "bold"
+    },
+    topBarIcons: {
+        flexDirection: 'row',
+        width: 125,
+        justifyContent: 'space-around',
+        alignContent: 'center'
+    },
     header: {
         position: "absolute",
-        top: 100, // below topBar
+        top: 100,
         left: 0,
         right: 0,
         backgroundColor: '#2A4BA0',
@@ -205,6 +232,11 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         paddingHorizontal: 16,
         zIndex: 10,
+    },
+    headerText: {
+        alignSelf: 'flex-start',
+        color: "white",
+        fontSize: 64,
     },
     filterRow: {
         position: "absolute",
@@ -219,6 +251,9 @@ const styles = StyleSheet.create({
         gap: 10,
         flex: 1,
     },
+    filterScrollContent: {
+        alignItems: "center"
+    },
     filter: {
         paddingHorizontal: 10,
         marginHorizontal: 8,
@@ -230,4 +265,14 @@ const styles = StyleSheet.create({
     activeFilter: {
         backgroundColor: '#FFC83A'
     },
+    scrollViewContent: {
+        paddingTop: 300,
+        paddingBottom: 40,
+    },
+    loadingText: {
+        paddingTop: 300,
+        fontSize: 64,
+        color: 'black',
+        alignSelf: 'center'
+    }
 });

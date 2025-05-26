@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { useState, useEffect } from "react";
+import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-
-export default function AddProduct({ navigation }) {
+// Accept token as prop
+export default function AddProduct({ navigation, token }) {
     
-    const [title, onChangeTitle] = useState('');
-    const [description, onChangeDescription] = useState('');
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState('');
     const [items, setItems] = useState([
@@ -20,7 +20,7 @@ export default function AddProduct({ navigation }) {
     ]);
     const [price, setPrice] = useState('');
     const [photo, setPhoto] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({mediaType: 'image'});
@@ -61,7 +61,7 @@ export default function AddProduct({ navigation }) {
         }
         let priceToDb = price;
         console.log('here');
-        priceToDb = parseInt(priceToDb.trim().replace(",","")+"00")
+        priceToDb = parseInt(priceToDb.trim().replace(",",""))
         
         const formData = new FormData();
         formData.append('title', title);
@@ -76,100 +76,104 @@ export default function AddProduct({ navigation }) {
         console.log('here');
 
         try {
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
-
+            // Use token prop for authentication
+            if (!token) {
+                Alert.alert('Niet ingelogd', 'Je bent niet ingelogd.');
+                return;
+            }
             const response = await fetch(API_URL + '/api/products/new', {
                 method: 'POST',
                 headers: {
-                    // Do NOT set Content-Type for FormData; let fetch set it
                     'Authorization': `Bearer ${token}`
+                    // Do NOT set Content-Type for FormData; let fetch set it
                 },
                 body: formData,
             });
 
             const data = await response.text();
             setLoading(false);
+            setPhoto(null);
+            setTitle('');
+            setDescription('');
+            setValue('');
+            setPrice('')
+            Alert.alert('Success', '', [{
+                text: 'OK',
+                onPress: () => navigation.goBack()
+            }]);
         } catch (error) {
             console.error(error);
             Alert.alert('Upload Gefaald', 'Probeer opnieuw');
         }
     }
+
+    const [pageHeight, setPageHeight] = useState(0);
     
-
-    if (!loading) {
-        Alert.alert('Success', '', [{
-            text: 'OK',
-            onPress : () => navigation.goBack()
-        }]);
-    }
-
     return(
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
                 <View>
-                    <TouchableOpacity style={{ display: 'flex', flexDirection: "row", justifyContent: "flex-start", alignItems: 'center'}} onPress={() => navigation.goBack()}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Icon name="arrow-left" type="feather" size={24} color="#fff"/>
-                        <Text style={{ color: "#fff", fontSize: 24, paddingLeft: 8  }}>Go back</Text>
+                        <Text style={styles.backButtonText}>Go back</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ flex: 1, paddingTop: 100, paddingHorizontal: 16, display: 'flex', justifyContent: "space-between" }}>
-                <View style={{display: 'flex', gap:20}}>
+            <View style={[styles.formWrapper, { transform: [{ translateY: -pageHeight }] }]}>
+                <View style={styles.formFields}>
+                    {/* Show photo at the top, styled as a main product image */}
+                    <View style={styles.imageContainer}>
+                        {photo ? (
+                            <Image
+                                source={{uri: photo.uri}}
+                                style={styles.mainPhoto}
+                            />
+                        ) : (
+                            <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+                                <Icon name="camera" type="feather" size={48} color="#B0B8C1" />
+                                <Text style={styles.imagePlaceholderText}>Voeg een foto toe</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
                     <TextInput
-                    style={styles.input}
-                    onChangeText={onChangeTitle}
-                    value={title}
-                    placeholder="Title"
+                        style={styles.input}
+                        onChangeText={setTitle}
+                        value={title}
+                        placeholder="Title"
+                        
                     />
                     <TextInput
-                    multiline
-                    style={[styles.input, {height: 100}]}
-                    onChangeText={onChangeDescription}
-                    value={description}
-                    placeholder="Description"
+                        style={[styles.input, styles.inputDescription]}
+                        onChangeText={setDescription}
+                        value={description}
+                        placeholder="Description"
+                        multiline
+                        submitBehavior={"blurAndSubmit"}
+                        returnKeyType="done"
                     />
                     <DropDownPicker
-                    open={open}
-                    value={value}
-                    items={items}
-                    setOpen={setOpen}
-                    setValue={setValue}
-                    setItems={setItems}
-                    placeholder="Select a category"
-                    style={styles.input}
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                        placeholder="Select a category"
+                        style={styles.input}
                     />
-
                     <TextInput
-                    style={styles.input}
-                    onChangeText={setPrice}
-                    value={price}
-                    placeholder="Price"
-                    keyboardType="numeric"
+                        style={styles.input}
+                        onChangeText={setPrice}
+                        value={price}
+                        placeholder="Price"
+                        keyboardType="numeric"
+                        returnKeyType="done"
+                        onFocus={() => setPageHeight(300)}
+                        onBlur={() => setPageHeight(0)}
                     />
-
-                    {photo && (
-                    <Image
-                    source={{uri: photo.uri}}
-                    style={{width: 200,height: 200,marginVertical: 10,borderRadius: 10, alignSelf: 'center'}}
-                    />
-                )}
-                </View>
-                <View>
-                    <Button title="Pick Image" onPress={pickImage} />
-                    <Button title="Upload" onPress={uploadProduct} />
+                    <TouchableOpacity style={styles.uploadButton} onPress={uploadProduct}>
+                        <Text style={styles.uploadButtonText}>Upload</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </SafeAreaView>
@@ -179,9 +183,11 @@ export default function AddProduct({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#fff"
+        backgroundColor: "#F6F8FC",
+        minHeight: 1000
     },
     topBar: {
+        flex: 1,
         position: "absolute",
         top: 0,
         left: 0,
@@ -192,14 +198,135 @@ const styles = StyleSheet.create({
         paddingTop: 25,
         paddingHorizontal: 16,
         zIndex: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    backButton: {
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: 'center',
+        backgroundColor: '#4164C9',
+        borderRadius: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.10,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    backButtonText: {
+        color: "#fff",
+        fontSize: 20,
+        paddingLeft: 8,
+        fontWeight: '600',
+    },
+    formWrapper: {
+        flex: 1,
+        justifyContent: "center", // Center vertically between top and bottom bar
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    formFields: {
+        flex: 1,
+        position: "absolute",
+        top: 50,
+        left: 0,
+        right: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        paddingHorizontal: 24,
+        gap: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 8,
+        elevation: 4,
     },
     input: {
-        borderColor: 'grey', 
-        borderWidth: 1,
+        borderColor: '#E3E6ED',
+        borderWidth: 1.5,
         borderRadius: 16,
-        fontSize: 24,
-        padding: 12,
-        textAlign: 'left',
+        fontSize: 18,
+        padding: 14,
+        backgroundColor: '#F6F8FC',
+        color: '#222B45',
+        marginBottom: 0,
+    },
+    inputDescription: {
+        height: 100,
         textAlignVertical: 'top',
     },
-})
+    photo: {
+        width: 200,
+        height: 200,
+        marginVertical: 10,
+        borderRadius: 16,
+        alignSelf: 'center',
+        borderWidth: 1.5,
+        borderColor: '#E3E6ED',
+        backgroundColor: '#F6F8FC',
+    },
+    mainPhoto: {
+        width: '100%',
+        height: 220,
+        borderRadius: 20,
+        alignSelf: 'center',
+        marginBottom: 8,
+        borderWidth: 1.5,
+        borderColor: '#E3E6ED',
+        backgroundColor: '#F6F8FC',
+        resizeMode: 'cover',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    imageContainer: {
+        width: '100%',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    imagePlaceholder: {
+        width: '92%',
+        height: 220,
+        borderRadius: 20,
+        backgroundColor: '#E7ECF0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.5,
+        borderColor: '#E3E6ED',
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    imagePlaceholderText: {
+        color: '#B0B8C1',
+        fontSize: 16,
+        marginTop: 8,
+    },
+    uploadButton: {
+        backgroundColor: '#2A4BA0',
+        borderRadius: 16,
+        paddingVertical: 16,
+        alignItems: 'center',
+        marginTop: 12,
+        marginBottom: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    uploadButtonText: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+});
