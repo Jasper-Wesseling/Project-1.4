@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
@@ -94,6 +94,16 @@ export default function Products({ navigation, token, user }) {
 
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
+    let priceFormat = new Intl.NumberFormat('nl-NL', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2
+    });
+
+    function formatPrice(price) {
+        return price ? priceFormat.format(price / 100): '';
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.container}>
@@ -163,7 +173,7 @@ export default function Products({ navigation, token, user }) {
                                 setModalVisible(true);
                             }}
                         >
-                            <ProductPreview product={product} />
+                            <ProductPreview product={product} formatPrice={formatPrice}/>
                         </TouchableOpacity>
                     ))}
                 </Animated.ScrollView>
@@ -173,6 +183,7 @@ export default function Products({ navigation, token, user }) {
                     visible={modalVisible}
                     product={selectedProduct}
                     onClose={() => setModalVisible(false)}
+                    formatPrice={formatPrice}
                 />
             </View>
         </View>

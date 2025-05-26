@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Products;
 use App\Repository\ProductsRepository;
 use App\Repository\UsersRepository;
+use DatePeriod;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Id;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -76,6 +78,7 @@ class ProductsController extends AbstractController
                 'created_at' => $product->getCreatedAt() ? $product->getCreatedAt()->format('Y-m-d H:i:s') : null,
                 'updated_at' => $product->getUpdatedAt() ? $product->getUpdatedAt()->format('Y-m-d H:i:s') : null,
                 'user_id' => $product->getUserId() ? $product->getUserId()->getId() : null,
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $product->getUpdatedAt())->days
             ];
         }
 
