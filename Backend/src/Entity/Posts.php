@@ -17,8 +17,8 @@ class Posts
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'user_Posts')]
-    private ?User $user_id = null;
+    #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
+    private ?Users $user_id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $title = null;
@@ -54,12 +54,12 @@ class Posts
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUserId(): ?Users
     {
         return $this->user_id;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUserId(?Users $user_id): static
     {
         $this->user_id = $user_id;
 
