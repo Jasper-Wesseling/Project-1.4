@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, TouchableOpacity, Alert } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, TouchableOpacity, Alert, View, Text, Switch } from "react-native";
 import { Icon } from "react-native-elements";
-
-const BACKEND_URL = "http://192.168.178.179:8000";
+import { useFocusEffect } from '@react-navigation/native'; 
+import { StyleSheet } from "react-native";
+import { API_URL } from '@env';
 
 export const themes = {
   light: {
@@ -23,71 +24,65 @@ export const themes = {
   }
 };
 
-export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange }) {
+export default function LightDarkToggle({ token, initialMode, onThemeChange, showIconToggle = true, theme }) {
   const [mode, setMode] = useState(initialMode || "light");
-  const [token, setToken] = useState(propToken || null);
+  const [systemDefault, setSystemDefault] = useState(false);
+  const [loading, setLoading] = useState(true);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // Ophalen van token als die niet als prop wordt meegegeven
-  useEffect(() => {
-    if (token) return;
-    async function fetchJwtToken() {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            "username": "jasper.wesseling@student.nhlstenden.com",
-            "password": "wesselingjasper"
-          })
-        });
-        const data = await response.json();
-        if (!response.ok || !data.token) throw new Error("Login mislukt");
-        setToken(data.token);
-      } catch (error) {
-        Alert.alert("Fout", error.message || "Kon niet inloggen.");
-      }
+  // Theme ophalen bij mount of token change
+  const fetchUserTheme = async () => {
+    if (!token || !API_URL) {
+      Alert.alert("Fout", "Geen geldige token of API_URL");
+      setLoading(false);
+      return;
     }
-    fetchJwtToken();
-  }, [token]);
+    try {
+      const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("Kan thema niet ophalen");
+      const data = await response.json();
+      if (data.theme === null) {
+        setSystemDefault(true);
+        setMode("light");
+        if (onThemeChange) onThemeChange(themes.light);
+      } else if (data.theme === "dark" || data.theme === "light") {
+        setSystemDefault(false);
+        setMode(data.theme);
+        if (onThemeChange) onThemeChange(themes[data.theme]);
+      }
+    } catch (error) {
+      Alert.alert("Fout", "Kon thema niet ophalen: " + error.message);
+    }
+    setLoading(false);
+  };
 
-  // Ophalen van huidige theme uit database
-  useEffect(() => {
-    if (!token) return;
-    async function fetchUserTheme() {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/lightdark/gettheme`, {
-          headers: { Authorization: "Bearer " + token }
-        });
-        if (!response.ok) throw new Error("Kan thema niet ophalen");
-        const data = await response.json();
-        if (data.theme === "dark" || data.theme === "light") {
-          setMode(data.theme);
-          if (onThemeChange) onThemeChange(themes[data.theme]); // <-- theme-object!
-        }
-      } catch (error) {
-        Alert.alert("Fout", "Kon thema niet ophalen.");
-      }
-    }
-    fetchUserTheme();
-  }, [token]);
+  useFocusEffect(
+    React.useCallback(() => {
+      setLoading(true);
+      fetchUserTheme();
+    }, [token])
+  );
 
   // Theme wisselen en opslaan in database
   const toggleTheme = async () => {
-    if (!token) return;
+    if (!token || !API_URL) {
+      Alert.alert("Fout", "Geen geldige token of API_URL");
+      return;
+    }
     const newMode = mode === "light" ? "dark" : "light";
     Animated.sequence([
       Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
       Animated.timing(fadeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
     ]).start();
-    setMode(newMode);
-    if (onThemeChange) onThemeChange(themes[newMode]); // <-- theme-object!
+
     try {
-      const response = await fetch(`${BACKEND_URL}/api/lightdark/settheme`, {
+      const response = await fetch(`${API_URL}/api/lightdark/settheme`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + token
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ theme: newMode }),
       });
@@ -95,31 +90,125 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
         const data = await response.json();
         throw new Error(data.error || "Thema kon niet worden opgeslagen");
       }
+      setSystemDefault(false);
+      setMode(newMode);
+      if (onThemeChange) onThemeChange(themes[newMode]);
     } catch (error) {
       Alert.alert("Fout", error.message || "Kon thema niet opslaan.");
     }
   };
 
-  // Feather sun/moon icon
-  const iconName = mode === "light" ? "sun" : "moon";
-  const iconColor = mode === "light" ? "#F9B023" : "#fff";
+  // Handler voor system default switch
+  const handleSystemDefault = async (value) => {
+    if (!token || !API_URL) return;
+    setSystemDefault(value);
+    if (value) {
+      // Zet theme op null in backend
+      try {
+        await fetch(`${API_URL}/api/lightdark/settheme`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ theme: null }),
+        });
+        setMode("light");
+        if (onThemeChange) onThemeChange(themes.light);
+      } catch (error) {
+        Alert.alert("Fout", "Kon system default niet opslaan.");
+      }
+    } else {
+      // Zet terug naar huidige mode (en update centraal theme)
+      if (onThemeChange) onThemeChange(themes[mode]);
+    }
+  };
 
+  if (loading) {
+    return (
+      <View style={{ alignItems: "center", margin: 16 }}>
+        <Text style={{ color: theme.text }}>Thema laden...</Text>
+      </View>
+    );
+  }
+
+  if (showIconToggle) {
+    const iconName = mode === "light" ? "sun" : "moon";
+    const iconColor = mode === "light" ? "#F9B023" : "#fff";
+    return (
+      <View style={{ alignItems: "center", margin: 16 }}>
+        <TouchableOpacity
+          onPress={systemDefault ? undefined : toggleTheme}
+          activeOpacity={0.7}
+          disabled={systemDefault}
+        >
+          <Animated.View
+            style={{
+              opacity: fadeAnim,
+              borderRadius: 20,
+            }}
+          >
+            <Icon
+              type="feather"
+              name={iconName}
+              size={32}
+              color={iconColor}
+            />
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Tekstuele toggle met system default knop
   return (
-    <TouchableOpacity onPress={toggleTheme} activeOpacity={0.7}>
-      <Animated.View
-        style={{
-          opacity: fadeAnim,
-          borderRadius: 20,
-          padding: 2,
-        }}
+    <View style={styles.container}>
+      <View style={styles.row}>
+        <Text style={[styles.text, { color: theme.text }]}>System default</Text>
+        <Switch value={systemDefault} onValueChange={handleSystemDefault} />
+      </View>
+      <TouchableOpacity
+        onPress={toggleTheme}
+        style={[
+          styles.button,
+          {
+            backgroundColor: mode === "light" ? "#222" : "#fff",
+            opacity: systemDefault ? 0.5 : 1,
+          },
+        ]}
+        disabled={systemDefault}
       >
-        <Icon
-          type="feather"
-          name={iconName}
-          size={32}
-          color={iconColor}
-        />
-      </Animated.View>
-    </TouchableOpacity>
+        <Text style={{ color: mode === "light" ? "#fff" : "#222" }}>
+          Wissel naar {mode === "light" ? "dark" : "light"}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    margin: 16,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  text: {
+    marginRight: 8,
+    fontSize: 16,
+  },
+  button: {
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+    minWidth: 120,
+    alignItems: "center",
+  },
+  status: {
+    marginTop: 8,
+    fontSize: 16,
+  },
+});

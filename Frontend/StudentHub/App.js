@@ -14,11 +14,12 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import LightDarkToggle, { themes } from './components/LightDarkComponent';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ token, user, onLogout }) {
+function MainTabs({ token, user, onLogout, theme, setTheme }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -42,9 +43,11 @@ function MainTabs({ token, user, onLogout }) {
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
-      <Tab.Screen name="AddPost" component={AddPost} />
+      <Tab.Screen name="AddPost">
+        {props => <FaqPage {...props} token={token} user={user} />}
+      </Tab.Screen>
       <Tab.Screen name="Profile">
-        {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
+        {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} showIconToggle={false} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -54,6 +57,7 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(null);
 
   // Load token from Keychain on mount
   useEffect(() => {
@@ -100,7 +104,7 @@ export default function App() {
           </>
         ) : (
           <Stack.Screen name="Main">
-            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
+              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} />}
           </Stack.Screen>
         )}
       </Stack.Navigator>

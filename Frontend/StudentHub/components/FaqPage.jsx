@@ -1,9 +1,8 @@
 import { useState, useRef } from "react";
-import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity, Appearance } from "react-native";
+import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity, useColorScheme } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Icon } from "react-native-elements";
 import LightDarkToggle, { themes } from "./LightDarkComponent";
-import UserFirstName from "./UserFirstName";
 
 const faqs = [
   { id: 1, question: "blaaablaaa", answer: "Antwoord 1" },
@@ -40,14 +39,21 @@ const faqs = [
   { id: 32, question: "luke het aapje", answer: "Antwoord 32" },
 ];
 
-export default function FaqPage() {
+export default function FaqPage({ token, user, theme, setTheme }) {
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState(null);
-  const [theme, setTheme] = useState(Appearance.getColorScheme() === "dark" ? themes.dark : themes.light);
-
+  const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
   const scrollY = useRef(new Animated.Value(0)).current;
+  // light dark mode
+  const colorScheme = useColorScheme();
+  const effectiveTheme = theme 
+    ? colorScheme === "dark"
+      ? themes.dark
+      : themes.light
+    : theme;
+  const styles = createFaqStyles(effectiveTheme);
 
-  // Animated header height (from 166 to 0)
+  // Animated header height (from 249 to 0)
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 249],
     outputRange: [166, 0],
@@ -72,22 +78,20 @@ export default function FaqPage() {
     faq.question.toLowerCase().includes(search.toLowerCase())
   );
 
-  const styles = createFaqStyles(theme);
-
   return (
     <View style={styles.container}>
       {/* Static Top Bar */}
       <View style={styles.topBar}>
         <View style={styles.topBarRow}>
           <Text style={styles.topBarTitle}>
-            Hey, <UserFirstName style={styles.topBarTitle} />
+            {`Hey, ${name}`}
           </Text>
           <View style={styles.topBarIcons}>
             <TouchableOpacity>
               <Icon name="search" size={34} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity>
-              <LightDarkToggle onThemeChange={setTheme} />
+              <LightDarkToggle token={token} onThemeChange={setTheme} showIconToggle />
             </TouchableOpacity>
           </View>
         </View>
@@ -155,11 +159,11 @@ export default function FaqPage() {
 }
 
 // Dynamische styles generator
-function createFaqStyles(theme) {
+function createFaqStyles(current) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background
+      backgroundColor: current.background
     },
     topBar: {
       position: "absolute",
@@ -167,7 +171,7 @@ function createFaqStyles(theme) {
       left: 0,
       right: 0,
       height: 100,
-      backgroundColor: theme.headerBg,
+      backgroundColor: current.headerBg,
       justifyContent: "center",
       paddingTop: 25,
       paddingHorizontal: 16,
@@ -193,7 +197,7 @@ function createFaqStyles(theme) {
       top: 100,
       left: 0,
       right: 0,
-      backgroundColor: theme.headerBg,
+      backgroundColor: current.headerBg,
       justifyContent: "center",
       alignItems: "flex-start",
       paddingHorizontal: 16,
@@ -211,7 +215,7 @@ function createFaqStyles(theme) {
       fontWeight: "bold",
     },
     stickyBar: {
-      backgroundColor: theme.background,
+      backgroundColor: current.background,
       zIndex: 5,
       paddingBottom: 0,
       paddingHorizontal: 0,
@@ -219,7 +223,7 @@ function createFaqStyles(theme) {
     searchBarInner: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.searchBg,
+      backgroundColor: current.searchBg,
       borderRadius: 16,
       paddingHorizontal: 16,
       paddingVertical: 10,
@@ -237,7 +241,7 @@ function createFaqStyles(theme) {
       backgroundColor: "transparent",
       borderWidth: 0,
       paddingVertical: 0,
-      color: theme.text,
+      color: current.text,
     },
     faqTitle: {
       fontWeight: "bold",
@@ -245,7 +249,7 @@ function createFaqStyles(theme) {
       marginBottom: 16,
       marginLeft: 24,
       marginTop: 16,
-      color: theme.text,
+      color: current.text,
     },
     scrollView: {
       flex: 1,
@@ -258,16 +262,16 @@ function createFaqStyles(theme) {
       flexDirection: "row",
       alignItems: "center",
       borderBottomWidth: 1,
-      borderColor: theme.border,
+      borderColor: current.border,
       paddingVertical: 18,
       paddingHorizontal: 24,
-      backgroundColor: theme.background,
+      backgroundColor: current.background,
       justifyContent: "space-between",
     },
     faqQuestion: {
       fontSize: 16,
       fontWeight: "600", //semi-bold
-      color: theme.text,
+      color: current.text,
       flex: 1,
       flexWrap: "wrap",
     },
@@ -278,16 +282,16 @@ function createFaqStyles(theme) {
       marginLeft: 12,
     },
     faqAnswerBox: {
-      backgroundColor: theme.answerBg,
+      backgroundColor: current.answerBg,
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderColor: theme.border,
+      borderColor: current.border,
       marginBottom: 0,
     },
     faqAnswer: {
       fontSize: 15,
-      color: theme.text,
+      color: current.text,
     },
     searchIcon: {
       marginRight: 8,
