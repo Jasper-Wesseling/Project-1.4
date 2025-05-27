@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Icon } from "react-native-elements";
-import LightDarkToggle, { themes } from "./LightDarkComponent"; // Zorg dat themes geïmporteerd is
+import { themes } from "./LightDarkComponent";
 
 const faqs = [
   { id: 1, question: "blaaablaaa", answer: "Antwoord 1" },
@@ -53,8 +53,8 @@ export default function FaqPage({ token, user, theme, setTheme }) {
       ? themes[theme]
       : themes.light;
 
-  // Don't render until we have a valid theme
-  if (!safeTheme || !safeTheme.text) {
+  // niet laden als theme niet geldig is
+  if (!safeTheme) {
     return null;
   }
   
@@ -96,9 +96,6 @@ export default function FaqPage({ token, user, theme, setTheme }) {
           <View style={styles.topBarIcons}>
             <TouchableOpacity>
               <Icon name="search" size={34} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <LightDarkToggle token={token} onThemeChange={setTheme} showIconToggle />
             </TouchableOpacity>
           </View>
         </View>
@@ -167,7 +164,7 @@ export default function FaqPage({ token, user, theme, setTheme }) {
 
 // Dynamische styles generator
 function createFaqStyles(safeTheme) {
-  // Extra defensive check to ensure theme has all required properties
+  // extra check om zeker te zijn dat theme een geldig object is
   if (!safeTheme || typeof safeTheme !== 'object' || !safeTheme.text) {
     console.warn('Invalid theme passed to createFaqStyles, using fallback');
     safeTheme = themes.light;

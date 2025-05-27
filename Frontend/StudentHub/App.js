@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useColorScheme } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -20,14 +21,18 @@ import { API_URL } from '@env';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ token, user, onLogout, theme, setTheme, themes }) {
+function MainTabs({ token, user, onLogout, theme, setTheme }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#2A4BA0",
-        tabBarInactiveTintColor: "#888",
-        tabBarStyle: { height: 60, paddingBottom: 8 },
+        tabBarActiveTintColor: theme?.tabBarActive || "#2A4BA0",
+        tabBarInactiveTintColor: theme?.tabBarInactive || "#888",
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 8,
+          backgroundColor: theme?.tabBarBg || "#fff", // tabbar achtergrond
+        },
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
@@ -45,10 +50,10 @@ function MainTabs({ token, user, onLogout, theme, setTheme, themes }) {
       </Tab.Screen>
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
       <Tab.Screen name="AddPost">
-        {props => <FaqPage {...props} token={token} user={user} theme={theme} setTheme={setTheme} themes={themes} />}
+        {props => <FaqPage {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} showIconToggle={false} theme={theme} themes={themes}/>}
+        {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -58,7 +63,10 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState(themes.light);
+  const [theme, setTheme] = useState(null);
+  const [systemDefault, setSystemDefault] = useState(false); 
+
+  const colorScheme = useColorScheme();
 
   // Load token from Keychain on mount
   useEffect(() => {
@@ -75,7 +83,7 @@ export default function App() {
     })();
   }, []);
 
-  // Theme ophalen
+  // Theme ophalen van backend
   useEffect(() => {
     async function fetchTheme() {
       if (!token) return;
@@ -86,15 +94,28 @@ export default function App() {
         const data = await response.json();
         if (data.theme === "dark" || data.theme === "light") {
           setTheme(themes[data.theme]);
+          setSystemDefault(false);
+        } else if (data.theme === "system" || data.theme === null) {
+          setTheme(null); // theme is null → volg systeem
+          setSystemDefault(true);
         } else {
-          setTheme(themes.light);
+          setTheme(null);
+          setSystemDefault(true);
         }
       } catch (e) {
-        setTheme(themes.light);
+        setTheme(null);
+        setSystemDefault(true);
       }
     }
     fetchTheme();
   }, [token]);
+
+  // Theme updaten bij system default wissel
+  useEffect(() => {
+    if (systemDefault) {
+      setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
+    }
+  }, [colorScheme, systemDefault]);
 
   // Save token and user to Keychain/state on login
   const handleLogin = async (newToken, userObj) => {
