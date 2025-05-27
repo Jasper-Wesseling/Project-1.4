@@ -47,7 +47,10 @@ class ProductsController extends AbstractController
         $category = $request->query->get('category', null);
         $search = $request->query->get('search', '');
 
+
         $qb = $productsRepository->createQueryBuilder('p')
+            ->where('p.user_id != :user')
+            ->setParameter('user', $user->getId())
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);

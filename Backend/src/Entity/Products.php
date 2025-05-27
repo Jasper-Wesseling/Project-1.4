@@ -55,9 +55,16 @@ class Products
     #[ORM\OneToMany(targetEntity: Reviews::class, mappedBy: 'product_id')]
     private Collection $reviews_product;
 
+    /**
+     * @var Collection<int, Messages>
+     */
+    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'product_id_id')]
+    private Collection $message_id;
+
     public function __construct()
     {
         $this->reviews_product = new ArrayCollection();
+        $this->message_id = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -209,6 +216,36 @@ class Products
             // set the owning side to null (unless already changed)
             if ($reviewsProduct->getProductId() === $this) {
                 $reviewsProduct->setProductId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Messages>
+     */
+    public function getMessageId(): Collection
+    {
+        return $this->message_id;
+    }
+
+    public function addMessageId(Messages $messageId): static
+    {
+        if (!$this->message_id->contains($messageId)) {
+            $this->message_id->add($messageId);
+            $messageId->setProductIdId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessageId(Messages $messageId): static
+    {
+        if ($this->message_id->removeElement($messageId)) {
+            // set the owning side to null (unless already changed)
+            if ($messageId->getProductIdId() === $this) {
+                $messageId->setProductIdId(null);
             }
         }
 

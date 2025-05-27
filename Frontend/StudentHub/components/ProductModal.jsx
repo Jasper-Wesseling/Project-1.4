@@ -53,7 +53,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         {/* Buttons */}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.filledButton} onPress={() => {  setUserToChat(productUser); navigation.navigate('ProductChat'); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.filledButton} onPress={() => {  setUserToChat(productUser); navigation.navigate('ProductChat', { product }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
                         </View>
                         {/* Details */}
                         <Text style={styles.sectionTitle}>Details</Text>

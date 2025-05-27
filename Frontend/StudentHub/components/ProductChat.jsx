@@ -1,19 +1,21 @@
-import { useEffect, useState } from "react";
-import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
 
 
-export default function ProductChat({ navigation, token, user, userToChat}) {
+export default function ProductChat({ navigation, token, user, userToChat, route}) {
     const userIDReciever = userToChat;
     const [chats, setChats] = useState([]);
     const [message, setMessage] = useState('');
     const [pageHeight, setPageHeight] = useState(0);
+    const { product } = route.params;
+    console.log('product id: '+product.id)
 
     const fetchChats = async () => {
         try {
-            const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userIDReciever)}`, {
+            const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userIDReciever)}&product=${encodeURIComponent(product.id)}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -54,7 +56,8 @@ export default function ProductChat({ navigation, token, user, userToChat}) {
                 },
                 body: JSON.stringify({
                     content: message,
-                    receiver: userToChat, // or receiver_id, depending on your backend
+                    receiver: userToChat, 
+                    product: product.id,
                 }),
             });
 
@@ -65,7 +68,12 @@ export default function ProductChat({ navigation, token, user, userToChat}) {
         }
     }
     console.log('user: ' + JSON.stringify(user) + '\nuserToChat: ' + JSON.stringify(userToChat));
-
+    const scrollViewRef = useRef(null);
+    useEffect(() => {
+        if (scrollViewRef.current) {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+    }, [chats]);
 
     return(
         <View style={styles.container}>
@@ -78,15 +86,36 @@ export default function ProductChat({ navigation, token, user, userToChat}) {
                 </View>
             </View>
             <View style={{flex:1, marginTop: 75, backgroundColor: "#2A4BA0" }}>
-                <View style={{flex:1, padding:16, backgroundColor: '#fff', margin: 25, borderRadius: 16, transform: [{ translateY: -pageHeight }] }}>
-                    <ScrollView>
-                      {chats.map((msg, idx) =>
-                        Array.isArray(msg.content)
-                        ? msg.content.map((item, subIdx) => (
-                            <Text key={idx + '-' + subIdx} style={item.sender === user.id ? styles.sentMessage : styles.recievedMessage}>{item.content}</Text>
+                <View style={{height: 100, backgroundColor: 'grey', marginHorizontal: 25, marginTop: 25, marginBottom: -25, borderTopLeftRadius: 16, borderTopRightRadius: 16, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16}}>
+                    <Image source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }} style={{ width: 68, height: 68, borderRadius: 16}} />
+                    <View style={{width: '50%'}}><Text>{product.title}</Text></View>
+                </View>
+                <View
+                    style={{
+                        flex:1,
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingBottom: 16,
+                        backgroundColor: '#fff',
+                        margin: 25,
+                        borderBottomLeftRadius: 16,
+                        borderBottomRightRadius: 16,
+                        transform: [{ translateY: -pageHeight }]
+                    }}
+                >
+                    <ScrollView
+                        ref={scrollViewRef}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 16 }}
+                    >
+                        {chats.map((msg, idx) =>
+                            Array.isArray(msg.content)
+                            ? msg.content.map((item, subIdx) => (
+                                <Text key={idx + '-' + subIdx} style={item.sender === user.id ? styles.sentMessage : styles.recievedMessage}>{item.content}</Text>
                             ))
-                        : <Text key={idx}>{msg.content || msg.text}</Text>
-                    )}
+                            : <Text key={idx}>{msg.content || msg.text}</Text>
+                        )}
                     </ScrollView>
                     <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                         <TextInput 
@@ -104,8 +133,8 @@ export default function ProductChat({ navigation, token, user, userToChat}) {
                             style={{backgroundColor:'#2A4BA0', justifyContent: "center", borderRadius: 100, width: 50}}
                             onPress={()=> {
                                 sendMessage();
-                                }
-                            }
+                                scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
+                            }}
                         >
                             <Icon name='paper-airplane' type='octicon' size={32} style={{marginRight: -5}} color='#fff'/>
                         </TouchableOpacity>

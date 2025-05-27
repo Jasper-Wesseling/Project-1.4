@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Messages;
+use App\Entity\Products;
 use App\Repository\MessagesRepository;
 use App\Repository\UsersRepository;
 use DateTime;
@@ -29,7 +30,7 @@ class MessagesController extends AbstractController
     }
 
     #[Route('/get', name: 'get_messages', methods: ['GET'])]
-    public function getMessages(Request $request, MessagesRepository $messagesRepository, UsersRepository $usersRepository): JsonResponse
+    public function getMessages(Request $request, MessagesRepository $messagesRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
     {
         $since = new \DateTime('-1 minute', new \DateTimeZone('Europe/Amsterdam')); // since 1 minute ago
         
@@ -38,6 +39,10 @@ class MessagesController extends AbstractController
         
         $reciever= $request->query->get('reciever', 1);
         $recieveUser = $usersRepository->findOneBy(['id' => $reciever]);
+
+        $productId= $request->query->get('product', 1);
+        $product = $entityManager->getRepository(Products::class)->find($productId);
+
 
         if (!$recieveUser || !$sendUser) 
         {
@@ -53,8 +58,10 @@ class MessagesController extends AbstractController
                 OR
                 (m.sender_id = :recieveUser AND m.receiver_id = :sendUser)
             ')
+            ->andWhere('m.product_id = :product')
             ->setParameter('since', $since->format('Y-m-d H:i:s'))
             ->setParameter('sendUser', $sendUser->getId())
+            ->setParameter('product', $product)
             ->setParameter('recieveUser', $recieveUser);
 
         $messages = $qb->getQuery()->getResult();
@@ -78,9 +85,12 @@ class MessagesController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $receiver = $data['receiver'] ?? null;
         $content = $data['content'] ?? null;
-        if (!$receiver || !$content)
+        $productId = $data['product'] ?? null;
+        $product = $entityManager->getRepository(Products::class)->find($productId);
+
+        if (!$receiver || !$content || !$product)
         {
-            return new JsonResponse('No content or reciever', 402);
+            return new JsonResponse('Missing content,reciever or product', 402);
         }
 
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
@@ -100,6 +110,7 @@ class MessagesController extends AbstractController
         $message->setSenderId($sendUser);
         $message->setReceiverId($receiverUser);
         $message->setTimestamp(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+        $message->setProductId($product);
         $currentContent = $message->getContent();
         if (empty($currentContent)) 
         {
@@ -108,13 +119,15 @@ class MessagesController extends AbstractController
 
         $message = $entityManager->getRepository(Messages::class)->findOneBy([
             'sender_id' => $sendUser,
-            'receiver_id' => $receiverUser
+            'receiver_id' => $receiverUser,
+            'product_id' => $product
         ]);
 
         if (!$message) {
             $message = $entityManager->getRepository(Messages::class)->findOneBy([
                 'sender_id' => $receiverUser,
-                'receiver_id' => $sendUser
+                'receiver_id' => $sendUser,
+                'product_id' => $product
             ]);
         }
 
@@ -123,6 +136,7 @@ class MessagesController extends AbstractController
             $message->setSenderId($sendUser);
             $message->setReceiverId($receiverUser);
             $message->setTimestamp(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+            $message->setProductId($product);
             $currentContent = [];
         } else {
             $currentContent = $message->getContent();
