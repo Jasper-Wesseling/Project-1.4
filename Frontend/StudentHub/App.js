@@ -15,11 +15,12 @@ import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
 import LightDarkToggle, { themes } from './components/LightDarkComponent';
+import { API_URL } from '@env';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ token, user, onLogout, theme, setTheme }) {
+function MainTabs({ token, user, onLogout, theme, setTheme, themes }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -37,17 +38,17 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
       })}
     >
       <Tab.Screen name="Products">
-        {props => <Products {...props} token={token} user={user} />}
+        {props => <Products {...props} token={token} user={user} theme={theme} />}
       </Tab.Screen>
       <Tab.Screen name="AddProduct">
-        {props => <AddProduct {...props} token={token} />}
+        {props => <AddProduct {...props} token={token} theme={theme} />}
       </Tab.Screen>
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
       <Tab.Screen name="AddPost">
-        {props => <FaqPage {...props} token={token} user={user} />}
+        {props => <FaqPage {...props} token={token} user={user} theme={theme} setTheme={setTheme} themes={themes} />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} showIconToggle={false} />}
+        {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} showIconToggle={false} theme={theme} themes={themes}/>}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -57,7 +58,7 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState(null);
+  const [theme, setTheme] = useState(themes.light);
 
   // Load token from Keychain on mount
   useEffect(() => {
@@ -73,6 +74,27 @@ export default function App() {
       setLoading(false);
     })();
   }, []);
+
+  // Theme ophalen
+  useEffect(() => {
+    async function fetchTheme() {
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.theme === "dark" || data.theme === "light") {
+          setTheme(themes[data.theme]);
+        } else {
+          setTheme(themes.light);
+        }
+      } catch (e) {
+        setTheme(themes.light);
+      }
+    }
+    fetchTheme();
+  }, [token]);
 
   // Save token and user to Keychain/state on login
   const handleLogin = async (newToken, userObj) => {
@@ -104,7 +126,7 @@ export default function App() {
           </>
         ) : (
           <Stack.Screen name="Main">
-              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} />}
+            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} themes={themes}/>}
           </Stack.Screen>
         )}
       </Stack.Navigator>

@@ -5,30 +5,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet } from "react-native";
 import { API_URL } from '@env';
 
-export const themes = {
-  light: {
-    background: "#fff",
-    text: "#222",
-    headerBg: "#2A4BA0",
-    answerBg: "#f7f7f7",
-    border: "#eee",
-    searchBg: "#fff",
-  },
-  dark: {
-    background: "#181A20",
-    text: "#fff",
-    headerBg: "#23263A",
-    answerBg: "#23263A",
-    border: "#333",
-    searchBg: "#23263A",
-  }
-};
-
 export default function LightDarkToggle({ token, initialMode, onThemeChange, showIconToggle = true, theme }) {
   const [mode, setMode] = useState(initialMode || "light");
   const [systemDefault, setSystemDefault] = useState(false);
   const [loading, setLoading] = useState(true);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+
 
   // Theme ophalen bij mount of token change
   const fetchUserTheme = async () => {
@@ -99,35 +81,53 @@ export default function LightDarkToggle({ token, initialMode, onThemeChange, sho
   };
 
   // Handler voor system default switch
-  const handleSystemDefault = async (value) => {
-    if (!token || !API_URL) return;
-    setSystemDefault(value);
-    if (value) {
-      // Zet theme op null in backend
-      try {
-        await fetch(`${API_URL}/api/lightdark/settheme`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ theme: null }),
-        });
-        setMode("light");
-        if (onThemeChange) onThemeChange(themes.light);
-      } catch (error) {
-        Alert.alert("Fout", "Kon system default niet opslaan.");
-      }
-    } else {
-      // Zet terug naar huidige mode (en update centraal theme)
-      if (onThemeChange) onThemeChange(themes[mode]);
+const handleSystemDefault = async (value) => {
+  if (!token || !API_URL) return;
+  setSystemDefault(value);
+  if (value) {
+    // Zet theme op null in backend
+    try {
+      await fetch(`${API_URL}/api/lightdark/settheme`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ theme: null }),
+      });
+      setMode("light");
+      if (onThemeChange) onThemeChange(themes.light);
+    } catch (error) {
+      Alert.alert("Fout", "Kon system default niet opslaan.");
     }
-  };
-
+  } else {
+    // Zet terug naar huidige mode en sla op in backend
+    try {
+      await fetch(`${API_URL}/api/lightdark/settheme`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ theme: mode }),
+      });
+      if (onThemeChange) onThemeChange(themes[mode]);
+    } catch (error) {
+      Alert.alert("Fout", "Kon thema niet opslaan.");
+      // Reset system default bij fout
+      setSystemDefault(true);
+    }
+  }
+};
   if (loading) {
     return (
       <View style={{ alignItems: "center", margin: 16 }}>
-        <Text style={{ color: theme.text }}>Thema laden...</Text>
+            <Icon
+              type="feather"
+              name="loader"
+              size={24}
+              color="#fff"
+            />
       </View>
     );
   }
@@ -164,7 +164,7 @@ export default function LightDarkToggle({ token, initialMode, onThemeChange, sho
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <Text style={[styles.text, { color: theme.text }]}>System default</Text>
+        <Text style={[styles.text, { color: theme?.text || "#222" }]}>System default</Text>
         <Switch value={systemDefault} onValueChange={handleSystemDefault} />
       </View>
       <TouchableOpacity
@@ -212,3 +212,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+export const themes = {
+  light: {
+    background: "#fff",
+    text: "#222",
+    headerBg: "#2A4BA0",
+    answerBg: "#f7f7f7",
+    border: "#eee",
+    searchBg: "#fff",
+  },
+  dark: {
+    background: "#181A20",
+    text: "#fff",
+    headerBg: "#23263A",
+    answerBg: "#23263A",
+    border: "#333",
+    searchBg: "#23263A",
+  },
+};

@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
-import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity, useColorScheme } from "react-native";
+import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Icon } from "react-native-elements";
-import LightDarkToggle, { themes } from "./LightDarkComponent";
+import LightDarkToggle, { themes } from "./LightDarkComponent"; // Zorg dat themes geïmporteerd is
 
 const faqs = [
   { id: 1, question: "blaaablaaa", answer: "Antwoord 1" },
@@ -44,14 +44,21 @@ export default function FaqPage({ token, user, theme, setTheme }) {
   const [openId, setOpenId] = useState(null);
   const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
   const scrollY = useRef(new Animated.Value(0)).current;
-  // light dark mode
-  const colorScheme = useColorScheme();
-  const effectiveTheme = theme 
-    ? colorScheme === "dark"
-      ? themes.dark
-      : themes.light
-    : theme;
-  const styles = createFaqStyles(effectiveTheme);
+
+  // Gebruik altijd een geldig theme object
+  const safeTheme =
+    typeof theme === "object" && theme && theme.text
+      ? theme
+      : typeof theme === "string" && themes[theme]
+      ? themes[theme]
+      : themes.light;
+
+  // Don't render until we have a valid theme
+  if (!safeTheme || !safeTheme.text) {
+    return null;
+  }
+  
+  const styles = createFaqStyles(safeTheme);
 
   // Animated header height (from 249 to 0)
   const headerHeight = scrollY.interpolate({
@@ -159,11 +166,17 @@ export default function FaqPage({ token, user, theme, setTheme }) {
 }
 
 // Dynamische styles generator
-function createFaqStyles(current) {
+function createFaqStyles(safeTheme) {
+  // Extra defensive check to ensure theme has all required properties
+  if (!safeTheme || typeof safeTheme !== 'object' || !safeTheme.text) {
+    console.warn('Invalid theme passed to createFaqStyles, using fallback');
+    safeTheme = themes.light;
+  }
+  
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: current.background
+      backgroundColor: safeTheme.background,
     },
     topBar: {
       position: "absolute",
@@ -171,7 +184,7 @@ function createFaqStyles(current) {
       left: 0,
       right: 0,
       height: 100,
-      backgroundColor: current.headerBg,
+      backgroundColor: safeTheme.headerBg,
       justifyContent: "center",
       paddingTop: 25,
       paddingHorizontal: 16,
@@ -180,6 +193,7 @@ function createFaqStyles(current) {
     topBarRow: {
       flexDirection: "row",
       justifyContent: "space-between",
+      alignItems: "center",
     },
     topBarTitle: {
       color: "#fff",
@@ -197,7 +211,7 @@ function createFaqStyles(current) {
       top: 100,
       left: 0,
       right: 0,
-      backgroundColor: current.headerBg,
+      backgroundColor: safeTheme.headerBg,
       justifyContent: "center",
       alignItems: "flex-start",
       paddingHorizontal: 16,
@@ -215,7 +229,7 @@ function createFaqStyles(current) {
       fontWeight: "bold",
     },
     stickyBar: {
-      backgroundColor: current.background,
+      backgroundColor: safeTheme.background,
       zIndex: 5,
       paddingBottom: 0,
       paddingHorizontal: 0,
@@ -223,7 +237,7 @@ function createFaqStyles(current) {
     searchBarInner: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: current.searchBg,
+      backgroundColor: safeTheme.searchBg,
       borderRadius: 16,
       paddingHorizontal: 16,
       paddingVertical: 10,
@@ -241,7 +255,7 @@ function createFaqStyles(current) {
       backgroundColor: "transparent",
       borderWidth: 0,
       paddingVertical: 0,
-      color: current.text,
+      color: safeTheme.text,
     },
     faqTitle: {
       fontWeight: "bold",
@@ -249,7 +263,7 @@ function createFaqStyles(current) {
       marginBottom: 16,
       marginLeft: 24,
       marginTop: 16,
-      color: current.text,
+      color: safeTheme.text,
     },
     scrollView: {
       flex: 1,
@@ -262,16 +276,16 @@ function createFaqStyles(current) {
       flexDirection: "row",
       alignItems: "center",
       borderBottomWidth: 1,
-      borderColor: current.border,
+      borderColor: safeTheme.border,
       paddingVertical: 18,
       paddingHorizontal: 24,
-      backgroundColor: current.background,
+      backgroundColor: safeTheme.background,
       justifyContent: "space-between",
     },
     faqQuestion: {
       fontSize: 16,
       fontWeight: "600", //semi-bold
-      color: current.text,
+      color: safeTheme.text,
       flex: 1,
       flexWrap: "wrap",
     },
@@ -282,16 +296,16 @@ function createFaqStyles(current) {
       marginLeft: 12,
     },
     faqAnswerBox: {
-      backgroundColor: current.answerBg,
+      backgroundColor: safeTheme.answerBg,
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderColor: current.border,
+      borderColor: safeTheme.border,
       marginBottom: 0,
     },
     faqAnswer: {
       fontSize: 15,
-      color: current.text,
+      color: safeTheme.text,
     },
     searchIcon: {
       marginRight: 8,
