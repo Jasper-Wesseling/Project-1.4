@@ -32,6 +32,7 @@ function MainTabs({ token, user, onLogout }) {
           if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
           if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
           if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
+          if (route.name === "Frontpage") return <Icon name="home" type="feather" color={color} size={size} />;
         },
       })}
     >
@@ -45,6 +46,9 @@ function MainTabs({ token, user, onLogout }) {
       <Tab.Screen name="AddPost" component={AddPost} />
       <Tab.Screen name="Profile">
         {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
+      </Tab.Screen>
+      <Tab.Screen name="Frontpage">
+        {props => <Frontpage {...props} token={token} user={user} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
