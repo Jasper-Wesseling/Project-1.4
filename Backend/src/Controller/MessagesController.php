@@ -37,7 +37,7 @@ class MessagesController extends AbstractController
         $sendUser = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
         
         $reciever= $request->query->get('reciever', 1);
-        $recieveUser = $usersRepository->findOneBy(['user_id' => $reciever]);
+        $recieveUser = $usersRepository->findOneBy(['id' => $reciever]);
 
         if (!$recieveUser || !$sendUser) 
         {
@@ -88,7 +88,7 @@ class MessagesController extends AbstractController
 
 
         
-        $receiverUser = $usersRepository->findOneBy(['user_id' => $receiver]);
+        $receiverUser = $usersRepository->findOneBy(['id' => $receiver]);
 
         if (!$receiverUser || !$sendUser) 
         {
