@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -36,7 +36,7 @@ function MainTabs({ token, user, onLogout }) {
       })}
     >
       <Tab.Screen name="Products">
-        {props => <Products {...props} token={token} user={user} />}
+        {props => <Products {...props} token={token} user={user} onLogout={onLogout} />}
       </Tab.Screen>
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
@@ -50,10 +50,26 @@ function MainTabs({ token, user, onLogout }) {
   );
 }
 
+// Helper to decode JWT and check expiration
+function isJwtExpired(token) {
+  if (!token) return true;
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return true;
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    if (!decoded.exp) return true;
+    // exp is in seconds
+    return Date.now() / 1000 > decoded.exp;
+  } catch (e) {
+    return true;
+  }
+}
+
 export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigationRef = useRef();
 
   // Load token from SecureStore on mount
   useEffect(() => {
@@ -63,8 +79,15 @@ export default function App() {
         if (creds) {
           // creds format: token||userJson
           const [savedToken, savedUserJson] = creds.split("||");
-          setToken(savedToken);
-          if (savedUserJson) setUser(JSON.parse(savedUserJson));
+          // Check if token is expired
+          if (isJwtExpired(savedToken)) {
+            await SecureStore.deleteItemAsync("auth");
+            setToken(null);
+            setUser(null);
+          } else {
+            setToken(savedToken);
+            if (savedUserJson) setUser(JSON.parse(savedUserJson));
+          }
         }
       } catch (e) {
         console.log("Error loading credentials from SecureStore:", e);
@@ -95,10 +118,21 @@ export default function App() {
     }
   };
 
+  // Listen for navigation changes to check token expiration
+  useEffect(() => {
+    if (!token) return;
+    const unsubscribe = navigationRef.current?.addListener?.("state", () => {
+      if (isJwtExpired(token)) {
+        handleLogout();
+      }
+    });
+    return unsubscribe;
+  }, [token]);
+
   if (loading) return <LoadingScreen />;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!token ? (
           <>

@@ -6,9 +6,10 @@ import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
+import * as SecureStore from 'expo-secure-store';
 
-// Accept token and user as props
-export default function Products({ navigation, token, user }) {
+// Accept token, user, and onLogout as props
+export default function Products({ navigation, token, user, onLogout }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -104,6 +105,13 @@ export default function Products({ navigation, token, user }) {
         return price ? priceFormat.format(price / 100): '';
     }
 
+    // TEMP: Logout function for testing
+    const tempLogout = async () => {
+        if (onLogout) {
+            await onLogout();
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.container}>
@@ -124,7 +132,9 @@ export default function Products({ navigation, token, user }) {
                             <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
                                 <Icon name="search" size={34} color="#fff" />
                             </TouchableOpacity>
-                            <TouchableOpacity><Icon name="bag-outline" type="ionicon" size={32} color="#fff"/></TouchableOpacity>
+                            <TouchableOpacity onPress={tempLogout}>
+                                <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
