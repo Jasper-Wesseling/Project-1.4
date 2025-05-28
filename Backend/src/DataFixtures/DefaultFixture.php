@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Posts;
 use App\Entity\Users;
 use App\Entity\Products;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -54,6 +55,18 @@ class DefaultFixture extends Fixture
 
         $manager->persist($product);
 
+        $manager->flush();
+
+        $post = new Posts();
+        $post->setUserId($user);
+        $post->setTitle('Welcome to the Platform');
+        $post->setDescription('This is your first post on the platform. Feel free to edit or delete it.');
+        $post->setType('Local');
+        $post->setStatus('Needs help');
+        $post->setCreatedAt(new \DateTime('2024-05-16T12:00:00'));
+        $post->setUpdatedAt(new \DateTime('2024-05-16T12:00:00'));
+
+        $manager->persist($post);
         $manager->flush();
     }
 }

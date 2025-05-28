@@ -4,8 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Products;
 use App\Repository\ProductsRepository;
-use App\Repository\UserRepository;
 use App\Repository\UsersRepository;
+use DatePeriod;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Id;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -30,13 +31,38 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/get', name: 'api_products_get', methods: ['GET'])]
-    public function getPreviewProducts(Request $request, ProductsRepository $productsRepository): Response
+    public function getPreviewProducts(Request $request, ProductsRepository $productsRepository, UsersRepository $usersRepository): Response
     {
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
-        $products = $productsRepository->findBy([], null, $limit, $offset);
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
+        $category = $request->query->get('category', null);
+        $search = $request->query->get('search', '');
+
+        $qb = $productsRepository->createQueryBuilder('p')
+            ->orderBy('p.created_at', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        if ($category) {
+            $qb->andWhere('p.study_tag = :category')
+               ->setParameter('category', $category);
+        }
+        if ($search) {
+            $qb->andWhere('LOWER(p.title) LIKE :search')
+               ->setParameter('search', '%' . strtolower($search) . '%');
+        }
+
+        
+
+        $products = $qb->getQuery()->getResult();
 
         $productsArray = [];
         foreach ($products as $product) {
@@ -52,11 +78,13 @@ class ProductsController extends AbstractController
                 'created_at' => $product->getCreatedAt() ? $product->getCreatedAt()->format('Y-m-d H:i:s') : null,
                 'updated_at' => $product->getUpdatedAt() ? $product->getUpdatedAt()->format('Y-m-d H:i:s') : null,
                 'user_id' => $product->getUserId() ? $product->getUserId()->getId() : null,
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $product->getUpdatedAt())->days
             ];
         }
 
         return new JsonResponse($productsArray, 200);
     }
+
     #[Route('/new', name: 'api_products_new', methods: ['POST'])]
     public function addProduct(Request $request, EntityManagerInterface $entityManager, UsersRepository $usersRepository) : Response
     {

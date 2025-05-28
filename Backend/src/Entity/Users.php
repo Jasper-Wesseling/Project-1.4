@@ -105,8 +105,14 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Messages>
      */
-    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'reciever_id', orphanRemoval: true)]
-    private Collection $mesages_user;
+    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'receiver_id', orphanRemoval: true)]
+    private Collection $messages_receiver;
+
+    /**
+     * @var Collection<int, Widgets>
+     */
+    #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $widgets_user;
 
 
     public function __construct()
@@ -116,7 +122,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->events_user = new ArrayCollection();
         $this->tips_user = new ArrayCollection();
         $this->messages_user = new ArrayCollection();
-        $this->mesages_user = new ArrayCollection();
+        $this->messages_receiver = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -197,6 +203,11 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->full_name = $full_name;
 
         return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return explode(' ', $this->full_name)[0];
     }
 
     public function getBio(): ?string
@@ -460,27 +471,57 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Messages>
      */
-    public function getMesagesUser(): Collection
+    public function getMessagesReceiver(): Collection
     {
-        return $this->mesages_user;
+        return $this->messages_receiver;
     }
 
-    public function addMesagesUser(Messages $mesagesUser): static
+    public function addMessagesReceiver(Messages $messagesReceiver): static
     {
-        if (!$this->mesages_user->contains($mesagesUser)) {
-            $this->mesages_user->add($mesagesUser);
-            $mesagesUser->setRecieverId($this);
+        if (!$this->messages_receiver->contains($messagesReceiver)) {
+            $this->messages_receiver->add($messagesReceiver);
+            $messagesReceiver->setReceiverId($this);
         }
 
         return $this;
     }
 
-    public function removeMesagesUser(Messages $mesagesUser): static
+    public function removeMessagesReceiver(Messages $messagesReceiver): static
     {
-        if ($this->mesages_user->removeElement($mesagesUser)) {
+        if ($this->messages_receiver->removeElement($messagesReceiver)) {
             // set the owning side to null (unless already changed)
-            if ($mesagesUser->getRecieverId() === $this) {
-                $mesagesUser->setRecieverId(null);
+            if ($messagesReceiver->getReceiverId() === $this) {
+                $messagesReceiver->setReceiverId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Widgets>
+     */
+    public function getWidgetsUser(): Collection
+    {
+        return $this->widgets_user;
+    }
+
+    public function addWidgetsUser(Widgets $widgetsUser): static
+    {
+        if (!$this->widgets_user->contains($widgetsUser)) {
+            $this->widgets_user->add($widgetsUser);
+            $widgetsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWidgetsUser(Widgets $widgetsUser): static
+    {
+        if ($this->widgets_user->removeElement($widgetsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($widgetsUser->getUserId() === $this) {
+                $widgetsUser->setUserId(null);
             }
         }
 
