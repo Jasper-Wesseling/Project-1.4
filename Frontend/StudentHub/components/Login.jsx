@@ -41,8 +41,10 @@ export default function Login({ navigation, onLogin }) {
         setLoading(false);
     };
 
+    const [pageHeight, setPageHeight] = useState(0);
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { transform: [{ translateY: -pageHeight }] }]}>
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.topHalf}>
                     <View style={styles.imagePlaceholder}>
@@ -64,6 +66,8 @@ export default function Login({ navigation, onLogin }) {
                     autoCapitalize="none"
                     keyboardType="email-address"
                     placeholderTextColor="#888"
+                    onFocus={() => setPageHeight(100)}
+                    onBlur={() => setPageHeight(0)}
                 />
                 <TextInput
                     style={styles.input}
@@ -72,6 +76,8 @@ export default function Login({ navigation, onLogin }) {
                     onChangeText={setPassword}
                     secureTextEntry
                     placeholderTextColor="#888"
+                    onFocus={() => setPageHeight(100)}
+                    onBlur={() => setPageHeight(0)}
                 />
                 <TouchableOpacity
                     style={styles.button}
