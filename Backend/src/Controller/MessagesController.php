@@ -61,17 +61,14 @@ class MessagesController extends AbstractController
             ->setParameter('product', $product)
             ->setParameter('recieveUser', $recieveUser);
 
-        $messages = $qb->getQuery()->getResult();
+        $message = $qb->getQuery()->getResult();
 
-        // Convert messages to array as needed
-        $messagesArray = [];
-        foreach ($messages as $message) {
-            $messagesArray[] = [
-                'content' => $message->getContent(),
-            ];
-        }
 
-        return new JsonResponse($message->getContent(), 200);
+        return new JsonResponse([
+            'messages' => $message[0]->getContent(),
+            'product' => $product->getTitle(),
+            'receiver' => $recieveUser->getFullName(),
+        ], 200);
     }
 
     #[Route('/new', name: 'new_message', methods: ['POST'])]
@@ -156,5 +153,38 @@ class MessagesController extends AbstractController
         return new JsonResponse([
             'message' => 'Successfully added!',
         ], 201);
+    }
+
+    #[Route('/get_preview', name: 'get_messages_preview', methods: ['GET'])]
+    public function getMessagesPreview(Request $request, MessagesRepository $messagesRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+
+        $qb = $messagesRepository->createQueryBuilder('m')
+            ->orderBy('m.timestamp', 'ASC')
+            ->andWhere('
+                (m.sender_id = :user)
+                OR
+                (m.receiver_id = :user)
+            ')
+            ->setParameter('user', $user);
+
+
+        $messages = $qb->getQuery()->getResult();
+
+        foreach ($messages as $message) {
+            $latestMessage = $message->getContent()[0] ?? null;
+            $messagesArray[] = [
+                'content' => $latestMessage['content'],
+                'sender' => $message->getSenderId()->getFullName(),
+                'receiver' => $message->getReceiverId()->getFullName(),
+                'sender_id' =>  $message->getSenderId()->getId(),
+                'receiver_id' => $message->getReceiverId()->getId(),
+                'product' => $message->getProductId()->getId()
+            ];
+        }
+
+        return new JsonResponse($messagesArray, 200);
     }
 }

@@ -6,6 +6,7 @@ import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
+import ChatOverview from "./ChatOverview";
 
 // Accept token and user as props
 export default function Products({ navigation, token, user, setUserToChat }) {
@@ -116,7 +117,7 @@ export default function Products({ navigation, token, user, setUserToChat }) {
                 {/* Static Top Bar */}
                 <View style={styles.topBar}>
                     <View style={styles.topBarRow}>
-                        <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : null}</Text>
+                        <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
                         <View style={styles.topBarIcons}>
                             <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
                                 <Icon name="plus" type="feather" size={34} color="#fff"/>
@@ -124,7 +125,9 @@ export default function Products({ navigation, token, user, setUserToChat }) {
                             <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
                                 <Icon name="search" size={34} color="#fff" />
                             </TouchableOpacity>
-                            <TouchableOpacity><Icon name="bag-outline" type="ionicon" size={32} color="#fff"/></TouchableOpacity>
+                            <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
+                                <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>

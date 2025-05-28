@@ -15,6 +15,8 @@ import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
 import ProductChat from "./components/ProductChat";
+import ChatOverview from "./components/ChatOverview";
+
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,8 +45,12 @@ function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
-      <Tab.Screen name="BountyBoard" component={BountyBoard} />
-      <Tab.Screen name="AddPost" component={AddPost} />
+      <Tab.Screen name="BountyBoard">
+        {props => <BountyBoard {...props} token={token}/>}
+      </Tab.Screen>
+      <Tab.Screen name="AddPost" >
+        {props => <AddPost {...props} token={token} />}
+      </Tab.Screen>
       <Tab.Screen name="Profile">
         {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
       </Tab.Screen>
@@ -108,6 +114,9 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
               {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}
+            </Stack.Screen>
+            <Stack.Screen name="ChatOverview">
+              {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
           </>
         )}

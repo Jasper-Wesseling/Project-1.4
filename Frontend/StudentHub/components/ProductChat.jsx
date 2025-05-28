@@ -1,21 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
 
 
-export default function ProductChat({ navigation, token, user, userToChat, route}) {
+export default function ProductChat({ navigation, token, user, route}) {
     const userIDReciever = userToChat;
     const [chats, setChats] = useState([]);
     const [message, setMessage] = useState('');
+    const [productTitle, setProductTitle] = useState('');
+    const [receiverName, setReceiverName] = useState('');
     const [pageHeight, setPageHeight] = useState(0);
-    const { product } = route.params;
-    console.log('product id: '+product.id)
+    const { product, userToChat } = route.params;
+    console.log('product id: '+product)
+    console.log('usertochat: '+userToChat)
 
     const fetchChats = async () => {
         try {
-            const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userIDReciever)}&product=${encodeURIComponent(product.id)}`, {
+            const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userToChat)}&product=${encodeURIComponent(product)}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -27,7 +30,9 @@ export default function ProductChat({ navigation, token, user, userToChat, route
             };
 
             const chatData = await chatsRes.json();
-            setChats(chatData);
+            setChats(chatData.messages);
+            setReceiverName(chatData.receiver);
+            setProductTitle(chatData.product);
             console.log('chats:'+chats);
         } catch (err) {
             console.error("API error:", err);   
@@ -40,14 +45,22 @@ export default function ProductChat({ navigation, token, user, userToChat, route
     }, [userIDReciever]);
 
     const sendMessage = async () => {
-
         if (!message || !userToChat) {
             console.error('mssing');
             return;
         }
-
+        const tempId = Date.now();
+        setChats(prevChats => [
+            ...prevChats,
+            {
+            id: tempId,
+            content: message,
+            sender: user.id,
+            // add other fields if needed (e.g., timestamp)
+            }
+        ]);
+        setMessage('');
         try {
-            console.log(message, userToChat)
             const response = await fetch(API_URL + `/api/messages/new`, {
                 method: 'POST',
                 headers: {
@@ -57,11 +70,12 @@ export default function ProductChat({ navigation, token, user, userToChat, route
                 body: JSON.stringify({
                     content: message,
                     receiver: userToChat, 
-                    product: product.id,
+                    product: product,
                 }),
             });
-
-            setMessage('');
+            if (!response.ok) {
+                setChats(prevChats => prevChats.map(msg => msg.id === tempId ? {...msg,  content: '[Failed to send] ' + msg.content } : msg));
+            }
             fetchChats();
         } catch (err) {
             console.error("API error:", err);
@@ -75,7 +89,7 @@ export default function ProductChat({ navigation, token, user, userToChat, route
         }
     }, [chats]);
 
-    const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
+    const name = user && user.full_name ? user.full_name.split(' ')[0] : "";                               //fix fetching user and product
 
 
     return(
@@ -84,8 +98,8 @@ export default function ProductChat({ navigation, token, user, userToChat, route
                 <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
                 <View style={{ width: '80%', alignItems: 'flex-start', justifyContent: 'center'}}>
                     {/* profile picture */}
-                    <Text style={{fontSize: 24, color: '#fff'}}>{name}</Text>
-                    <Text style={{fontSize: 16, color: '#fff'}}>{product.title}</Text>
+                    <Text style={{fontSize: 24, color: '#fff'}}>{receiverName}</Text>
+                    <Text style={{fontSize: 16, color: '#fff'}}>{productTitle}</Text>
                 </View>
             </View>
             <View
@@ -100,14 +114,14 @@ export default function ProductChat({ navigation, token, user, userToChat, route
                     ref={scrollViewRef}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 16 }}
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 40, paddingTop: 100 }}
                 >
                     {chats.map((msg, idx) => (
                         <Text
                             key={idx}
                             style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
                         >
-                            {msg.content || msg.text}
+                            {msg.content}
                         </Text>
                     ))}
                 </ScrollView>
@@ -202,4 +216,8 @@ const styles = StyleSheet.create({
         padding: 10,
         maxWidth: '75%',
     },
+    scrollViewContent: {
+      paddingTop: 100,
+      paddingBottom: 40,
+   },
 })
