@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, SafeAreaView, Alert, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
@@ -44,57 +44,59 @@ export default function Login({ navigation, onLogin }) {
     const [pageHeight, setPageHeight] = useState(0);
 
     return (
-        <View style={[styles.container, { transform: [{ translateY: -pageHeight }] }]}>
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.topHalf}>
-                    <View style={styles.imagePlaceholder}>
-                        <Image
-                            source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
-                            style={{ width: 180, height: 180, borderRadius: 28 }}
-                            resizeMode="cover"
-                        />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View style={[styles.container, { transform: [{ translateY: -pageHeight }] }]}>
+                <SafeAreaView style={styles.safeArea}>
+                    <View style={styles.topHalf}>
+                        <View style={styles.imagePlaceholder}>
+                            <Image
+                                source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
+                                style={{ width: 180, height: 180, borderRadius: 28 }}
+                                resizeMode="cover"
+                            />
+                        </View>
                     </View>
+                </SafeAreaView>
+                <View style={styles.bottomHalf}>
+                    <Text style={styles.title}>Login</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        placeholderTextColor="#888"
+                        onFocus={() => setPageHeight(100)}
+                        onBlur={() => setPageHeight(0)}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        placeholderTextColor="#888"
+                        onFocus={() => setPageHeight(100)}
+                        onBlur={() => setPageHeight(0)}
+                    />
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleLogin}
+                        disabled={loading}
+                    >
+                        <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
+                        <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.registerLink}
+                        onPress={() => navigation.navigate('Register')}
+                    >
+                        <Text style={styles.registerText}>Don't have an account? Register</Text>
+                    </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-            <View style={styles.bottomHalf}>
-                <Text style={styles.title}>Login</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholderTextColor="#888"
-                    onFocus={() => setPageHeight(100)}
-                    onBlur={() => setPageHeight(0)}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholderTextColor="#888"
-                    onFocus={() => setPageHeight(100)}
-                    onBlur={() => setPageHeight(0)}
-                />
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleLogin}
-                    disabled={loading}
-                >
-                    <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
-                    <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.registerLink}
-                    onPress={() => navigation.navigate('Register')}
-                >
-                    <Text style={styles.registerText}>Don't have an account? Register</Text>
-                </TouchableOpacity>
             </View>
-        </View>
+        </TouchableWithoutFeedback>
     );
 }
 
