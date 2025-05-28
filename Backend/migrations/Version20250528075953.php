@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250523073403 extends AbstractMigration
+final class Version20250528075953 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -30,7 +30,7 @@ final class Version20250523073403 extends AbstractMigration
             CREATE TABLE locations (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE messages (id INT AUTO_INCREMENT NOT NULL, sender_id_id INT NOT NULL, reciever_id_id INT NOT NULL, content LONGTEXT NOT NULL, timestamp DATETIME NOT NULL, INDEX IDX_DB021E966061F7CF (sender_id_id), INDEX IDX_DB021E96AE06B8F9 (reciever_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE messages (id INT AUTO_INCREMENT NOT NULL, sender_id_id INT NOT NULL, receiver_id_id INT NOT NULL, timestamp DATETIME NOT NULL, content JSON DEFAULT NULL COMMENT '(DC2Type:json)', INDEX IDX_DB021E966061F7CF (sender_id_id), INDEX IDX_DB021E96BE20CAB0 (receiver_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE posts (id INT AUTO_INCREMENT NOT NULL, user_id_id INT DEFAULT NULL, title VARCHAR(255) NOT NULL, description LONGTEXT DEFAULT NULL, type VARCHAR(255) NOT NULL, status VARCHAR(255) NOT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME DEFAULT NULL, INDEX IDX_885DBAFA9D86650F (user_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -54,6 +54,9 @@ final class Version20250523073403 extends AbstractMigration
             CREATE TABLE users (id INT AUTO_INCREMENT NOT NULL, location_id_id INT DEFAULT NULL, user_id_id INT DEFAULT NULL, email VARCHAR(255) NOT NULL, roles JSON NOT NULL COMMENT '(DC2Type:json)', password VARCHAR(255) NOT NULL, role VARCHAR(255) NOT NULL, full_name VARCHAR(255) NOT NULL, bio LONGTEXT DEFAULT NULL, avatar_url VARCHAR(255) DEFAULT NULL, interests LONGTEXT DEFAULT NULL, study_program VARCHAR(255) DEFAULT NULL, language VARCHAR(255) DEFAULT NULL, theme VARCHAR(255) DEFAULT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME DEFAULT NULL, INDEX IDX_1483A5E9918DB72 (location_id_id), INDEX IDX_1483A5E99D86650F (user_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE widgets (id INT AUTO_INCREMENT NOT NULL, user_id_id INT NOT NULL, widget VARCHAR(255) NOT NULL, enabled TINYINT(1) NOT NULL, INDEX IDX_9D58E4C19D86650F (user_id_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE companies ADD CONSTRAINT FK_8244AA3A918DB72 FOREIGN KEY (location_id_id) REFERENCES locations (id)
         SQL);
         $this->addSql(<<<'SQL'
@@ -63,7 +66,7 @@ final class Version20250523073403 extends AbstractMigration
             ALTER TABLE messages ADD CONSTRAINT FK_DB021E966061F7CF FOREIGN KEY (sender_id_id) REFERENCES users (id)
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE messages ADD CONSTRAINT FK_DB021E96AE06B8F9 FOREIGN KEY (reciever_id_id) REFERENCES users (id)
+            ALTER TABLE messages ADD CONSTRAINT FK_DB021E96BE20CAB0 FOREIGN KEY (receiver_id_id) REFERENCES users (id)
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE posts ADD CONSTRAINT FK_885DBAFA9D86650F FOREIGN KEY (user_id_id) REFERENCES users (id)
@@ -96,16 +99,13 @@ final class Version20250523073403 extends AbstractMigration
             ALTER TABLE users ADD CONSTRAINT FK_1483A5E99D86650F FOREIGN KEY (user_id_id) REFERENCES users (id)
         SQL);
         $this->addSql(<<<'SQL'
-            DROP TABLE refresh_tokens
+            ALTER TABLE widgets ADD CONSTRAINT FK_9D58E4C19D86650F FOREIGN KEY (user_id_id) REFERENCES users (id)
         SQL);
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql(<<<'SQL'
-            CREATE TABLE refresh_tokens (id INT AUTO_INCREMENT NOT NULL, refresh_token VARCHAR(128) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, username VARCHAR(255) CHARACTER SET utf8mb4 NOT NULL COLLATE `utf8mb4_unicode_ci`, valid DATETIME NOT NULL, UNIQUE INDEX UNIQ_9BACE7E1C74F2195 (refresh_token), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB COMMENT = '' 
-        SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE companies DROP FOREIGN KEY FK_8244AA3A918DB72
         SQL);
@@ -116,7 +116,7 @@ final class Version20250523073403 extends AbstractMigration
             ALTER TABLE messages DROP FOREIGN KEY FK_DB021E966061F7CF
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE messages DROP FOREIGN KEY FK_DB021E96AE06B8F9
+            ALTER TABLE messages DROP FOREIGN KEY FK_DB021E96BE20CAB0
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE posts DROP FOREIGN KEY FK_885DBAFA9D86650F
@@ -147,6 +147,9 @@ final class Version20250523073403 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE users DROP FOREIGN KEY FK_1483A5E99D86650F
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE widgets DROP FOREIGN KEY FK_9D58E4C19D86650F
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE companies
@@ -180,6 +183,9 @@ final class Version20250523073403 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE users
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE widgets
         SQL);
     }
 }
