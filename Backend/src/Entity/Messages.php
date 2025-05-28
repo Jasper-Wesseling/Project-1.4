@@ -30,7 +30,7 @@ class Messages
     #[ORM\Column(nullable: true)]
     private ?array $content = null;
 
-    #[ORM\ManyToOne(inversedBy: 'message_id')]
+    #[ORM\ManyToOne(inversedBy: 'product_id')]
     private ?Products $product_id = null;
 
     public function getId(): ?int

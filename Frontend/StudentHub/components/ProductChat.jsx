@@ -75,70 +75,63 @@ export default function ProductChat({ navigation, token, user, userToChat, route
         }
     }, [chats]);
 
+    const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
+
+
     return(
         <View style={styles.container}>
-            <View style={styles.topBar}>
-                <View>
-                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Icon name="arrow-left" type="feather" size={24} color="#fff"/>
-                        <Text style={styles.backButtonText}>Go back</Text>
-                    </TouchableOpacity>
+            <View style={[styles.topBar, {height: 125, backgroundColor: "#2A4BA0", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingTop:32 }]}>
+                <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
+                <View style={{ width: '80%', alignItems: 'flex-start', justifyContent: 'center'}}>
+                    {/* profile picture */}
+                    <Text style={{fontSize: 24, color: '#fff'}}>{name}</Text>
+                    <Text style={{fontSize: 16, color: '#fff'}}>{product.title}</Text>
                 </View>
             </View>
-            <View style={{flex:1, marginTop: 75, backgroundColor: "#2A4BA0" }}>
-                <View style={{height: 100, backgroundColor: 'grey', marginHorizontal: 25, marginTop: 25, marginBottom: -25, borderTopLeftRadius: 16, borderTopRightRadius: 16, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16}}>
-                    <Image source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }} style={{ width: 68, height: 68, borderRadius: 16}} />
-                    <View style={{width: '50%'}}><Text>{product.title}</Text></View>
-                </View>
-                <View
-                    style={{
-                        flex:1,
-                        paddingLeft: 16,
-                        paddingRight: 16,
-                        paddingBottom: 16,
-                        backgroundColor: '#fff',
-                        margin: 25,
-                        borderBottomLeftRadius: 16,
-                        borderBottomRightRadius: 16,
-                        transform: [{ translateY: -pageHeight }]
-                    }}
+            <View
+                style={{
+                    flex:1,
+                    padding: 32,
+                    backgroundColor: '#fff',
+                    transform: [{ translateY: -pageHeight }]
+                }}
+            >
+                <ScrollView
+                    ref={scrollViewRef}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 16 }}
                 >
-                    <ScrollView
-                        ref={scrollViewRef}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 16 }}
-                    >
-                        {chats.map((msg, idx) =>
-                            Array.isArray(msg.content)
-                            ? msg.content.map((item, subIdx) => (
-                                <Text key={idx + '-' + subIdx} style={item.sender === user.id ? styles.sentMessage : styles.recievedMessage}>{item.content}</Text>
-                            ))
-                            : <Text key={idx}>{msg.content || msg.text}</Text>
-                        )}
-                    </ScrollView>
-                    <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-                        <TextInput 
-                            style={[styles.input, {width: '80%'}]}
-                            onChangeText={setMessage}
-                            value={message}
-                            placeholder="Type something..."
-                            onFocus={() => setPageHeight(325)}
-                            onBlur={() => setPageHeight(0)}
-                            multiline={true}
-                            blurOnSubmit={true}
-                            returnKeyType="done"
-                        />
-                        <TouchableOpacity
-                            style={{backgroundColor:'#2A4BA0', justifyContent: "center", borderRadius: 100, width: 50}}
-                            onPress={()=> {
-                                sendMessage();
-                                scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
-                            }}
+                    {chats.map((msg, idx) => (
+                        <Text
+                            key={idx}
+                            style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
                         >
-                            <Icon name='paper-airplane' type='octicon' size={32} style={{marginRight: -5}} color='#fff'/>
-                        </TouchableOpacity>
-                    </View>
+                            {msg.content || msg.text}
+                        </Text>
+                    ))}
+                </ScrollView>
+                <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
+                    <TextInput 
+                        style={[styles.input, {width: '80%'}]}
+                        onChangeText={setMessage}
+                        value={message}
+                        placeholder="Type something..."
+                        onFocus={() => setPageHeight(325)}
+                        onBlur={() => setPageHeight(0)}
+                        multiline={true}
+                        blurOnSubmit={true}
+                        returnKeyType="done"
+                    />
+                    <TouchableOpacity
+                        style={{backgroundColor:'#2A4BA0', justifyContent: "center", borderRadius: 100, width: 50}}
+                        onPress={()=> {
+                            sendMessage();
+                            scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
+                        }}
+                    >
+                        <Icon name='paper-airplane' type='octicon' size={32} style={{marginRight: -5}} color='#fff'/>
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>

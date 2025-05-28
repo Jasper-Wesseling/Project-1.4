@@ -32,7 +32,6 @@ class MessagesController extends AbstractController
     #[Route('/get', name: 'get_messages', methods: ['GET'])]
     public function getMessages(Request $request, MessagesRepository $messagesRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
     {
-        $since = new \DateTime('-1 minute', new \DateTimeZone('Europe/Amsterdam')); // since 1 minute ago
         
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $sendUser = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
@@ -52,14 +51,12 @@ class MessagesController extends AbstractController
 
         $qb = $messagesRepository->createQueryBuilder('m')
             ->orderBy('m.timestamp', 'ASC')
-            ->andWhere('m.timestamp < :since')
             ->andWhere('
                 (m.sender_id = :sendUser AND m.receiver_id = :recieveUser)
                 OR
                 (m.sender_id = :recieveUser AND m.receiver_id = :sendUser)
             ')
             ->andWhere('m.product_id = :product')
-            ->setParameter('since', $since->format('Y-m-d H:i:s'))
             ->setParameter('sendUser', $sendUser->getId())
             ->setParameter('product', $product)
             ->setParameter('recieveUser', $recieveUser);
@@ -71,12 +68,10 @@ class MessagesController extends AbstractController
         foreach ($messages as $message) {
             $messagesArray[] = [
                 'content' => $message->getContent(),
-                'timestamp' => $message->getTimeStamp()->format('Y-m-d H:i:s'),
-                'sender' => $message->getSenderId()->getId(),
             ];
         }
 
-        return new JsonResponse($messagesArray);
+        return new JsonResponse($message->getContent(), 200);
     }
 
     #[Route('/new', name: 'new_message', methods: ['POST'])]
