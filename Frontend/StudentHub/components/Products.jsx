@@ -132,8 +132,11 @@ export default function Products({ navigation, token, user, onLogout }) {
                             <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
                                 <Icon name="search" size={34} color="#fff" />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={tempLogout}>
+                            <TouchableOpacity>
                                 <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={tempLogout}>
+                                <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
                             </TouchableOpacity>
                         </View>
                     </View>

@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
 
 export default function Register({ navigation, onLogin }) {
-    const [username, setUsername] = useState("");
+    const [full_name, setFullName] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
@@ -23,20 +23,53 @@ export default function Register({ navigation, onLogin }) {
     const handleRegister = async () => {
         setLoading(true);
         try {
-            const res = await fetch(API_URL + '/api/register', {
+            const res = await fetch(API_URL + '/api/users/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    username,
+                    full_name,
                     password,
                     email,
                 }),
             });
-            if (!res.ok) throw new Error("Registration failed");
-            const data = await res.json();
+            if (!res.ok) {
+                let err = {};
+                try {
+                    err = await res.json();
+                } catch (jsonErr) {
+                    const text = await res.text();
+                    err = { message: text || "Registration failed" };
+                }
+                if (err.violations && Array.isArray(err.violations)) {
+                    const messages = err.violations.map(v => `${v.propertyPath}: ${v.message}`).join('\n');
+                    Alert.alert("Registration failed", messages);
+                } else {
+                    Alert.alert("Registration failed", err.error || err.message || "Registration failed");
+                }
+                setLoading(false);
+                return;
+            }
+            // Optionally auto-login after registration
+            const loginRes = await fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: email, password: password }),
+            });
+            if (!loginRes.ok) {
+                let err = {};
+                try {
+                    err = await loginRes.json();
+                } catch (jsonErr) {
+                    const text = await loginRes.text();
+                    err = { message: text || "Auto-login failed" };
+                }
+                Alert.alert("Auto-login failed", err.error || err.message || "Auto-login failed");
+                setLoading(false);
+                return;
+            }
+            const data = await loginRes.json();
             const token = data.token || data.access_token;
             if (token) {
-                // Fetch user info after registration
                 const userRes = await fetch(API_URL + '/api/users/get', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -71,21 +104,21 @@ export default function Register({ navigation, onLogin }) {
                     <Text style={styles.title}>Register</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Email"
-                        value={email}
-                        onChangeText={setEmail}
+                        placeholder="Username"
+                        value={full_name}
+                        onChangeText={setFullName}
                         autoCapitalize="none"
-                        keyboardType="email-address"
                         placeholderTextColor="#888"
                         onFocus={() => animateTranslateY(-100)}
                         onBlur={() => animateTranslateY(0)}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Username"
-                        value={username}
-                        onChangeText={setUsername}
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
                         autoCapitalize="none"
+                        keyboardType="email-address"
                         placeholderTextColor="#888"
                         onFocus={() => animateTranslateY(-100)}
                         onBlur={() => animateTranslateY(0)}
