@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Animated } from "react-native";
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
@@ -8,6 +8,17 @@ export default function Login({ navigation, onLogin }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Replace pageHeight state with Animated.Value
+    const animatedTranslateY = useRef(new Animated.Value(0)).current;
+
+    const animateTranslateY = (toValue) => {
+        Animated.timing(animatedTranslateY, {
+            toValue,
+            duration: 150,
+            useNativeDriver: true,
+        }).start();
+    };
 
     const handleLogin = async () => {
         setLoading(true);
@@ -41,11 +52,9 @@ export default function Login({ navigation, onLogin }) {
         setLoading(false);
     };
 
-    const [pageHeight, setPageHeight] = useState(0);
-
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View style={[styles.container, { transform: [{ translateY: -pageHeight }] }]}>
+            <Animated.View style={[styles.container, { transform: [{ translateY: animatedTranslateY }] }]}>
                 <SafeAreaView style={styles.safeArea}>
                     <View style={styles.topHalf}>
                         <View style={styles.imagePlaceholder}>
@@ -67,8 +76,8 @@ export default function Login({ navigation, onLogin }) {
                         autoCapitalize="none"
                         keyboardType="email-address"
                         placeholderTextColor="#888"
-                        onFocus={() => setPageHeight(100)}
-                        onBlur={() => setPageHeight(0)}
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
                     />
                     <TextInput
                         style={styles.input}
@@ -77,8 +86,8 @@ export default function Login({ navigation, onLogin }) {
                         onChangeText={setPassword}
                         secureTextEntry
                         placeholderTextColor="#888"
-                        onFocus={() => setPageHeight(100)}
-                        onBlur={() => setPageHeight(0)}
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
                     />
                     <TouchableOpacity
                         style={styles.button}
@@ -95,7 +104,7 @@ export default function Login({ navigation, onLogin }) {
                         <Text style={styles.registerText}>Don't have an account? Register</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </Animated.View>
         </TouchableWithoutFeedback>
     );
 }
