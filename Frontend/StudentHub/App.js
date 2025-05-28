@@ -14,6 +14,7 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import BusinessPage from './components/businessPage';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -29,7 +30,7 @@ function MainTabs({ token, user, onLogout }) {
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
-          if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
+          if (route.name === "BusinessPage") return <Icon name="briefcase" type="feather" color={color} size={size} />;
           if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
           if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
         },
@@ -43,9 +44,7 @@ function MainTabs({ token, user, onLogout }) {
       </Tab.Screen>
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
       <Tab.Screen name="AddPost" component={AddPost} />
-      <Tab.Screen name="Profile">
-        {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
-      </Tab.Screen>
+      <Tab.Screen name="BusinessPage" component={BusinessPage} />
     </Tab.Navigator>
   );
 }

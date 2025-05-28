@@ -39,7 +39,7 @@ export default function Products() {
                     setLoading(false);
                 });
 
-                // Fetch one event (first event)
+            
                 fetch('http://192.168.2.7:8000/api/events', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -54,14 +54,14 @@ export default function Products() {
         });
     }, []);
 
-    // Animated header height (from 150 to 0)
+
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [150, 0],
         extrapolate: "clamp",
     });
 
-    // Animated filter row top position (starts at 100+150, ends at 100)
+   
     const filterTop = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [210, 100], // Adjusted to match the header height
@@ -74,7 +74,7 @@ export default function Products() {
         extrapolate: "clamp",
     });
 
-    // Helper: Only enable buttons if opacity > 0.5
+    
     const [buttonsEnabled, setButtonsEnabled] = useState(false);
 
     useEffect(() => {
@@ -132,7 +132,7 @@ export default function Products() {
                 {/* Scrollable Content */}
                 {!loading ? 
                 <Animated.ScrollView
-                    // contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
+                 
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: false }
@@ -144,7 +144,7 @@ export default function Products() {
                     ))}
                 </Animated.ScrollView>
                 :
-                <View style={{ paddingTop: 275, alignItems: 'center' }}> {/* Adjusted paddingTop to move events up */}
+                <View style={{ paddingTop: 275, alignItems: 'center' }}> 
                     <View style={styles.eventBox}>
                         <Text style={styles.eventTitle}>Event 1</Text>
                         <Text style={styles.eventDescription}>Meeting with Team</Text>
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
-        marginBottom: -100, // to avoid overlap with agenda button
+        marginBottom: -100, 
     },
     topBar: {
         position: "absolute",
