@@ -7,6 +7,7 @@ import { API_URL } from '@env';
 import { TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
+import { useTranslation } from 'react-i18next';
 
 export default function BountyBoard({ navigation }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -19,6 +20,7 @@ export default function BountyBoard({ navigation }) {
     const [hasMorePages, setHasMorePages] = useState(true);
     const filters = ['Local', 'Remote'];
     const [activeFilter, setActiveFilter] = useState(null);
+    const { t, i18n } = useTranslation();
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
@@ -108,6 +110,35 @@ export default function BountyBoard({ navigation }) {
 
     return(
         <SafeAreaView style={styles.container} >
+            {/* Language Switcher - absolutely positioned at the top right */}
+            <View style={styles.languageSwitcher}>
+                <TouchableOpacity
+                    style={[
+                        styles.langButton,
+                        i18n.language === 'en' && styles.langButtonActive
+                    ]}
+                    onPress={() => i18n.changeLanguage('en')}
+                >
+                    <Text style={[
+                        styles.langButtonText,
+                        i18n.language === 'en' && styles.langButtonTextActive
+                    ]}>EN</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.langButton,
+                        i18n.language === 'nl' && styles.langButtonActive
+                    ]}
+                    onPress={() => i18n.changeLanguage('nl')}
+                >
+                    <Text style={[
+                        styles.langButtonText,
+                        i18n.language === 'nl' && styles.langButtonTextActive
+                    ]}>NL</Text>
+                </TouchableOpacity>
+            </View>
+            {/* Test word to show translation */}
+           
             <SearchBar
                 visible={searchModalVisible}
                 value={search}
@@ -172,7 +203,8 @@ export default function BountyBoard({ navigation }) {
                 ))}
             </Animated.ScrollView>
             :
-            <Text style={styles.loadingText}>Loading...</Text>}
+            <Text style={styles.loadingText}>Loading...</Text>}\
+             <Text style={{ alignSelf: 'center', fontSize: 18, marginBottom: 10 }}>{t('test_word')}</Text>
         </SafeAreaView>                      
     );
 }
@@ -181,6 +213,34 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff"
+    },
+    languageSwitcher: {
+        position: 'absolute',
+        paddingTop: 100,
+        top: 10,
+        right: 10,
+        flexDirection: 'row',
+        zIndex: 100,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        borderRadius: 10,
+        padding: 2,
+    },
+    langButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        backgroundColor: '#eee',
+        marginHorizontal: 2,
+    },
+    langButtonActive: {
+        backgroundColor: '#2A4BA0',
+    },
+    langButtonText: {
+        color: '#2A4BA0',
+        fontWeight: 'bold'
+    },
+    langButtonTextActive: {
+        color: '#fff'
     },
     topBar: {
         position: "absolute",
