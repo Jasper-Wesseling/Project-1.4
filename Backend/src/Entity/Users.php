@@ -84,11 +84,45 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Reviews::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $reviews_user;
 
+    /**
+     * @var Collection<int, UserEvents>
+     */
+    #[ORM\OneToMany(targetEntity: UserEvents::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $events_user;
+
+    /**
+     * @var Collection<int, Tips>
+     */
+    #[ORM\OneToMany(targetEntity: Tips::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $tips_user;
+
+    /**
+     * @var Collection<int, Messages>
+     */
+    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'sender_id', orphanRemoval: true)]
+    private Collection $messages_user;
+
+    /**
+     * @var Collection<int, Messages>
+     */
+    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'receiver_id', orphanRemoval: true)]
+    private Collection $messages_receiver;
+
+    /**
+     * @var Collection<int, Widgets>
+     */
+    #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $widgets_user;
+
 
     public function __construct()
     {
         $this->products_user = new ArrayCollection();
         $this->reviews_user = new ArrayCollection();
+        $this->events_user = new ArrayCollection();
+        $this->tips_user = new ArrayCollection();
+        $this->messages_user = new ArrayCollection();
+        $this->messages_receiver = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -169,6 +203,11 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->full_name = $full_name;
 
         return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return explode(' ', $this->full_name)[0];
     }
 
     public function getBio(): ?string
@@ -333,6 +372,156 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($reviewsUser->getUserId() === $this) {
                 $reviewsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserEvents>
+     */
+    public function getEventsUser(): Collection
+    {
+        return $this->events_user;
+    }
+
+    public function addEventsUser(UserEvents $eventsUser): static
+    {
+        if (!$this->events_user->contains($eventsUser)) {
+            $this->events_user->add($eventsUser);
+            $eventsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventsUser(UserEvents $eventsUser): static
+    {
+        if ($this->events_user->removeElement($eventsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($eventsUser->getUserId() === $this) {
+                $eventsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Tips>
+     */
+    public function getTipsUser(): Collection
+    {
+        return $this->tips_user;
+    }
+
+    public function addTipsUser(Tips $tipsUser): static
+    {
+        if (!$this->tips_user->contains($tipsUser)) {
+            $this->tips_user->add($tipsUser);
+            $tipsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTipsUser(Tips $tipsUser): static
+    {
+        if ($this->tips_user->removeElement($tipsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($tipsUser->getUserId() === $this) {
+                $tipsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Messages>
+     */
+    public function getMessagesUser(): Collection
+    {
+        return $this->messages_user;
+    }
+
+    public function addMessagesUser(Messages $messagesUser): static
+    {
+        if (!$this->messages_user->contains($messagesUser)) {
+            $this->messages_user->add($messagesUser);
+            $messagesUser->setSenderId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesUser(Messages $messagesUser): static
+    {
+        if ($this->messages_user->removeElement($messagesUser)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesUser->getSenderId() === $this) {
+                $messagesUser->setSenderId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Messages>
+     */
+    public function getMessagesReceiver(): Collection
+    {
+        return $this->messages_receiver;
+    }
+
+    public function addMessagesReceiver(Messages $messagesReceiver): static
+    {
+        if (!$this->messages_receiver->contains($messagesReceiver)) {
+            $this->messages_receiver->add($messagesReceiver);
+            $messagesReceiver->setReceiverId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesReceiver(Messages $messagesReceiver): static
+    {
+        if ($this->messages_receiver->removeElement($messagesReceiver)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesReceiver->getReceiverId() === $this) {
+                $messagesReceiver->setReceiverId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Widgets>
+     */
+    public function getWidgetsUser(): Collection
+    {
+        return $this->widgets_user;
+    }
+
+    public function addWidgetsUser(Widgets $widgetsUser): static
+    {
+        if (!$this->widgets_user->contains($widgetsUser)) {
+            $this->widgets_user->add($widgetsUser);
+            $widgetsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWidgetsUser(Widgets $widgetsUser): static
+    {
+        if ($this->widgets_user->removeElement($widgetsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($widgetsUser->getUserId() === $this) {
+                $widgetsUser->setUserId(null);
             }
         }
 

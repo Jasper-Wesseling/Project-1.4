@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\Translation;
+use App\Entity\Tips;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Translation>
+ * @extends ServiceEntityRepository<Tips>
  */
-class TranslationRepository extends ServiceEntityRepository
+class TipsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Translation::class);
+        parent::__construct($registry, Tips::class);
     }
 
     //    /**
-    //     * @return Translation[] Returns an array of Translation objects
+    //     * @return Tips[] Returns an array of Tips objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class TranslationRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Translation
+    //    public function findOneBySomeField($value): ?Tips
     //    {
     //        return $this->createQueryBuilder('t')
     //            ->andWhere('t.exampleField = :val')
