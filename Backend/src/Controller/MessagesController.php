@@ -173,16 +173,34 @@ class MessagesController extends AbstractController
 
         $messages = $qb->getQuery()->getResult();
 
+        $messagesArray = [];
         foreach ($messages as $message) {
-            $latestMessage = $message->getContent()[0] ?? null;
+            $contentArray = $message->getContent();
+            $latestMessage = end($contentArray) ?: null;
+
+            if ($latestMessage) {
+            $senderId = $latestMessage['sender'];
+            $senderUser = $message->getSenderId();
+            $receiverUser = $message->getReceiverId();
+
+            // Determine the other user
+            if ($senderUser->getId() == $senderId) {
+                $otherUser = $receiverUser;
+            } else {
+                $otherUser = $senderUser;
+            }
+
             $messagesArray[] = [
                 'content' => $latestMessage['content'],
-                'sender' => $message->getSenderId()->getFullName(),
-                'receiver' => $message->getReceiverId()->getFullName(),
-                'sender_id' =>  $message->getSenderId()->getId(),
-                'receiver_id' => $message->getReceiverId()->getId(),
-                'product' => $message->getProductId()->getId()
+                'sender' => $senderUser->getFullName(),
+                'receiver' => $otherUser->getFullName(),
+                'sender_id' => $senderUser->getId(),
+                'receiver_id' => $receiverUser->getId(),
+                'product' => $message->getProductId()->getId(),
+                'timestamp' => $latestMessage['timestamp'] ?? $message->getTimestamp()->format('Y-m-d H:i:s'),
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), new \DateTime($latestMessage['timestamp']))->days
             ];
+            }
         }
 
         return new JsonResponse($messagesArray, 200);
