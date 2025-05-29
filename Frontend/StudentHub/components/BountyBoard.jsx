@@ -7,8 +7,9 @@ import { API_URL } from '@env';
 import { TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
+import BountyBoardModal from "./BountyBoardModal";
 
-export default function BountyBoard({ navigation }) {
+export default function BountyBoard({ navigation, token }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
     const [user, setUser] = useState();
@@ -19,22 +20,11 @@ export default function BountyBoard({ navigation }) {
     const [hasMorePages, setHasMorePages] = useState(true);
     const filters = ['Local', 'Remote'];
     const [activeFilter, setActiveFilter] = useState(null);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [bountyModalVisible, setBountyModalVisible] = useState(false);
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
-            // Login and get token
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
             if (!token) throw new Error("No token received");
 
             // Build query params for search and filter
@@ -89,6 +79,11 @@ export default function BountyBoard({ navigation }) {
         }
     };
 
+    const openBountyModal = (post) => {
+        setSelectedPost(post);
+        setBountyModalVisible(true);
+    };
+
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [150, 0],
@@ -106,7 +101,7 @@ export default function BountyBoard({ navigation }) {
     });
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
-    return(
+    return (
         <SafeAreaView style={styles.container} >
             <SearchBar
                 visible={searchModalVisible}
@@ -120,9 +115,9 @@ export default function BountyBoard({ navigation }) {
                     <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'hoi'}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
-                            <Icon name="plus" type="feather" size={34} color="#fff"/>
+                            <Icon name="plus" type="feather" size={34} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
+                        <TouchableOpacity onPress={() => { setSearchModalVisible(true) }}>
                             <Icon name="search" size={34} color="#fff" />
                         </TouchableOpacity>
                     </View>
@@ -148,32 +143,62 @@ export default function BountyBoard({ navigation }) {
                 </ScrollView>
             </Animated.View>
             {/* Animated Header */}
-            <Animated.View style={[styles.header, { height: headerHeight }]}> 
-                <Animated.Text style={[styles.headerText, {opacity: headerOpacity, marginTop: -20, fontWeight: '300'}]}>Step up,</Animated.Text>
-                <Animated.Text style={[styles.headerText, styles.headerTextBold, {opacity: headerOpacity}]}>Take a bounty</Animated.Text>
+            <Animated.View style={[styles.header, { height: headerHeight }]}>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity, marginTop: -20, fontWeight: '300' }]}>Step up,</Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>Take a bounty</Animated.Text>
             </Animated.View>
-            {!loading ? 
-            <Animated.ScrollView
-                contentContainerStyle={styles.scrollViewContent}
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-                onScrollEndDrag={loadMore}
-            >
-                {posts
-                    .filter(post =>
-                        (!activeFilter || post.type === activeFilter) &&
-                        post.title.toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map(post => (
-                        <PostPreview key={post.id} post={post} />
-                ))}
-            </Animated.ScrollView>
-            :
-            <Text style={styles.loadingText}>Loading...</Text>}
-        </SafeAreaView>                      
+            {!loading ?
+                <Animated.ScrollView
+                    contentContainerStyle={styles.scrollViewContent}
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                    onScrollEndDrag={loadMore}
+                >
+                    {posts
+                        .filter(post =>
+                            (!activeFilter || post.type === activeFilter) &&
+                            post.title.toLowerCase().includes(search.toLowerCase())
+                        )
+                        .map(post => {
+                            // Zoek de user die bij deze post hoort
+                            const postUser = Array.isArray(user)
+                                ? user.find(u => u.id === post.user_id)
+                                : user && user.id === post.user_id
+                                    ? user
+                                    : null;
+                            return (
+                                <View key={post.id}>
+                                    <PostPreview
+                                        post={post}
+                                        user={postUser}
+                                        onQuickHelp={() => openBountyModal(post)}
+                                    />
+                                </View>
+                            );
+                        })}
+                </Animated.ScrollView>
+                :
+                <Text style={styles.loadingText}>Loading...</Text>}
+
+            {/* BountyModal */}
+            <BountyBoardModal
+                visible={bountyModalVisible}
+                bounty={selectedPost}
+                user={
+                    selectedPost
+                        ? (Array.isArray(user)
+                            ? user.find(u => u.id === selectedPost.user_id)
+                            : user && user.id === selectedPost.user_id
+                                ? user
+                                : null)
+                        : null
+                }
+                onClose={() => setBountyModalVisible(false)}
+            />
+        </SafeAreaView>
     );
 }
 

@@ -41,8 +41,12 @@ function MainTabs({ token, user, onLogout }) {
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
-      <Tab.Screen name="BountyBoard" component={BountyBoard} />
-      <Tab.Screen name="AddPost" component={AddPost} />
+      <Tab.Screen name="BountyBoard">
+        {props => <BountyBoard {...props} token={token} user={user} />}
+      </Tab.Screen>
+      <Tab.Screen name="AddPost">
+        {props => <AddPost {...props} token={token} user={user} />}
+      </Tab.Screen>
       <Tab.Screen name="Profile">
         {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
       </Tab.Screen>

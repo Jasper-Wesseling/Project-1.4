@@ -68,6 +68,7 @@ class PostsController extends AbstractController
                 'created_at' => $post->getCreatedAt() ? $post->getCreatedAt()->format('Y-m-d H:i:s') : null,
                 'updated_at' => $post->getUpdatedAt() ? $post->getUpdatedAt()->format('Y-m-d H:i:s') : null,
                 'user_id' => $post->getUserId() ? $post->getUserId()->getId() : null,
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $post->getUpdatedAt())->days
             ];
         }
 
