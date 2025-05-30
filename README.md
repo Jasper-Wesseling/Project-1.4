@@ -105,32 +105,37 @@ in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
 
 
 
-# Top contributors:
+# 🌟 Top Contributors
+
+<div align="center">
+
 <table>
   <tr>
     <td align="center">
       <a href="https://github.com/Jasper-Wesseling">
-        <img src="https://avatars.githubusercontent.com/u/102893492?v=4" width="80" alt="Jasper-Wesseling"/><br />
-        <sub><b>Jasper-Wesseling</b></sub>
+        <img src="https://avatars.githubusercontent.com/u/93253259?v=4" width="100" style="border-radius:50%;" alt="Jasper-Wesseling"/><br />
+        <b>Jasper-Wesseling</b>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/LukeBoscher">
-        <img src="https://avatars.githubusercontent.com/u/183364004?v=4" width="80" alt="LukeBoscher"/><br />
-        <sub><b>LukeBoscher</b></sub>
+        <img src="https://avatars.githubusercontent.com/u/183364004?v=4" width="100" style="border-radius:50%;" alt="LukeBoscher"/><br />
+        <b>LukeBoscher</b>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/Svenkiel">
-        <img src="https://avatars.githubusercontent.com/u/108806428?v=4" width="80" alt="Svenkiel"/><br />
-        <sub><b>Svenkiel</b></sub>
+        <img src="https://avatars.githubusercontent.com/u/108806428?v=4" width="100" style="border-radius:50%;" alt="Svenkiel"/><br />
+        <b>Svenkiel</b>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/RobbinSkippy">
-        <img src="https://avatars.githubusercontent.com/u/183363464?v=4" width="80" alt="RobbinSkippy"/><br />
-        <sub><b>RobbinSkippy</b></sub>
+        <img src="https://avatars.githubusercontent.com/u/183363464?v=4" width="100" style="border-radius:50%;" alt="RobbinSkippy"/><br />
+        <b>RobbinSkippy</b>
       </a>
     </td>
   </tr>
 </table>
+
+</div>
