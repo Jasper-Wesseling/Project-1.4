@@ -6,6 +6,8 @@ Studenthub
 What you should have installed already
 +Nodejs
 
+
+
 ### to install the Frontend
 * npm
   ```sh
@@ -20,36 +22,57 @@ What you should have installed already
 
 
 ## Backend
-you should have 
+
+you should have installed
 + composer 
 + database of you choice 
 + openssl
 + php
 
+
+
 ### to install the Backend
-* composer
+
+. composer
   ```sh
   composer install
   ```
 
-* copy .env and make a .env.local version and add you credentia etc
 
-* database create
+. copy .env and make a .env.local version and add you credentia etc
+
+
+. database create
   ```sh
   php bin/console doctrine:database:create
   ```
 
-* generate-keypair
+
+. generate-keypair
   ```sh
   php bin/console lexik:jwt:generate-keypair
   ```
+
+
+. migrations
+  ```sh
+  php bin/console doctrine:migrations:migrate
+  ```
+
+
+. optinal use dummy data 
+  ```sh
+  php bin/console doctrine:fixtures:load
+  ```
     
-       
+
+
 ### to run the Backend
 * symfony server:starts
   ```sh
   symfony server:start
   ```
+
 
 * if you want to use the backend with the frontend the easy way that run this command instead of the command above
 expose backend to phone(pc ip-adresss)
@@ -57,18 +80,21 @@ expose backend to phone(pc ip-adresss)
   php -S 0.0.0.0:8000 -t public
   ```
 
+
 ## Help on installing/running Backend
 
 * if you get a driver error find the location of the ini file of the php you are using
+in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
   ```sh
   php -i | findstr /c:"Loaded Configuration File"
   ```
-in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
+
 
 * if openssl is not working for some reason try this command to install openssl os wide on windows
   ```sh
   choco install openssl
   ```
+
 
 ### WHEN WORKING ON BACKEND AND EVERYTHING IS BROKEN USE THIS AS A LAST RESORT! WARNING THIS REMOVES EVERY THING IN THE DATABASE! 
   ```sh
