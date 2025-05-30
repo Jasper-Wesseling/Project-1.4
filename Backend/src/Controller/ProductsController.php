@@ -82,7 +82,8 @@ class ProductsController extends AbstractController
                 'created_at' => $product->getCreatedAt() ? $product->getCreatedAt()->format('Y-m-d H:i:s') : null,
                 'updated_at' => $product->getUpdatedAt() ? $product->getUpdatedAt()->format('Y-m-d H:i:s') : null,
                 'user_id' => $product->getUserId() ? $product->getUserId()->getId() : null,
-                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $product->getUpdatedAt())->days
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $product->getUpdatedAt())->days,
+                'product_username' => $product->getUserId()->getFullName()
             ];
         }
 

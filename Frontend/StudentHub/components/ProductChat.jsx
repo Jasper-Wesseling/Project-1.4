@@ -9,10 +9,8 @@ export default function ProductChat({ navigation, token, user, route}) {
     const userIDReciever = userToChat;
     const [chats, setChats] = useState([]);
     const [message, setMessage] = useState('');
-    const [productTitle, setProductTitle] = useState('');
-    const [receiverName, setReceiverName] = useState('');
     const [pageHeight, setPageHeight] = useState(0);
-    const { product, userToChat } = route.params;
+    const { product, userToChat, productTitle, receiverName } = route.params;
     console.log('product id: '+product)
     console.log('usertochat: '+userToChat)
 
@@ -31,8 +29,6 @@ export default function ProductChat({ navigation, token, user, route}) {
 
             const chatData = await chatsRes.json();
             setChats(chatData.messages);
-            setReceiverName(chatData.receiver);
-            setProductTitle(chatData.product);
             console.log('chats:'+chats);
         } catch (err) {
             console.error("API error:", err);   
