@@ -4,7 +4,7 @@ Studenthub
 
 # Frontend
 What you should have installed already
-+Nodejs
++ Nodejs
 
 
 
@@ -106,6 +106,31 @@ in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
 
 
 # Top contributors:
-<a href="https://github.com/Jasper-Wesseling/Project-1.4/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Jasper-Wesseling/Project-1.4" alt="contrib.rocks image" />
-</a>
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Jasper-Wesseling">
+        <img src="https://avatars.githubusercontent.com/u/102893492?v=4" width="80" alt="Jasper-Wesseling"/><br />
+        <sub><b>Jasper-Wesseling</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/LukeBoscher">
+        <img src="https://avatars.githubusercontent.com/u/183364004?v=4" width="80" alt="LukeBoscher"/><br />
+        <sub><b>LukeBoscher</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Svenkiel">
+        <img src="https://avatars.githubusercontent.com/u/108806428?v=4" width="80" alt="Svenkiel"/><br />
+        <sub><b>Svenkiel</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/RobbinSkippy">
+        <img src="https://avatars.githubusercontent.com/u/183363464?v=4" width="80" alt="RobbinSkippy"/><br />
+        <sub><b>RobbinSkippy</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
