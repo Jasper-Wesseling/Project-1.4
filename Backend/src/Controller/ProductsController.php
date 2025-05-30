@@ -36,6 +36,7 @@ class ProductsController extends AbstractController
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
+        // $userIDReciever = max(1, (int)$request->query->get('reciever', 1));
 
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
@@ -46,7 +47,10 @@ class ProductsController extends AbstractController
         $category = $request->query->get('category', null);
         $search = $request->query->get('search', '');
 
+
         $qb = $productsRepository->createQueryBuilder('p')
+            ->where('p.user_id != :user')
+            ->setParameter('user', $user->getId())
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
