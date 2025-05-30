@@ -30,7 +30,6 @@ export default function ChatOverview({ navigation, token, user }) {
 
          const chatData = await chatsRes.json();
          setChats(chatData);
-         console.log('chats:'+chats);
       } catch (err) {
          console.error("API error:", err);   
       }

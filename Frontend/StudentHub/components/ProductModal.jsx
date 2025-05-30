@@ -8,8 +8,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     const [fullscreenImg, setFullscreenImg] = useState(false);
 
     if (!product) return null;
-    console.log(productUser)
-    console.log('product: '+product.id);
     return (
         <Modal
             visible={visible}

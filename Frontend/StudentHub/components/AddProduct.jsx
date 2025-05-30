@@ -40,10 +40,8 @@ export default function AddProduct({ navigation, token }) {
     };
 
     const uploadProduct = async () => {
-        console.log(price)
         if (!photo || !title || !description || !value || !price)
         {
-            console.log(!photo, !title, !description, !value, !price)
             Alert.alert('Error', 'Alle velden invullen AUB');
             return;
         }
@@ -60,7 +58,6 @@ export default function AddProduct({ navigation, token }) {
             }
         }
         let priceToDb = price;
-        console.log('here');
         priceToDb = parseInt(priceToDb.trim().replace(",",""))
         
         const formData = new FormData();
@@ -73,7 +70,6 @@ export default function AddProduct({ navigation, token }) {
             name: photo.fileName || 'photo.jpg',
             type: photo.type || 'image/jpeg',
         });
-        console.log('here');
 
         try {
             // Use token prop for authentication

@@ -11,8 +11,6 @@ export default function ProductChat({ navigation, token, user, route}) {
     const [message, setMessage] = useState('');
     const [pageHeight, setPageHeight] = useState(0);
     const { product, userToChat, productTitle, receiverName } = route.params;
-    console.log('product id: '+product)
-    console.log('usertochat: '+userToChat)
 
     const fetchChats = async () => {
         try {
@@ -29,7 +27,6 @@ export default function ProductChat({ navigation, token, user, route}) {
 
             const chatData = await chatsRes.json();
             setChats(chatData.messages);
-            console.log('chats:'+chats);
         } catch (err) {
             console.error("API error:", err);   
         }
@@ -42,7 +39,6 @@ export default function ProductChat({ navigation, token, user, route}) {
 
     const sendMessage = async () => {
         if (!message || !userToChat) {
-            console.error('mssing');
             return;
         }
         const tempId = Date.now();
@@ -77,7 +73,6 @@ export default function ProductChat({ navigation, token, user, route}) {
             console.error("API error:", err);
         }
     }
-    console.log('user: ' + JSON.stringify(user) + '\nuserToChat: ' + JSON.stringify(userToChat));
     const scrollViewRef = useRef(null);
     useEffect(() => {
         if (scrollViewRef.current) {
