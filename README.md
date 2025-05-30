@@ -2,26 +2,26 @@
 Studenthub
 
 
-## Frontend
+# Frontend
 What you should have installed already
 +Nodejs
 
 
 
-### to install the Frontend
+## to install the Frontend
 * npm
   ```sh
   npm install
   ```
 
-### to run the Frontend
+## to run the Frontend
 * expo
   ```sh
   npx expo start
   ```
 
 
-## Backend
+# Backend
 
 you should have installed
 + composer 
@@ -31,43 +31,43 @@ you should have installed
 
 
 
-### to install the Backend
+## to install the Backend
 
-. composer
+* composer
   ```sh
   composer install
   ```
 
 
-. copy .env and make a .env.local version and add you credentia etc
+* copy .env and make a .env.local version and add you credentia etc
 
 
-. database create
+* database create
   ```sh
   php bin/console doctrine:database:create
   ```
 
 
-. generate-keypair
+* generate-keypair
   ```sh
   php bin/console lexik:jwt:generate-keypair
   ```
 
 
-. migrations
+* migrations
   ```sh
   php bin/console doctrine:migrations:migrate
   ```
 
 
-. optinal use dummy data 
+* optinal use dummy data 
   ```sh
   php bin/console doctrine:fixtures:load
   ```
     
 
 
-### to run the Backend
+## to run the Backend
 * symfony server:starts
   ```sh
   symfony server:start
@@ -81,7 +81,7 @@ expose backend to phone(pc ip-adresss)
   ```
 
 
-## Help on installing/running Backend
+# Help on installing/running Backend
 
 * if you get a driver error find the location of the ini file of the php you are using
 in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
@@ -96,7 +96,7 @@ in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
   ```
 
 
-### WHEN WORKING ON BACKEND AND EVERYTHING IS BROKEN USE THIS AS A LAST RESORT! WARNING THIS REMOVES EVERY THING IN THE DATABASE! 
+## WHEN WORKING ON BACKEND AND EVERYTHING IS BROKEN USE THIS AS A LAST RESORT! WARNING THIS REMOVES EVERY THING IN THE DATABASE! 
   ```sh
   php bin/console doctrine:schema:drop --force
   php bin/console doctrine:migrations:migrate
