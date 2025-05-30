@@ -15,6 +15,7 @@ import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
 import BusinessPage from './components/businessPage';
+import CreateEvent from './components/CreateEvent';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -98,9 +99,12 @@ export default function App() {
             </Stack.Screen>
           </>
         ) : (
-          <Stack.Screen name="Main">
-            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen name="Main">
+              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
+            </Stack.Screen>
+            <Stack.Screen name="CreateEvent" component={CreateEvent} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
