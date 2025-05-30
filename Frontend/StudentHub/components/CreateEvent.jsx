@@ -74,6 +74,9 @@ export default function CreateEvent({ navigation }) {
 
     return (
         <View style={styles.container}>
+            <Text style={{fontSize:24, fontWeight:'bold', marginBottom:16}}>Create Event</Text>
+            <Button title={loading ? "Creating..." : "Create Event"} onPress={handleSubmit} disabled={loading} />
+            <Button title="Back" onPress={() => navigation.goBack()} color="#2A4BA0" style={{marginTop: 12}} />
             <Text style={styles.label}>Title</Text>
             <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="Event Title" />
             <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
@@ -84,7 +87,6 @@ export default function CreateEvent({ navigation }) {
             <TextInput style={styles.input} value={location} onChangeText={setLocation} placeholder="Location" />
             <Text style={styles.label}>Company ID</Text>
             <TextInput style={styles.input} value={companyId} onChangeText={setCompanyId} placeholder="Company ID" />
-            <Button title={loading ? "Creating..." : "Create Event"} onPress={handleSubmit} disabled={loading} />
         </View>
     );
 }
