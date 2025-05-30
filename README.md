@@ -1,32 +1,32 @@
 # Project-1.4
-expose backend to phone(pc ip-adresss)
-php -S 0.0.0.0:8000 -t public
+Studenthub
 
-<!-- GETTING STARTED -->
-## Getting Started
-[![Contributors][contributors-shield]][contributors-url]
-[![Issues][issues-shield]][issues-url]
 
-### Frontend
-you should have nodejs installed
+## Frontend
+What you should have installed already
++Nodejs
 
-to install the project
+### to install the Frontend
 * npm
   ```sh
   npm install
   ```
 
-to run the project
+### to run the Frontend
 * expo
   ```sh
   npx expo start
   ```
 
 
-### Backend
-you should have composer installed, a database of you choice and have openssl
+## Backend
+you should have 
++ composer 
++ database of you choice 
++ openssl
++ php
 
-to install the project
+### to install the Backend
 * composer
   ```sh
   composer install
@@ -39,56 +39,47 @@ to install the project
   php bin/console doctrine:database:create
   ```
 
-if you get nog driver error
-* find ini file of used php
-  ```sh
-  php -i | findstr /c:"Loaded Configuration File"
-  ```
- in this file uncomment: 
-* pdo_mysql
-* pdo_sqlite
-
 * generate-keypair
   ```sh
   php bin/console lexik:jwt:generate-keypair
   ```
     
        
-to run the project
+### to run the Backend
 * symfony server:starts
   ```sh
   symfony server:start
   ```
 
+* if you want to use the backend with the frontend the easy way that run this command instead of the command above
+expose backend to phone(pc ip-adresss)
+  ```sh
+  php -S 0.0.0.0:8000 -t public
+  ```
 
-infodump
+## Help on installing/running Backend
 
-if openssl is not working for some reason try this command to install openssl os wide
-choco install openssl
+* if you get a driver error find the location of the ini file of the php you are using
+  ```sh
+  php -i | findstr /c:"Loaded Configuration File"
+  ```
+in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
 
-VERVANGT ALLES IN DE DATABASE
-php bin/console doctrine:fixtures:load
+* if openssl is not working for some reason try this command to install openssl os wide on windows
+  ```sh
+  choco install openssl
+  ```
+
+### WHEN WORKING ON BACKEND AND EVERYTHING IS BROKEN USE THIS AS A LAST RESORT! WARNING THIS REMOVES EVERY THING IN THE DATABASE! 
+  ```sh
+  php bin/console doctrine:schema:drop --force
+  php bin/console doctrine:migrations:migrate
+  php bin/console doctrine:fixtures:load
+  ```
 
 
-ALS ECHT NIKS MEER WERKT IN DE BACKEND RUN DIT
-php bin/console doctrine:schema:drop --force
-php bin/console make:migration
-php bin/console doctrine:migrations:migrate
-php bin/console doctrine:fixtures:load
 
-zonder alles te verwijderen
-php bin/console doctrine:schema:drop --force
-php bin/console doctrine:migrations:migrate
-php bin/console doctrine:fixtures:load
-
-
-database initialize
-PS C:\Users\lukeb\OneDrive\Bureaublad\Project-1.4\Backend> php bin/console doctrine:database:create
-Created database `studenthub` for connection named default
-PS C:\Users\lukeb\OneDrive\Bureaublad\Project-1.4\Backend> php bin/console doctrine:schema:update --force
-
-### Top contributors:
-
+# Top contributors:
 <a href="https://github.com/Jasper-Wesseling/Project-1.4/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Jasper-Wesseling/Project-1.4" alt="contrib.rocks image" />
 </a>
