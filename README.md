@@ -136,20 +136,22 @@ in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
       </a>
     </td>
   </tr>
-  <td align="center">
+  <tr>
+    <td align="center">
       <a href="https://github.com/WWesseling">
-        <img src="https://avatars.githubusercontent.com/u/149768576?v=4" width="100" style="border-radius:50%;" alt="RobbinSkippy"/><br />
+        <img src="https://avatars.githubusercontent.com/u/149768576?v=4" width="100" style="border-radius:50%;" alt="WWesseling"/><br />
         <b>WWesseling</b>
       </a>
     </td>
-  </tr>
-  <td align="center">
+    <td align="center">
       <a href="https://github.com/AnneMayavdk">
-        <img src="https://avatars.githubusercontent.com/u/183364284?v=4" width="100" style="border-radius:50%;" alt="RobbinSkippy"/><br />
+        <img src="https://avatars.githubusercontent.com/u/183364284?v=4" width="100" style="border-radius:50%;" alt="AnneMayavdk"/><br />
         <b>AnneMaya</b>
       </a>
     </td>
-  </tr>  
+    <td></td>
+    <td></td>
+  </tr>
 </table>
 
 </div>
