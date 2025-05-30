@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, SafeAreaView, Alert, TouchableOpacity } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Animated } from "react-native";
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
@@ -8,6 +8,17 @@ export default function Login({ navigation, onLogin }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Replace pageHeight state with Animated.Value
+    const animatedTranslateY = useRef(new Animated.Value(0)).current;
+
+    const animateTranslateY = (toValue) => {
+        Animated.timing(animatedTranslateY, {
+            toValue,
+            duration: 150,
+            useNativeDriver: true,
+        }).start();
+    };
 
     const handleLogin = async () => {
         setLoading(true);
@@ -42,53 +53,59 @@ export default function Login({ navigation, onLogin }) {
     };
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.topHalf}>
-                    <View style={styles.imagePlaceholder}>
-                        <Image
-                            source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
-                            style={{ width: 180, height: 180, borderRadius: 28 }}
-                            resizeMode="cover"
-                        />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <Animated.View style={[styles.container, { transform: [{ translateY: animatedTranslateY }] }]}>
+                <SafeAreaView style={styles.safeArea}>
+                    <View style={styles.topHalf}>
+                        <View style={styles.imagePlaceholder}>
+                            <Image
+                                source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
+                                style={{ width: 180, height: 180, borderRadius: 28 }}
+                                resizeMode="cover"
+                            />
+                        </View>
                     </View>
+                </SafeAreaView>
+                <View style={styles.bottomHalf}>
+                    <Text style={styles.title}>Login</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        placeholderTextColor="#888"
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        placeholderTextColor="#888"
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
+                    />
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleLogin}
+                        disabled={loading}
+                    >
+                        <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
+                        <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.registerLink}
+                        onPress={() => navigation.navigate('Register')}
+                    >
+                        <Text style={styles.registerText}>Don't have an account? Register</Text>
+                    </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-            <View style={styles.bottomHalf}>
-                <Text style={styles.title}>Login</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholderTextColor="#888"
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholderTextColor="#888"
-                />
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleLogin}
-                    disabled={loading}
-                >
-                    <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
-                    <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.registerLink}
-                    onPress={() => navigation.navigate('Register')}
-                >
-                    <Text style={styles.registerText}>Don't have an account? Register</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+            </Animated.View>
+        </TouchableWithoutFeedback>
     );
 }
 
