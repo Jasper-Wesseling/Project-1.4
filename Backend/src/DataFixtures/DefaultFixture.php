@@ -20,26 +20,51 @@ class DefaultFixture extends Fixture
 
     public function load(ObjectManager $manager): void
     {
+
+        $usersInfo = [
+            [
+                "email" => "jasper.wesseling@student.nhlstenden.com",
+                "fullName" => "Jasper Wesseling",
+                "password" => "!JasperWesseling123",
+                "bio" => "I am a student at NHL Stenden.",
+                "theme" => "light",
+                "profileULR" => "/uploads/682729bdd4a8d.jpg",
+            ],
+            [
+                "email" => "luke.boscher@student.nhlstenden.com",
+                "fullName" => "Luke Boscher",
+                "password" => "X33ghfKI",
+                "bio" => "I am a student at NHL Stenden.",
+                "theme" => "dark",
+                "profileULR" => "/uploads/68272e6e1bda9.jpg",
+            ]
+        ];
         // users
-        $user = new Users();
-        $user->setEmail('jasper.wesseling@student.nhlstenden.com');
-        $user->setRole('ROLE_USER');
-        $hashedPassword = $this->passwordHasher->hashPassword($user, 'wesselingjasper');
-        $user->setPassword($hashedPassword);
-        $user->setFullName('Jasper Wesseling');
-        $user->setBio('I am a student at NHL Stenden.');
-        $user->setAvatarUrl('https://example.com/avatar.jpg');
-        $user->setInterests('coding, music, sports');
-        $user->setStudyProgram('Computer Science');
-        $user->setLanguage('en');
-        $user->setTheme('dark');
-        $user->setCreatedAt(new \DateTime('2024-05-13T12:00:00'));
-        $user->setUpdatedAt(new \DateTime('2024-05-13T12:00:00'));
-        $manager->persist($user);
+        for ($i=0; $i < 2; $i++) { 
+            $user = new Users();
+            $user->setEmail($usersInfo[$i]["email"]);
+            $user->setRole('ROLE_USER');
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $usersInfo[$i]["password"]);
+            $user->setPassword($hashedPassword);
+            $user->setFullName($usersInfo[$i]["fullName"]);
+            $user->setBio($usersInfo[$i]["bio"]);
+            $user->setAvatarUrl($usersInfo[$i]["profileULR"]);
+            $user->setInterests('coding, music, sports');
+            $user->setStudyProgram('Computer Science');
+            $user->setLanguage('en');
+            $user->setTheme($usersInfo[$i]["theme"]);
+            $user->setCreatedAt(new \DateTime('2024-05-13T12:00:00'));
+            $user->setUpdatedAt(new \DateTime('2024-05-13T12:00:00'));
+            $manager->persist($user);
 
-        $manager->flush(); // Ensure user gets an ID
-
-        $user = $manager->getRepository(Users::class)->findOneBy(['email' => 'jasper.wesseling@student.nhlstenden.com']);
+            $manager->flush(); // Ensure user gets an ID
+        }
+        
+        $users = [
+            $manager->getRepository(Users::class)->findOneBy(['email' => 'jasper.wesseling@student.nhlstenden.com']),
+            $manager->getRepository(Users::class)->findOneBy(['email' => 'luke.boscher@student.nhlstenden.com']),
+        ]; 
+        
 
         // Dummy data arrays
         $titles = [
@@ -72,7 +97,7 @@ class DefaultFixture extends Fixture
         // Create 25 products with random data
         for ($i = 0; $i < 100; $i++) {
             $product = new Products();
-            $product->setUserId($user);
+            $product->setUserId($users[array_rand($users)]);
             $product->setTitle($titles[array_rand($titles)]);
             $product->setDescription($descriptions[array_rand($descriptions)]);
             $product->setPrice($price[array_rand($price)]);
@@ -89,7 +114,7 @@ class DefaultFixture extends Fixture
         $manager->flush();
 
         $post = new Posts();
-        $post->setUserId($user);
+        $post->setUserId($users[array_rand($users)]);
         $post->setTitle('Welcome to the Platform');
         $post->setDescription('This is your first post on the platform. Feel free to edit or delete it.');
         $post->setType('Local');
