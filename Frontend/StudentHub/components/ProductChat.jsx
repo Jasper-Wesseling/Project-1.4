@@ -112,14 +112,16 @@ export default function ProductChat({ navigation, token, user, route}) {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 40, paddingTop: 100 }}
                 >
-                    {chats.map((msg, idx) => (
-                        <Text
-                            key={idx}
-                            style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
-                        >
-                            {msg.content}
-                        </Text>
-                    ))}
+                    {chats.map((msg, idx) => 
+                        msg && msg.content ?(
+                            <Text
+                                key={idx}
+                                style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
+                            >
+                                {msg.content}
+                            </Text>
+                        ) : null
+                    )}
                 </ScrollView>
                 <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                     <TextInput 

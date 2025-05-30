@@ -65,7 +65,7 @@ class MessagesController extends AbstractController
 
 
         return new JsonResponse([
-            'messages' => $message[0]->getContent(),
+            'messages' => isset($message[0]) ? $message[0]->getContent() : [''],
             'product' => $product->getTitle(),
             'receiver' => $recieveUser->getFullName(),
         ], 200);
@@ -191,7 +191,7 @@ class MessagesController extends AbstractController
             }
 
             $messagesArray[] = [
-                'content' => $latestMessage['content'],
+                'content' => $latestMessage['content'] ? $latestMessage['content'] : '',
                 'sender' => $senderUser->getFullName(),
                 'receiver' => $otherUser->getFullName(),
                 'sender_id' => $senderUser->getId(),
