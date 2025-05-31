@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Users;
+use App\Entity\Profile;
 use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -104,8 +105,16 @@ class UsersController extends AbstractController
 
             return new JsonResponse(['violations' => $violations], JsonResponse::HTTP_BAD_REQUEST);
         }
+        $profile = new Profile();
+        $profile->setUser($user);
+        $profile->setFullName('');
+        $profile->setAge(null);
+        $profile->setStudyProgram('');
+        $profile->setLocation('');
+        $profile->setBio('');
 
         $entityManager->persist($user);
+        $entityManager->persist($profile);
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'User created'], 201);

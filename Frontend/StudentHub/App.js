@@ -14,6 +14,7 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import Profile from "./components/Profile";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,7 +45,7 @@ function MainTabs({ token, user, onLogout }) {
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
       <Tab.Screen name="AddPost" component={AddPost} />
       <Tab.Screen name="Profile">
-        {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
+        {props => <Profile {...props} token={token} user={user} />}   
       </Tab.Screen>
     </Tab.Navigator>
   );

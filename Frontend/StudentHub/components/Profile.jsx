@@ -1,8 +1,72 @@
-import React from "react";
-import { Text, View, Image, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useEffect, useState } from "react";
+import {
+  Text,
+  View,
+  Image,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
+import { API_URL } from "@env";
 
-export default function Profile() {
+export default function Profile({ token }) {
+  const [profile, setProfile] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(null);
+
+  const DEFAULT_AVATAR_URL =
+    "https://i1.sndcdn.com/avatars-000543806595-ivit9r-t240x240.jpg";
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(API_URL + "/api/profile", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+        setProfile(data);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    if (token) fetchProfile();
+  }, [token]);
+
+  const startEditing = () => {
+    setEditedProfile(profile);
+    setIsEditing(true);
+  };
+
+  const saveChanges = async () => {
+    try {
+      const res = await fetch(API_URL + "/api/profile", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedProfile),
+      });
+
+      if (!res.ok) throw new Error("Failed to update profile");
+      const updated = await res.json();
+      setProfile(updated);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    }
+  };
+
+  if (!profile) return <Text>Loading...</Text>;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -10,40 +74,130 @@ export default function Profile() {
           <Text style={styles.backArrow}>←</Text>
 
           <View style={styles.imageContainer}>
-              <Text style={styles.nameText}>Wouter Wesseling</Text>
+            {isEditing ? (
+              <TextInput
+                value={editedProfile.full_name || ""}
+                onChangeText={(text) =>
+                  setEditedProfile({ ...editedProfile, full_name: text })
+                }
+                style={styles.input}
+                placeholder="Full Name"
+              />
+            ) : (
+              <Text style={styles.nameText}>{profile.full_name}</Text>
+            )}
             <Image
-              source={require("../assets/wnwoufer.png")} // voor de test
+              source={{
+                uri: profile.avatar_url || DEFAULT_AVATAR_URL,
+              }}
               style={styles.profileImage}
             />
           </View>
 
           <View style={styles.infoSection}>
             <View style={styles.nameBox}>
-            <Text style={styles.userName}>Wouter</Text>
-            <Text style={styles.userName}>Wesseling</Text>
+              {isEditing ? (
+                <>
+                  <TextInput
+                    value={editedProfile.first_name || ""}
+                    onChangeText={(text) =>
+                      setEditedProfile({ ...editedProfile, first_name: text })
+                    }
+                    style={styles.input}
+                    placeholder="First Name"
+                  />
+                  <TextInput
+                    value={editedProfile.last_name || ""}
+                    onChangeText={(text) =>
+                      setEditedProfile({ ...editedProfile, last_name: text })
+                    }
+                    style={styles.input}
+                    placeholder="Last Name"
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.userName}>{profile.first_name}</Text>
+                  <Text style={styles.userName}>{profile.last_name}</Text>
+                </>
+              )}
             </View>
 
             <View style={styles.row}>
-              <Text style={styles.age}>20 jaar</Text>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>Informatica, jaar 1</Text>
-              </View>
+              {isEditing ? (
+                <TextInput
+                  keyboardType="numeric"
+                  value={editedProfile.age ? String(editedProfile.age) : ""}
+                  onChangeText={(text) =>
+                    setEditedProfile({
+                      ...editedProfile,
+                      age: text ? Number(text) : null,
+                    })
+                  }
+                  style={[styles.input, { width: 80 }]}
+                  placeholder="Age"
+                />
+              ) : (
+                <Text style={styles.age}>{profile.age} jaar</Text>
+              )}
+
+              {isEditing ? (
+                <TextInput
+                  value={editedProfile.study_program || ""}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, study_program: text })
+                  }
+                  style={[styles.input, { flex: 1, marginLeft: 10 }]}
+                  placeholder="Study Program"
+                />
+              ) : (
+                <View style={styles.tag}>
+                  <Text style={styles.tagText}>{profile.study_program}</Text>
+                </View>
+              )}
             </View>
 
-            <Text style={styles.location}>NHL Stenden, Emmen</Text>
+            {isEditing ? (
+              <TextInput
+                value={editedProfile.location || ""}
+                onChangeText={(text) =>
+                  setEditedProfile({ ...editedProfile, location: text })
+                }
+                style={styles.input}
+                placeholder="Location"
+              />
+            ) : (
+              <Text style={styles.location}>{profile.location}</Text>
+            )}
 
             <View style={styles.reviewContainer}>
               <Text style={styles.stars}>★ ★ ★ ★ ☆</Text>
-              <Text style={styles.reviews}>110 Reviews</Text>
+              <Text style={styles.reviews}>
+                {profile.review_count || 110} Reviews
+              </Text>
             </View>
           </View>
 
           <Text style={styles.sectionTitle}>Details</Text>
-          <Text style={styles.description}>
-            Eerstejaars Informatica aan NHL Stenden.{"\n"}
-            Geïnteresseerd in front-end en AI.{"\n"}
-            Altijd bezig met nieuwe tech-projecten.
-          </Text>
+          {isEditing ? (
+            <TextInput
+              value={editedProfile.bio || ""}
+              onChangeText={(text) =>
+                setEditedProfile({ ...editedProfile, bio: text })
+              }
+              style={[styles.input, { height: 80, textAlignVertical: "top" }]}
+              multiline
+              placeholder="Bio"
+            />
+          ) : (
+            <Text style={styles.description}>
+              {profile.bio || "Geen bio beschikbaar."}
+            </Text>
+          )}
+
+          
+
+          {/* Keep your existing accordion and buttons here */}
 
           <TouchableOpacity style={styles.accordion}>
             <Text style={styles.accordionText}>Overige Details</Text>
@@ -54,17 +208,31 @@ export default function Profile() {
             <Text style={styles.accordionText}>Interesses</Text>
             <Text style={styles.chevron}>⌄</Text>
           </TouchableOpacity>
+<View style={styles.buttonGroup}>
+          {isEditing ? (
+            <>
+              <TouchableOpacity style={styles.dotButton} onPress={saveChanges}>
+                <Text style={styles.dotButtonText}>💾</Text>
+              </TouchableOpacity>
 
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity style={styles.dotButton}>
-              <Text style={styles.dotButtonText}>..........</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.contactButton} onPress={() => setIsEditing(false)}>
+                <Text style={styles.contactButtonText}>✖</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={styles.dotButton} onPress={startEditing}>
+                <Text style={styles.dotButtonText}>Edit</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={styles.contactButton}>
-              <Text style={styles.contactButtonText}>contact</Text>
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={styles.contactButton}>
+                <Text style={styles.contactButtonText}>Contact</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
+        </View>
+        
       </ScrollView>
     </SafeAreaView>
   );
@@ -208,5 +376,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10,
+    fontSize: 14,
+    width: "100%",
   },
 });
