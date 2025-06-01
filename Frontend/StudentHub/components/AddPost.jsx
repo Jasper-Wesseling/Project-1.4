@@ -27,9 +27,9 @@ export default function AddPost({ navigation, token }) {
             return;
         }
 
-
-
         try {
+            if (!token) throw new Error("No token received");
+
             const response = await fetch(API_URL + '/api/posts/new', {
                 method: 'POST',
                 headers: {
@@ -42,6 +42,7 @@ export default function AddPost({ navigation, token }) {
                     "type": type,
                 }),
             });
+            if (!response.ok) throw new Error("add post failed");
             setLoading(false);
             Alert.alert('Succesfully Created!', '', [{
                 text: 'OK',
