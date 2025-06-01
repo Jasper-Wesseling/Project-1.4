@@ -103,35 +103,6 @@ export default function BountyBoard({ navigation, token }) {
 
     return (
         <SafeAreaView style={styles.container} >
-            {/* Language Switcher - absolutely positioned at the top right */}
-            <View style={styles.languageSwitcher}>
-                <TouchableOpacity
-                    style={[
-                        styles.langButton,
-                        i18n.language === 'en' && styles.langButtonActive
-                    ]}
-                    onPress={() => i18n.changeLanguage('en')}
-                >
-                    <Text style={[
-                        styles.langButtonText,
-                        i18n.language === 'en' && styles.langButtonTextActive
-                    ]}>EN</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[
-                        styles.langButton,
-                        i18n.language === 'nl' && styles.langButtonActive
-                    ]}
-                    onPress={() => i18n.changeLanguage('nl')}
-                >
-                    <Text style={[
-                        styles.langButtonText,
-                        i18n.language === 'nl' && styles.langButtonTextActive
-                    ]}>NL</Text>
-                </TouchableOpacity>
-            </View>
-            {/* Test word to show translation */}
-           
             <SearchBar
                 visible={searchModalVisible}
                 value={search}
@@ -226,6 +197,9 @@ export default function BountyBoard({ navigation, token }) {
                         : null
                 }
                 onClose={() => setBountyModalVisible(false)}
+                navigation={navigation}
+                productUser={selectedPost?.user_id}
+                productUserName={selectedPost?.product_username}
             />
         </SafeAreaView>
     );

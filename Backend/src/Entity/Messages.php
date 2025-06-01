@@ -33,6 +33,9 @@ class Messages
     #[ORM\ManyToOne(inversedBy: 'product_id')]
     private ?Products $product_id = null;
 
+    #[ORM\ManyToOne(inversedBy: 'messages')]
+    private ?Posts $post_id = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -101,6 +104,18 @@ class Messages
     public function setProductId(?Products $product_id): static
     {
         $this->product_id = $product_id;
+
+        return $this;
+    }
+
+    public function getPostId(): ?Posts
+    {
+        return $this->post_id;
+    }
+
+    public function setPostId(?Posts $post_id): static
+    {
+        $this->post_id = $post_id;
 
         return $this;
     }

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { Icon } from "react-native-elements";
 
-export default function BountyBoardModal({ visible, bounty, onClose, user }) {
+export default function BountyBoardModal({ visible, bounty, onClose, user, navigation }) {
     const [showOverige, setShowOverige] = useState(false);
 
     if (!bounty) return null;
@@ -56,7 +56,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user }) {
                         </View>
                         {/* Chat button */}
                         <View style={styles.buttonRow}>
-                            <TouchableOpacity style={styles.filledButton}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { userToChat: bounty.user_id, receiverName: bounty.product_username, bountyTitle: bounty.title, bounty: bounty }); onClose();  }}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
                         </View>
                         {/* Description */}
                         <Text style={styles.sectionTitle}>Beschrijving</Text>
