@@ -1,13 +1,39 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState, useRef } from "react";
-import { SafeAreaView, View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity, Pressable } from "react-native";
+import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function BountyBoard({ navigation }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    // Fetch companies for filters
+    const [filters, setFilters] = useState([]);
+    const [activeFilter, setActiveFilter] = useState(null);
 
+    // Fetch all companies for filters
+    const fetchCompanies = async () => {
+        try {
+            const res = await fetch(API_URL + '/api/companies/get', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!res.ok) throw new Error('Failed to fetch companies');
+            const companies = await res.json();
+            // Use id and name for filters
+            if (Array.isArray(companies) && companies.length > 0) {
+                setFilters(companies.map(c => ({ id: c.id, name: c.name })));
+            } else {
+                setFilters([]);
+            }
+        } catch (err) {
+            setFilters([]);
+        }
+    };
+
+    // Fetch events (filtered by company id if selected)
     const fetchEvents = async () => {
         try {
             const loginRes = await fetch(API_URL + '/api/login', {
@@ -24,7 +50,12 @@ export default function BountyBoard({ navigation }) {
             const token = loginData.token || loginData.access_token;
             if (!token) throw new Error("No token received");
 
-            const eventsRes = await fetch(API_URL + '/api/events/get', {
+            // Add filter to events fetch if activeFilter is set
+            let eventsUrl = API_URL + '/api/events/get';
+            if (activeFilter) {
+                eventsUrl += `?company_id=${activeFilter}`;
+            }
+            const eventsRes = await fetch(eventsUrl, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -42,8 +73,13 @@ export default function BountyBoard({ navigation }) {
 
     useFocusEffect(
         useCallback(() => {
-            fetchEvents();
+            fetchCompanies();
         }, [])
+    );
+    useFocusEffect(
+        useCallback(() => {
+            fetchEvents();
+        }, [activeFilter])
     );
 
     const headerHeight = scrollY.interpolate({
@@ -51,24 +87,65 @@ export default function BountyBoard({ navigation }) {
         outputRange: [150, 0],
         extrapolate: "clamp",
     });
+
     const headerOpacity = scrollY.interpolate({
         inputRange: [0, 40],
         outputRange: [1, 0],
         extrapolate: "clamp",
     });
 
+    // Filter row position (sticky below header)
+    const filterTop = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [250, 100], // 100 is top bar height, 150 is max header height
+        extrapolate: "clamp",
+    });
+
     return (
         <SafeAreaView style={styles.container}>
-            <TouchableOpacity
-                style={{backgroundColor:'#2A4BA0', padding:12, borderRadius:8, margin:16, alignItems:'center'}}
-                onPress={() => navigation.navigate('CreateEvent')}
-            >
-                <Text style={{color:'#fff', fontWeight:'bold', fontSize:18}}>Maak Event</Text>
-            </TouchableOpacity>
+            {/* Static Top Bar */}
+            <View style={styles.topBar}>
+                <View style={styles.topBarRow}>
+                    <Text style={styles.topBarText}>Hey, Jasper</Text>
+                    <View style={styles.topBarIcons}>
+                        <TouchableOpacity onPress={() => navigation.navigate('CreateEvent')}>
+                            <Icon name="plus" type="feather" size={30} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="calendar" type="feather" size={30} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="user" type="feather" size={30} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, { opacity: headerOpacity, marginTop: -20, fontWeight: '300' }]}>Step up,</Animated.Text>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Step up,</Animated.Text>
                 <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>Take a bounty</Animated.Text>
+            </Animated.View>
+
+            {/* Filter Row (copied from Products.jsx) */}
+            <Animated.View style={[styles.filterRow, { top: filterTop, height: 50 }]}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.filterScrollContent}
+                >
+                    {filters && filters.length > 0 ? (
+                        filters.map((filter, i) => (
+                            <TouchableOpacity key={filter.id} onPress={() => setActiveFilter(activeFilter === filter.id ? null : filter.id)}>
+                                <Text style={[styles.filter, activeFilter === filter.id ? styles.activeFilter : null]}>
+                                    {filter.name}
+                                </Text>
+                            </TouchableOpacity>
+                        ))
+                    ) : (
+                        <Text style={{color: '#888', marginLeft: 16}}>No companies found</Text>
+                    )}
+                </ScrollView>
             </Animated.View>
 
             {loading ? (
@@ -97,6 +174,14 @@ export default function BountyBoard({ navigation }) {
                     )}
                 </Animated.ScrollView>
             )}
+            {/* Agenda Button */}
+            <Pressable
+                style={styles.agendaButton}
+                onPress={() => console.log('View Agenda Pressed')}
+            >
+                <Text style={styles.agendaButtonText}>View Agenda</Text>
+                <MaterialIcons name="event" size={20} color="white" />
+            </Pressable>
         </SafeAreaView>
     );
 }
@@ -106,9 +191,37 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#fff"
     },
-    header: {
+    topBar: {
         position: "absolute",
         top: 0,
+        left: 0,
+        right: 0,
+        height: 100,
+        backgroundColor: "#2A4BA0",
+        justifyContent: "center",
+        paddingTop: 25,
+        paddingHorizontal: 16,
+        zIndex: 20,
+    },
+    topBarRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center"
+    },
+    topBarText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "bold"
+    },
+    topBarIcons: {
+        flexDirection: 'row',
+        width: 125,
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    header: {
+        position: "absolute",
+        top: 100,
         left: 0,
         right: 0,
         backgroundColor: '#2A4BA0',
@@ -118,16 +231,42 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     headerText: {
-        alignSelf: 'flex-start',
         color: "white",
-        fontSize: 60,
+        fontSize: 64,
+        fontWeight: '300'
     },
     headerTextBold: {
         fontWeight: 'bold',
-        width: 400,
+    },
+    filterRow: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        flexDirection: "row",
+        alignItems: "center",
+        zIndex: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
+        gap: 10,
+        flex: 1,
+    },
+    filterScrollContent: {
+        alignItems: "center"
+    },
+    filter: {
+        paddingHorizontal: 10,
+        marginHorizontal: 8,
+        paddingVertical: 7,
+        borderWidth: 1,
+        borderColor: 'grey',
+        borderRadius: 100,
+    },
+    activeFilter: {
+        backgroundColor: '#FFC83A'
     },
     scrollViewContent: {
-        paddingTop: 180,
+        paddingTop: 280, // 100 topbar + 150 header + margin
         paddingBottom: 80,
     },
     loadingText: {
@@ -162,5 +301,23 @@ const styles = StyleSheet.create({
     eventDescription: {
         fontSize: 16,
         color: '#222',
-    }
+    },
+    agendaButton: {
+        position: "absolute",
+        bottom: 30, 
+        right: 10, 
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F9B023", 
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 20,
+        zIndex: 30,
+    },
+    agendaButtonText: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "bold",
+        marginRight: 5,
+        }
 });
