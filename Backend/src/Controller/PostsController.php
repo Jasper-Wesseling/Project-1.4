@@ -42,6 +42,8 @@ class PostsController extends AbstractController
         $type = $request->query->get('type', null);
 
         $qb = $postsRepository->createQueryBuilder('p')
+            ->where('p.user_id != :user')
+            ->setParameter('user', $user->getId())
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);

@@ -103,6 +103,35 @@ export default function BountyBoard({ navigation, token }) {
 
     return (
         <SafeAreaView style={styles.container} >
+            {/* Language Switcher - absolutely positioned at the top right */}
+            <View style={styles.languageSwitcher}>
+                <TouchableOpacity
+                    style={[
+                        styles.langButton,
+                        i18n.language === 'en' && styles.langButtonActive
+                    ]}
+                    onPress={() => i18n.changeLanguage('en')}
+                >
+                    <Text style={[
+                        styles.langButtonText,
+                        i18n.language === 'en' && styles.langButtonTextActive
+                    ]}>EN</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.langButton,
+                        i18n.language === 'nl' && styles.langButtonActive
+                    ]}
+                    onPress={() => i18n.changeLanguage('nl')}
+                >
+                    <Text style={[
+                        styles.langButtonText,
+                        i18n.language === 'nl' && styles.langButtonTextActive
+                    ]}>NL</Text>
+                </TouchableOpacity>
+            </View>
+            {/* Test word to show translation */}
+           
             <SearchBar
                 visible={searchModalVisible}
                 value={search}
@@ -206,6 +235,34 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff"
+    },
+    languageSwitcher: {
+        position: 'absolute',
+        paddingTop: 100,
+        top: 10,
+        right: 10,
+        flexDirection: 'row',
+        zIndex: 100,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        borderRadius: 10,
+        padding: 2,
+    },
+    langButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        backgroundColor: '#eee',
+        marginHorizontal: 2,
+    },
+    langButtonActive: {
+        backgroundColor: '#2A4BA0',
+    },
+    langButtonText: {
+        color: '#2A4BA0',
+        fontWeight: 'bold'
+    },
+    langButtonTextActive: {
+        color: '#fff'
     },
     topBar: {
         position: "absolute",
