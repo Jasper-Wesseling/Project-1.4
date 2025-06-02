@@ -56,8 +56,10 @@ class ProductsController extends AbstractController
             ->setMaxResults($limit);
 
         if ($category) {
-            $qb->andWhere('p.study_tag = :category')
-               ->setParameter('category', $category);
+            // Support multiple categories (comma-separated)
+            $categories = array_map('trim', explode(',', $category));
+            $qb->andWhere('p.study_tag IN (:categories)')
+               ->setParameter('categories', $categories);
         }
         if ($search) {
             $qb->andWhere('LOWER(p.title) LIKE :search')
