@@ -19,7 +19,7 @@ export default function ProductChat({ navigation, token, user, route}) {
         }
 
         if (productTitle) {
-            query+=`&product=${productTitle}`
+            query+=`&product=${product}`
         }
         try {
             const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userToChat)}` + query, {

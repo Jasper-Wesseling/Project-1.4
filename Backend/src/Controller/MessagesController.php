@@ -40,10 +40,10 @@ class MessagesController extends AbstractController
         $reciever= $request->query->get('reciever', 1);
         $recieveUser = $usersRepository->findOneBy(['id' => $reciever]);
 
-        $productId= $request->query->get('product', 1);
-        $bountyId= $request->query->get('bounty', 1);
-        $product = $entityManager->getRepository(Products::class)->find($productId);
-        $bounty = $entityManager->getRepository(Products::class)->find($bountyId);
+        $productId = $request->query->has('product') ? $request->query->get('product') : null;
+        $bountyId = $request->query->has('bounty') ? $request->query->get('bounty') : null;
+        $product = $productId ? $entityManager->getRepository(Products::class)->find($productId) : null;
+        $bounty = $bountyId ? $entityManager->getRepository(Posts::class)->find($bountyId) : null;
 
 
         if (!$recieveUser || !$sendUser) 
@@ -240,7 +240,8 @@ class MessagesController extends AbstractController
                 'receiver' => $otherUser->getFullName(),
                 'sender_id' => $senderUser->getId(),
                 'receiver_id' => $receiverUser->getId(),
-                'product' => $message->getProductId()->getId(),
+                'product' => $message->getProductId() ? $message->getProductId()->getId() : null,
+                'post' => $message->getPostId() ? $message->getPostId()->getId() : null,
                 'timestamp' => $latestMessage['timestamp'] ?? $message->getTimestamp()->format('Y-m-d H:i:s'),
                 'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), new \DateTime($latestMessage['timestamp']))->days
             ];
