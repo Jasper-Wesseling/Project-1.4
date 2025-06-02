@@ -1,9 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { Icon } from "react-native-elements";
+import { API_URL } from "@env";
 
-export default function BountyBoardModal({ visible, bounty, onClose, user, navigation }) {
+export default function BountyBoardModal({ visible, bounty, onClose, navigation }) {
+    const [user, setUser] = useState(null);
     const [showOverige, setShowOverige] = useState(false);
+
+    useEffect(() => {
+        setUser(null); // Reset user bij nieuwe bounty of openen modal
+        let isMounted = true;
+        async function fetchUser() {
+            if (!bounty?.user_id || !bounty?.token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/users/getbyid/${bounty.user_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${bounty.token}`,
+                    },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (isMounted) setUser(data);
+            } catch (e) { }
+        }
+        fetchUser();
+        return () => { isMounted = false; };
+    }, [bounty?.user_id, bounty?.token, visible]);
 
     if (!bounty) return null;
 
@@ -21,16 +43,14 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, navig
                         contentContainerStyle={{ paddingBottom: 32 }}
                         showsVerticalScrollIndicator={false}
                     >
-                        {/* User info */}
                         {user && (
                             <View style={styles.userRow}>
-                                {/* Back Arrow Button */}
                                 <TouchableOpacity style={styles.backButton} onPress={onClose}>
                                     <View style={styles.backCircle}>
                                         <Text style={styles.backArrow}>←</Text>
                                     </View>
                                 </TouchableOpacity>
-                                {user.avatar_url && user.avatar_url ? (
+                                {user.avatar_url ? (
                                     <Image
                                         source={{ uri: user.avatar_url }}
                                         style={styles.avatar}

@@ -1,43 +1,49 @@
+import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
+import { API_URL } from "@env";
 
-export default function PostPreview({ post, onQuickHelp, user }) {
+export default function PostPreview({ post, onQuickHelp, token }) {
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        async function fetchUser() {
+            if (!post?.user_id || !token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/users/getbyid/${post.user_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (isMounted) setUser(data);
+            } catch (e) { }
+        }
+        fetchUser();
+        return () => { isMounted = false; };
+    }, [post?.user_id, token]);
+
     if (!post) return null;
 
     return (
-        <TouchableOpacity
-            onPress={onQuickHelp}
-        >
+        <TouchableOpacity onPress={onQuickHelp}>
             <View style={styles.card}>
                 <View style={styles.cardContent}>
                     <View>
-                        <Text
-                            style={styles.cardTitle}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                        >
+                        <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
                             {post.title}
                         </Text>
-                        <Text
-                            style={styles.cardSubtitle}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                        >
+                        <Text style={styles.cardSubtitle} numberOfLines={1} ellipsizeMode="tail">
                             Geplaatst door: {user?.full_name || "Onbekende gebruiker"}
                         </Text>
-                        <Text
-                            style={styles.cardDescription}
-                            numberOfLines={3}
-                            ellipsizeMode="tail"
-                        >
+                        <Text style={styles.cardDescription} numberOfLines={3} ellipsizeMode="tail">
                             {post.description}
                         </Text>
                     </View>
-                    {/* button + status+location */}
                     <View style={styles.cardFooter}>
-                        <TouchableOpacity
-                            style={styles.footerButton}
-                        >
+                        <TouchableOpacity style={styles.footerButton}>
                             <Text style={styles.footerButtonText}>Quick Help</Text>
                         </TouchableOpacity>
                         <View style={[styles.footerButton, styles.statusButton]}>

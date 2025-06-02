@@ -12,7 +12,6 @@ import BountyBoardModal from "./BountyBoardModal";
 export default function BountyBoard({ navigation, token }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
-    const [user, setUser] = useState([]); // Array van alle users
     const [currentUser, setCurrentUser] = useState(null); // Huidige ingelogde user
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -23,35 +22,6 @@ export default function BountyBoard({ navigation, token }) {
     const [activeFilter, setActiveFilter] = useState(null);
     const [selectedPost, setSelectedPost] = useState(null);
     const [bountyModalVisible, setBountyModalVisible] = useState(false);
-
-    // Functie om een user op te vragen op basis van user ID
-    const fetchUserById = async (userId) => {
-        try {
-            const response = await fetch(API_URL + `/api/users/get?id=${userId}`, {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (response.ok) {
-                const userData = await response.json();
-                return userData;
-            } else {
-                console.warn(`Failed to fetch user with ID ${userId}`);
-                return {
-                    id: userId,
-                    full_name: `User ${userId}`,
-                    email: `user${userId}@example.com`
-                };
-            }
-        } catch (error) {
-            console.error(`Error fetching user ${userId}:`, error);
-            return {
-                id: userId,
-                full_name: `User ${userId}`,
-                email: `user${userId}@example.com`
-            };
-        }
-    };
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
@@ -80,34 +50,19 @@ export default function BountyBoard({ navigation, token }) {
             const postsData = await postsRes.json();
             const currentUser = await userRes.json();
 
-            // Extract unique user IDs from posts
-            const uniqueUserIds = [...new Set(postsData.map(post => post.user_id).filter(Boolean))];
-            
-            // Gebruik de fetchUserById functie voor elke user ID
-            const userPromises = uniqueUserIds.map(userId => fetchUserById(userId));
-            const usersData = await Promise.all(userPromises);
-            const usersFromPosts = usersData.filter(Boolean);
-
-            // Voeg current user toe als die er nog niet in staat
-            if (!usersFromPosts.find(u => u.id === currentUser.id)) {
-                usersFromPosts.push(currentUser);
-            }
-
             setHasMorePages(postsData.length === 20);
             setPosts(prev =>
                 append
                     ? [...prev, ...postsData.filter(p => !prev.some(existing => existing.id === p.id))]
                     : postsData
             );
-            setUser(usersFromPosts); // Array van alle users met volledige data
-            setCurrentUser(currentUser); // Aparte state voor huidige user
+            setCurrentUser(currentUser);
             setLoading(false);
         } catch (err) {
             console.error("API error:", err);
             setLoading(false);
         }
     };
-
 
     useFocusEffect(
         useCallback(() => {
@@ -208,23 +163,15 @@ export default function BountyBoard({ navigation, token }) {
                             (!activeFilter || post.type === activeFilter) &&
                             post.title.toLowerCase().includes(search.toLowerCase())
                         )
-                        .map(post => {
-                            // Zoek de user die bij deze post hoort
-                            const postUser = Array.isArray(user)
-                                ? user.find(u => u.id === post.user_id)
-                                : user && user.id === post.user_id
-                                    ? user
-                                    : null;
-                            return (
-                                <View key={post.id}>
-                                    <PostPreview
-                                        post={post}
-                                        user={postUser}
-                                        onQuickHelp={() => openBountyModal(post)}
-                                    />
-                                </View>
-                            );
-                        })}
+                        .map(post => (
+                            <View key={post.id}>
+                                <PostPreview
+                                    post={post}
+                                    token={token}
+                                    onQuickHelp={() => openBountyModal(post)}
+                                />
+                            </View>
+                        ))}
                 </Animated.ScrollView>
                 :
                 <Text style={styles.loadingText}>Loading...</Text>}
@@ -232,20 +179,9 @@ export default function BountyBoard({ navigation, token }) {
             {/* BountyModal */}
             <BountyBoardModal
                 visible={bountyModalVisible}
-                bounty={selectedPost}
-                user={
-                    selectedPost
-                        ? (Array.isArray(user)
-                            ? user.find(u => u.id === selectedPost.user_id)
-                            : user && user.id === selectedPost.user_id
-                                ? user
-                                : null)
-                        : null
-                }
+                bounty={selectedPost ? { ...selectedPost, token } : null}
                 onClose={() => setBountyModalVisible(false)}
                 navigation={navigation}
-                productUser={selectedPost?.user_id}
-                productUserName={selectedPost?.product_username}
             />
         </SafeAreaView>
     );
