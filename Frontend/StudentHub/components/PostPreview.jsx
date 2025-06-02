@@ -5,49 +5,52 @@ export default function PostPreview({ post, onQuickHelp, user }) {
     if (!post) return null;
 
     return (
-        <View style={styles.card}>
-            <View style={styles.cardContent}>
-                <View>
-                    <Text
-                        style={styles.cardTitle}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        {post.title}
-                    </Text>
-                    <Text
-                        style={styles.cardSubtitle}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        Geplaatst door: {user?.full_name || "Onbekende gebruiker"}
-                    </Text>
-                    <Text
-                        style={styles.cardDescription}
-                        numberOfLines={3}
-                        ellipsizeMode="tail"
-                    >
-                        {post.description}
-                    </Text>
-                </View>
-                {/* button + status+location */}
-                <View style={styles.cardFooter}>
-                    <TouchableOpacity
-                        style={styles.footerButton}
-                        onPress={onQuickHelp}
-                    >
-                        <Text style={styles.footerButtonText}>Quick Help</Text>
-                    </TouchableOpacity>
-                    <View style={[styles.footerButton, styles.statusButton]}>
-                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status}</Text>
+        <TouchableOpacity
+            onPress={onQuickHelp}
+        >
+            <View style={styles.card}>
+                <View style={styles.cardContent}>
+                    <View>
+                        <Text
+                            style={styles.cardTitle}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {post.title}
+                        </Text>
+                        <Text
+                            style={styles.cardSubtitle}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            Geplaatst door: {user?.full_name || "Onbekende gebruiker"}
+                        </Text>
+                        <Text
+                            style={styles.cardDescription}
+                            numberOfLines={3}
+                            ellipsizeMode="tail"
+                        >
+                            {post.description}
+                        </Text>
                     </View>
-                    <View style={[styles.footerButton, styles.locationButton]}>
-                        <Icon name="location-on" type="material" size={16} color="#000" />
-                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type}</Text>
+                    {/* button + status+location */}
+                    <View style={styles.cardFooter}>
+                        <TouchableOpacity
+                            style={styles.footerButton}
+                        >
+                            <Text style={styles.footerButtonText}>Quick Help</Text>
+                        </TouchableOpacity>
+                        <View style={[styles.footerButton, styles.statusButton]}>
+                            <Text style={[styles.footerButtonText, styles.blackText]}>{post.status}</Text>
+                        </View>
+                        <View style={[styles.footerButton, styles.locationButton]}>
+                            <Icon name="location-on" type="material" size={16} color="#000" />
+                            <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type}</Text>
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

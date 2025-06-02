@@ -16,12 +16,6 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, navig
         >
             <SafeAreaView style={styles.overlay}>
                 <View style={styles.card}>
-                    {/* Back Arrow Button */}
-                    <TouchableOpacity style={styles.backButton} onPress={onClose}>
-                        <View style={styles.backCircle}>
-                            <Text style={styles.backArrow}>←</Text>
-                        </View>
-                    </TouchableOpacity>
                     <ScrollView
                         style={{ width: '100%' }}
                         contentContainerStyle={{ paddingBottom: 32 }}
@@ -30,7 +24,13 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, navig
                         {/* User info */}
                         {user && (
                             <View style={styles.userRow}>
-                                {user.avatar_url && user.avatar_url.startsWith('http') ? (
+                                {/* Back Arrow Button */}
+                                <TouchableOpacity style={styles.backButton} onPress={onClose}>
+                                    <View style={styles.backCircle}>
+                                        <Text style={styles.backArrow}>←</Text>
+                                    </View>
+                                </TouchableOpacity>
+                                {user.avatar_url && user.avatar_url ? (
                                     <Image
                                         source={{ uri: user.avatar_url }}
                                         style={styles.avatar}
@@ -56,7 +56,11 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, navig
                         </View>
                         {/* Chat button */}
                         <View style={styles.buttonRow}>
-                            <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { userToChat: bounty.user_id, receiverName: bounty.product_username, bountyTitle: bounty.title, bounty: bounty }); onClose();  }}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { userToChat: bounty.user_id, receiverName: bounty.product_username, bountyTitle: bounty.title, bounty: bounty }); onClose();  }}>
+                                <Text style={styles.filledButtonText}>
+                                    Chat nu
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                         {/* Description */}
                         <Text style={styles.sectionTitle}>Beschrijving</Text>
@@ -106,10 +110,7 @@ const styles = StyleSheet.create({
         elevation: 12,
     },
     backButton: {
-        position: 'absolute',
-        top: 18,
-        right: 18,
-        zIndex: 10,
+        marginRight: 16,
     },
     backCircle: {
         backgroundColor: '#f4f5f7',

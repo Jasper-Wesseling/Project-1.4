@@ -12,7 +12,8 @@ import BountyBoardModal from "./BountyBoardModal";
 export default function BountyBoard({ navigation, token }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
-    const [user, setUser] = useState();
+    const [user, setUser] = useState([]); // Array van alle users
+    const [currentUser, setCurrentUser] = useState(null); // Huidige ingelogde user
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -23,6 +24,35 @@ export default function BountyBoard({ navigation, token }) {
     const [selectedPost, setSelectedPost] = useState(null);
     const [bountyModalVisible, setBountyModalVisible] = useState(false);
 
+    // Functie om een user op te vragen op basis van user ID
+    const fetchUserById = async (userId) => {
+        try {
+            const response = await fetch(API_URL + `/api/users/get?id=${userId}`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+                const userData = await response.json();
+                return userData;
+            } else {
+                console.warn(`Failed to fetch user with ID ${userId}`);
+                return {
+                    id: userId,
+                    full_name: `User ${userId}`,
+                    email: `user${userId}@example.com`
+                };
+            }
+        } catch (error) {
+            console.error(`Error fetching user ${userId}:`, error);
+            return {
+                id: userId,
+                full_name: `User ${userId}`,
+                email: `user${userId}@example.com`
+            };
+        }
+    };
+
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
             if (!token) throw new Error("No token received");
@@ -32,7 +62,7 @@ export default function BountyBoard({ navigation, token }) {
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&type=${encodeURIComponent(filterValue)}`;
 
-            // Fetch posts and user in parallel
+            // Fetch posts and current user in parallel
             const [postsRes, userRes] = await Promise.all([
                 fetch(API_URL + `/api/posts/get${query}`, {
                     method: 'GET',
@@ -48,7 +78,20 @@ export default function BountyBoard({ navigation, token }) {
             if (!userRes.ok) throw new Error("User fetch failed");
 
             const postsData = await postsRes.json();
-            const users = await userRes.json();
+            const currentUser = await userRes.json();
+
+            // Extract unique user IDs from posts
+            const uniqueUserIds = [...new Set(postsData.map(post => post.user_id).filter(Boolean))];
+            
+            // Gebruik de fetchUserById functie voor elke user ID
+            const userPromises = uniqueUserIds.map(userId => fetchUserById(userId));
+            const usersData = await Promise.all(userPromises);
+            const usersFromPosts = usersData.filter(Boolean);
+
+            // Voeg current user toe als die er nog niet in staat
+            if (!usersFromPosts.find(u => u.id === currentUser.id)) {
+                usersFromPosts.push(currentUser);
+            }
 
             setHasMorePages(postsData.length === 20);
             setPosts(prev =>
@@ -56,13 +99,15 @@ export default function BountyBoard({ navigation, token }) {
                     ? [...prev, ...postsData.filter(p => !prev.some(existing => existing.id === p.id))]
                     : postsData
             );
-            setUser(users);
+            setUser(usersFromPosts); // Array van alle users met volledige data
+            setCurrentUser(currentUser); // Aparte state voor huidige user
             setLoading(false);
         } catch (err) {
             console.error("API error:", err);
             setLoading(false);
         }
     };
+
 
     useFocusEffect(
         useCallback(() => {
@@ -99,7 +144,8 @@ export default function BountyBoard({ navigation, token }) {
         outputRange: [1, 0],
         extrapolate: "clamp",
     });
-    const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
+
+    const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
 
     return (
         <SafeAreaView style={styles.container} >
