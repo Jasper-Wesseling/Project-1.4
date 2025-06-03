@@ -71,7 +71,7 @@ export const themes = {
     locationText: "#23263A",
     star: '#FFC83A',
     reviewCount: '#bbb',
-    filledButtonText: '#fff',
+    filledButtonText: '#000',
     detailsText: '#ccc',
     sectionRowBorder: '#23263A',
     sectionArrow: '#FFC83A',

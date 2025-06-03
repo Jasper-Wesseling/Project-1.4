@@ -160,7 +160,7 @@ function createModalStyles(theme) {
         title: {
             fontSize: 24,
             fontWeight: 'bold',
-            color: theme.primary,
+            color: theme.headerText,
             alignSelf: 'flex-start',
             marginTop: 12,
             marginBottom: 2,
@@ -252,7 +252,7 @@ function createModalStyles(theme) {
         },
         filledButton: {
             flex: 1,
-            backgroundColor: theme.primary,
+            backgroundColor: theme.locationBg,
             borderRadius: 16,
             paddingVertical: 12,
             alignItems: 'center',

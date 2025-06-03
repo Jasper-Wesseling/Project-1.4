@@ -61,7 +61,7 @@ export default function PostPreview({ post, onQuickHelp, token, theme }) {
                             <Text style={[styles.footerButtonText, styles.blackText]}>{post.status}</Text>
                         </View>
                         <View style={[styles.footerButton, styles.locationButton]}>
-                            <Icon name="location-on" type="material" size={16} color={safeTheme.locationText} />
+                            <Icon name="location-on" type="material" size={16} color={safeTheme.text} />
                             <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type}</Text>
                         </View>
                     </View>
@@ -94,7 +94,7 @@ function createPreviewStyles(theme) {
             fontWeight: '400',
             fontSize: 24,
             marginBottom: 4,
-            color: theme.primary,
+            color: theme.headerText,
         },
         cardSubtitle: {
             fontWeight: '500',
@@ -121,7 +121,7 @@ function createPreviewStyles(theme) {
             borderRadius: 12,
             height: 40,
             marginHorizontal: 4,
-            backgroundColor: theme.primary, // default voor Quick Help
+            backgroundColor: theme.locationBg, // default voor Quick Help
         },
         footerButtonText: {
             color: theme.filledButtonText,
@@ -129,13 +129,13 @@ function createPreviewStyles(theme) {
             fontSize: 14,
         },
         statusButton: {
-            backgroundColor: theme.locationBg,
+            backgroundColor: theme.primary,
         },
         locationButton: {
-            backgroundColor: theme.locationBg,
+            backgroundColor: theme.primary,
         },
         blackText: {
-            color: theme.locationText,
+            color: theme.text,
         },
     });
 }
