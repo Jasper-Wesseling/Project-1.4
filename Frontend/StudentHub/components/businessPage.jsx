@@ -16,12 +16,32 @@ export default function BountyBoard({ navigation }) {
     // Fetch all companies for filters
     const fetchCompanies = async () => {
         try {
+            // Get token first (same as fetchEvents)
+            const loginRes = await fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "username": "jasper.wesseling@student.nhlstenden.com",
+                    "password": "wesselingjasper",
+                    "full_name": "Jasper Wesseling"
+                })
+            });
+            if (!loginRes.ok) throw new Error("Login failed");
+            const loginData = await loginRes.json();
+            const token = loginData.token || loginData.access_token;
+            if (!token) throw new Error("No token received");
+
+            // Now fetch companies with Authorization header
             const res = await fetch(API_URL + '/api/companies/get', {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
             if (!res.ok) throw new Error('Failed to fetch companies');
             const companies = await res.json();
+            console.log('Fetched companies:', companies); // Debug log
             // Use id and name for filters
             if (Array.isArray(companies) && companies.length > 0) {
                 setFilters(companies.map(c => ({ id: c.id, name: c.name })));
@@ -29,6 +49,7 @@ export default function BountyBoard({ navigation }) {
                 setFilters([]);
             }
         } catch (err) {
+            console.error('Error fetching companies:', err); // Debug log
             setFilters([]);
         }
     };
@@ -128,7 +149,7 @@ export default function BountyBoard({ navigation }) {
             </Animated.View>
 
             {/* Filter Row (copied from Products.jsx) */}
-            <Animated.View style={[styles.filterRow, { top: filterTop, height: 50 }]}>
+            <Animated.View style={[styles.filterRow, { top: filterTop, height: 50, zIndex: 30, backgroundColor: '#fff' }]}>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
