@@ -95,7 +95,7 @@ export default function EditProducts({ navigation, token, user }) {
             onClose={() => setModalVisible(false)}
             formatPrice={formatPrice}
             navigation={navigation}
-            productUser={selectedProduct?.user_id}
+            productUser={selectedProduct?.product_user_id}
             productUserName={selectedProduct?.product_username}
          />
       </View>

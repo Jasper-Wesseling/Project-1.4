@@ -153,18 +153,18 @@ const styles = StyleSheet.create({
     imageContainer: {
         marginTop: 24,
         marginBottom: 16,
-        width: 200,           // increased from 140
-        height: 200,          // increased from 140
-        borderRadius: 100,    // half of width/height
+        width: 200,
+        height: 200,
+        borderRadius: 100,
         backgroundColor: '#f4f5f7',
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
     },
     image: {
-        width: 170,           // increased from 120
-        height: 170,          // increased from 120
-        borderRadius: 85,     // half of width/height
+        width: 170,
+        height: 170,
+        borderRadius: 85,
     },
     title: {
         fontSize: 22,
