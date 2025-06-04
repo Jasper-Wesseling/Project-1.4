@@ -114,6 +114,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $widgets_user;
 
+    #[ORM\Column(nullable: false)]
+    private ?bool $disabled = false;
+
 
     public function __construct()
     {
@@ -524,6 +527,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
                 $widgetsUser->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isDisabled(): ?bool
+    {
+        return $this->disabled;
+    }
+
+    public function setDisabled(bool $disabled): static
+    {
+        $this->disabled = $disabled;
 
         return $this;
     }

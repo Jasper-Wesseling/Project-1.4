@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import './App.css';
 import Login from './Login.jsx';
-import BanUser from './BanUser.jsx';
 import Navbar from './Navbar.jsx';
+import UserManagement from './UserManagement.jsx';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; 
 
 function App() {
@@ -44,7 +44,7 @@ function App() {
         <div className="main-content">
           <Routes>
             <Route path="/" element={<div>Dashboard - Home page (protected)</div>} />
-            <Route path="/ban" element={<BanUser />} />
+            <Route path="/users" element={<UserManagement />} />
             <Route path="/events" element={<div>Events Management (coming soon)</div>} />
             <Route path="/posts" element={<div>Posts Management (coming soon)</div>} />
           </Routes>

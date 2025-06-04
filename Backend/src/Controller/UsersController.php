@@ -28,6 +28,111 @@ class UsersController extends AbstractController
         $this->tokenStorageInterface = $tokenStorageInterface;
     }
     
+    #[Route('/admin/getall', name: 'api_users_admin_getall', methods: ['GET'])]
+    public function admin(UsersRepository $usersRepository): Response
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+        
+        $users = $usersRepository->findAll();
+        if (!$users) {
+            return new JsonResponse(['error' => 'No users found'], 404);
+        }
+
+        $usersData = [];
+        foreach ($users as $user) {
+            $usersData[] = [
+                'id' => $user->getId() ? $user->getId() : null,
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles(),
+                'role' => $user->getRole(),
+                'full_name' => $user->getFullName(),
+                'bio' => $user->getBio(),
+                'avatar_url' => $user->getAvatarUrl(),
+                'interests' => $user->getInterests(),
+                'study_program' => $user->getStudyProgram(),
+                'language' => $user->getLanguage(),
+                'theme' => $user->getTheme(),
+                'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
+                'disabled' => $user->isDisabled(),
+            ];
+        }
+
+        return new JsonResponse($usersData, 200);
+
+
+    }
+
+    #[Route('/admin/ban', name: 'api_users_admin_ban', methods: ['PUT'])]
+    public function adminBan(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UsersRepository $usersRepository
+    ): Response {
+        $data = json_decode($request->getContent(), true);
+
+
+        if (!isset($data['id'])) {
+            return new JsonResponse(['error' => 'Missing id'], 400);
+        }
+
+        $user = $usersRepository->findOneBy(['id' => $data['id']]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+        if (user->isBanned()) {
+            return new JsonResponse(['error' => 'User is already banned'], 400);
+        }
+        
+
+        $user->setDisabled(true);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'User banned successfully'], 200);
+    }
+
+    #[Route('/admin/role', name: 'api_users_admin_role', methods: ['PUT'])]
+    function setRole(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UsersRepository $usersRepository
+    ): Response {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['id'])) {
+            return new JsonResponse(['error' => 'Missing id'], 400);
+        }
+
+        $user = $usersRepository->findOneBy(['id' => $data['id']]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        $role = $data['role'] ?? null;
+        if (!$role || !in_array($role, ['ROLE_USER', 'ROLE_ADMIN'])) {
+            return new JsonResponse(['error' => 'Invalid role'], 400);
+        }
+        if ($role === 'ROLE_ADMIN' && in_array('ROLE_ADMIN', $user->getRoles())) {
+            return new JsonResponse(['error' => 'User is already an admin'], 400);
+        }
+
+        if ($role === 'ROLE_USER') {
+            $user->setRoles([]);
+        }
+        if ($role === 'ROLE_ADMIN') {
+            $user->setRoles(['ROLE_ADMIN']);
+        }
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'User set as admin successfully'], 200);
+    }
+
+
+
     #[Route('/register', name: 'api_users_register', methods: ['POST'])]
     public function register(
         Request $request,

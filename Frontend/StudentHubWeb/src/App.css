@@ -55,6 +55,7 @@ html,
 .app-container {
   width: 100vw;
   min-height: 100vh;
+  max-height: 100vh;
   max-width: none;
   margin: 0;
   padding: 0;
@@ -63,7 +64,7 @@ html,
   background: #F5F4F8;
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: stretch;
   overflow-x: hidden;
 }
@@ -145,8 +146,8 @@ html,
 /* Main content area with proper spacing */
 .main-content {
   flex: 1;
-  padding: 2rem;
-  width: 100%;
+  padding: 1rem;
+  width: 90%;
   box-sizing: border-box;
   background: #F5F4F8;
   color: #23244A;
