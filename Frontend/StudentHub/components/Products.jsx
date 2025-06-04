@@ -132,17 +132,17 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 <View style={styles.topBarRow}>
                     <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
                     <View style={styles.topBarIcons}>
-                        <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
-                            <Icon name="plus" type="feather" size={34} color="#fff"/>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
-                            <Icon name="search" size={34} color="#fff" />
-                        </TouchableOpacity>
                         <TouchableOpacity onPress={tempLogout}>
                             <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
                         </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
+                            <Icon name="plus" type="feather" size={34} color="#fff"/>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditProduct')}>
+                            <Icon name="cog" type="material-community" size={34} color="#fff" />
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
-                            <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            <Icon name="chat" type="material-community" size={32} color="#fff"/>
                         </TouchableOpacity>
                     </View>
                 </View>
