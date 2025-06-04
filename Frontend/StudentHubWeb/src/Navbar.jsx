@@ -18,6 +18,14 @@ const Navbar = ({ user, onLogout }) => {
       <div className='navbar-middle'>
         <ul>
           <li>
+            <Link
+              to="/" 
+              className={isActive('/dashboard') ? 'active' : ''}
+            >
+              Dashboard
+            </Link>
+          </li>
+          <li>
             <Link 
               to="/users" 
               className={isActive('/users') ? 'active' : ''}
