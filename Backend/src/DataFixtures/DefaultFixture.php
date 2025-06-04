@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Posts;
 use App\Entity\Users;
 use App\Entity\Products;
+use App\Entity\Forums;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -123,6 +124,84 @@ class DefaultFixture extends Fixture
         $post->setUpdatedAt(new \DateTime('2024-05-16T12:00:00'));
 
         $manager->persist($post);
+        $manager->flush();
+
+        $forumCategories = ["aap", "banketstaaf", "Vlaflip", "Tech", "Overig"];
+        $forumTitles = [
+            "Wat is je favoriete snack?",
+            "Tips voor Tech studenten",
+            "Vlaflip: recept gezocht!",
+            "Aap in de collegezaal?",
+            "Banketstaaf of kerststol?",
+            "Tech gadgets 2025",
+            "Overig: alles mag hier",
+            "Wie houdt er van kaas?",
+            "Beste studietip ooit",
+            "Hoe motiveer jij jezelf?"
+        ];
+        $forumContents = [
+            "Laat hieronder weten wat jouw favoriete snack is!",
+            "Welke tips heb jij voor nieuwe tech studenten?",
+            "Wie heeft een goed recept voor vlaflip?",
+            "Er liep vandaag een aap door de collegezaal, iemand gezien?",
+            "Wat vinden jullie lekkerder: banketstaaf of kerststol?",
+            "Welke gadgets gebruik jij voor school?",
+            "Plaats hier alles wat niet in een andere categorie past.",
+            "Kaas is leven. Eens of oneens?",
+            "Deel jouw beste studietip!",
+            "Hoe blijf jij gemotiveerd tijdens het studeren?"
+        ];
+
+        for ($i = 0; $i < 30; $i++) {
+            $forum = new Forums();
+            $forum->setUserId($users[array_rand($users)]);
+            $forum->setTitle($forumTitles[$i % count($forumTitles)]);
+            $forum->setContent($forumContents[$i % count($forumContents)]);
+            $forum->setCreatedAt(new \DateTime($dates[array_rand($dates)]));
+            $forum->setCategory($forumCategories[$i % count($forumCategories)]);
+            $forum->setImage('/uploads/' . $photos[array_rand($photos)]);
+
+            // Forum likes/dislikes (beide users stemmen random)
+            $forumLikes = [];
+            $forumDislikes = [];
+            foreach ($users as $user) {
+                if (rand(0, 1)) {
+                    $forumLikes[] = $user->getId();
+                } else {
+                    $forumDislikes[] = $user->getId();
+                }
+            }
+
+            // Replies met likes/dislikes per reply
+            $replies = [];
+            for ($r = 0; $r < rand(1, 3); $r++) {
+                $replyUser = $users[array_rand($users)];
+                $replyUpvotes = [];
+                $replyDownvotes = [];
+                foreach ($users as $user) {
+                    if (rand(0, 1)) {
+                        $replyUpvotes[] = $user->getId();
+                    } else {
+                        $replyDownvotes[] = $user->getId();
+                    }
+                }
+                $replies[] = [
+                    'user_name' => $replyUser->getFullName(),
+                    'user_id' => $replyUser->getId(),
+                    'created_at' => (new \DateTime($dates[array_rand($dates)]))->format('Y-m-d H:i:s'),
+                    'content' => 'Reply van ' . $replyUser->getFullName(),
+                    'upvotes' => $replyUpvotes,
+                    'downvotes' => $replyDownvotes,
+                ];
+            }
+
+            $forum->setReplies($replies);
+            $forum->setLikes($forumLikes);
+            $forum->setDislikes($forumDislikes);
+
+            $manager->persist($forum);
+        }
+
         $manager->flush();
     }
 }

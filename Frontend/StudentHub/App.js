@@ -17,6 +17,7 @@ import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
+import TipsFeed from "./components/TipsFeed";
 
 
 const Stack = createStackNavigator();
@@ -47,10 +48,10 @@ function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
       <Tab.Screen name="BountyBoard">
-        {props => <BountyBoard {...props} token={token} user={user} />}
+        {props => <FaqPage {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="AddPost">
-        {props => <AddPost {...props} token={token} user={user} />}
+        {props => <TipsFeed {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
         {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
