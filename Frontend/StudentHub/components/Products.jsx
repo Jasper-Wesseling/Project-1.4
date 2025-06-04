@@ -138,7 +138,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                         <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
                             <Icon name="plus" type="feather" size={34} color="#fff"/>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('EditProduct')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditProducts')}>
                             <Icon name="cog" type="material-community" size={34} color="#fff" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>

@@ -66,7 +66,57 @@ class ProductsController extends AbstractController
                ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        
+        $products = $qb->getQuery()->getResult();
+
+        $productsArray = [];
+        foreach ($products as $product) {
+            $productsArray[] = [
+                'id' => $product->getId(),
+                'title' => $product->getTitle(),
+                'description' => $product->getDescription(),
+                'price' => $product->getPrice(),
+                'study_tag' => $product->getStudyTag(),
+                'status' => $product->getStatus(),
+                'wishlist' => $product->isWishlist(),
+                'photo' => $product->getPhoto(),
+                'created_at' => $product->getCreatedAt() ? $product->getCreatedAt()->format('Y-m-d H:i:s') : null,
+                'updated_at' => $product->getUpdatedAt() ? $product->getUpdatedAt()->format('Y-m-d H:i:s') : null,
+                'user_id' => $product->getUserId() ? $product->getUserId()->getId() : null,
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $product->getUpdatedAt())->days,
+                'product_username' => $product->getUserId()->getFullName()
+            ];
+        }
+
+        return new JsonResponse($productsArray, 200);
+    }
+
+
+    #[Route('/get/fromCurrentUser', name: 'api_products_get_from_current_user', methods: ['GET'])]
+    public function getPreviewProductsFromUser(Request $request, ProductsRepository $productsRepository, UsersRepository $usersRepository): Response
+    {
+        $page = max(1, (int)$request->query->get('page', 1));
+        $limit = 20;
+        $offset = ($page - 1) * $limit;
+
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
+        $search = $request->query->get('search', '');
+
+        $qb = $productsRepository->createQueryBuilder('p')
+            ->where('p.user_id = :user')
+            ->setParameter('user', $user->getId())
+            ->orderBy('p.created_at', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        if ($search) {
+            $qb->andWhere('LOWER(p.title) LIKE :search')
+               ->setParameter('search', '%' . strtolower($search) . '%');
+        }
 
         $products = $qb->getQuery()->getResult();
 
