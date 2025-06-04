@@ -287,8 +287,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFC83A'
     },
     scrollViewContent: {
-        paddingTop: 280, // 100 topbar + 150 header + margin
-        paddingBottom: 80,
+        paddingTop: 260, // 100 topbar + 150 header + margin
+        paddingBottom: 0,
     },
     loadingText: {
         paddingTop: 300,
