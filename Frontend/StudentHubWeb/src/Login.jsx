@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './App.css';
+import './Login.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,15 +17,15 @@ function Login({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
       });
-      if (!res.ok) throw new Error('Login failed');
-      const data = await res.json();
-      const jwt = data.token || data.access_token;      if (!jwt) throw new Error('No token received');
+      if (!res.ok) throw new Error('Login failed');      const data = await res.json();
+      const jwt = data.token || data.access_token;
+      if (!jwt) throw new Error('No token received');
       const userRes = await fetch(`${API_URL}/api/users/get`, {
         headers: { Authorization: `Bearer ${jwt}` },
       });
       if (!userRes.ok) throw new Error('User fetch failed');
       const userObj = await userRes.json();
-      if (userObj.role !== 'ROLE_ADMIN') {
+      if (!userObj.roles.includes('ROLE_ADMIN')) {
         throw new Error('Wrong Permissions');
       }
       onLogin(jwt, userObj);

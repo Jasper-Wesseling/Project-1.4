@@ -82,16 +82,27 @@ class UsersController extends AbstractController
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 404);
         }
-        if (user->isBanned()) {
-            return new JsonResponse(['error' => 'User is already banned'], 400);
-        }
         
+        if ($data['type'] === false) {
+            if (!$user->isDisabled()) {
+                return new JsonResponse(['error' => 'User is already enabled'], 400);
+            }
+            $user->setDisabled($data['type']);
+            $entityManager->persist($user);
+            $entityManager->flush();
+            return new JsonResponse(['message' => 'User unbanned successfully'], 200);
+        }
+        if ($data['type'] === true) {
+            if ($user->isDisabled()) {
+                return new JsonResponse(['error' => 'User is already disabled'], 400);
+            }
+            $user->setDisabled($data['type']);
+            $entityManager->persist($user);
+            $entityManager->flush();
+            return new JsonResponse(['error' => 'User banned successfully'], 200);
+        }
 
-        $user->setDisabled(true);
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        return new JsonResponse(['message' => 'User banned successfully'], 200);
+        return new JsonResponse(['message' => 'Something went wrong'], 400);
     }
 
     #[Route('/admin/role', name: 'api_users_admin_role', methods: ['PUT'])]

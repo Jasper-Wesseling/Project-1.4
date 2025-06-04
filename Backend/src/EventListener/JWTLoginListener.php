@@ -10,8 +10,15 @@ class JWTLoginListener
     {
         $user = $event->getUser();
 
-        if ($user->isDisabled()) {
+        if (method_exists($user, 'isDisabled') && $user->isDisabled()) {
+            $data = [
+            'error' => 'User account is disabled',
+            ];
+            $event->setData($data);
             return;
         }
+        $data = $event->getData();
+        $data['message'] = 'Authentication successful';
+        $event->setData($data);
     }
 }

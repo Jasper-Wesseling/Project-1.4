@@ -3,7 +3,9 @@ import './App.css';
 import Login from './Login.jsx';
 import Navbar from './Navbar.jsx';
 import UserManagement from './UserManagement.jsx';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; 
+import Bussiness from './Bussiness.jsx';
+import Dashboard from './Dashboard.jsx';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '');
@@ -40,11 +42,11 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <Navbar user={user} onLogout={handleLogout} />
-        <div className="main-content">
+        <Navbar user={user} onLogout={handleLogout} />        <div className="main-content">
           <Routes>
-            <Route path="/" element={<div>Dashboard - Home page (protected)</div>} />
+            <Route path="/" element={<Dashboard user={user} />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/bussiness" element={<Bussiness />} />
             <Route path="/events" element={<div>Events Management (coming soon)</div>} />
             <Route path="/posts" element={<div>Posts Management (coming soon)</div>} />
           </Routes>
