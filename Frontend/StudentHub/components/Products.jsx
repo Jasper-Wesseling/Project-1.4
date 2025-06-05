@@ -8,9 +8,10 @@ import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from 'expo-secure-store';
 import ChatOverview from "./ChatOverview";
+import { hasRole } from "../utils/roleUtils.js";
 
 // Accept token, user, and onLogout as props
-export default function Products({ navigation, token, user, onLogout, setUserToChat }) {
+export default function Products({ navigation, token, user, onLogout }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -127,7 +128,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                     <View style={styles.topBarRow}>
                         <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
                         <View style={styles.topBarIcons}>
-                            <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
+                            <TouchableOpacity onPress={() => navigation.navigate('AddProduct')} disabled={hasRole(user, 'ROLE_TEMP')}>
                                 <Icon name="plus" type="feather" size={34} color="#fff"/>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
@@ -136,9 +137,10 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                             <TouchableOpacity onPress={tempLogout}>
                                 <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
-                                <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')} disabled={hasRole(user, 'ROLE_TEMP')}>
+                                <Icon name="chatbubble-ellipses-outline" type="ionicon" size={32} color="#fff"/>
                             </TouchableOpacity>
+
                         </View>
                     </View>
                 </View>

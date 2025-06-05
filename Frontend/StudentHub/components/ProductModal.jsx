@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { API_URL } from '@env';
+import { hasRole } from "../utils/roleUtils";
 
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName }) {
     const [showOverige, setShowOverige] = useState(false);
@@ -52,7 +53,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         {/* Buttons */}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                            <TouchableOpacity disabled={hasRole(user, 'ROLE_TEMP')} style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
                         </View>
                         {/* Details */}
                         <Text style={styles.sectionTitle}>Details</Text>
