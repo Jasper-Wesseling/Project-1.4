@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { API_URL } from '@env';
 
-export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName }) {
+export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user }) {
     const [showOverige, setShowOverige] = useState(false);
     const [showReviews, setShowReviews] = useState(false);
     const [fullscreenImg, setFullscreenImg] = useState(false);
@@ -44,15 +44,26 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             <Text style={styles.price}>{formatPrice(product.price)}</Text>
                             <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} days ago</Text></View>
                         </View>
-                        {/* Stars and Reviews */}
-                        <View style={styles.starsRow}>
-                            <Text style={styles.stars}>★★★★★</Text>
-                            <Text style={styles.reviewCount}>110 Reviews</Text>
-                        </View>
+                        
                         {/* Buttons */}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
                             <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                        </View>
+                        {/* Seller Info - improved */}
+                        <Text style={styles.sectionTitle}>Seller info</Text>
+                        <View style={styles.sellerContainer}>
+                            <View style={styles.sellerRow}>
+                                <Image
+                                    source={product.avatar_url ? { uri: API_URL + product.avatar_url } : { uri: 'https://placecats.com/300/200' }}
+                                    style={styles.sellerImg}
+                                />
+                                <Text style={styles.sellerName}>{product.product_username}</Text>
+                            </View>
+                            <View style={styles.sellerRatingRow}>
+                                <Text style={styles.stars}>★★★★★</Text>
+                                <Text style={styles.sellerRatingText}>Seller rating (coming soon)</Text>
+                            </View>
                         </View>
                         {/* Details */}
                         <Text style={styles.sectionTitle}>Details</Text>
@@ -282,5 +293,49 @@ const styles = StyleSheet.create({
         width: '95%',
         height: '80%',
         borderRadius: 16,
+    },
+    sellerContainer: {
+        width: '100%',
+        backgroundColor: '#f9f9f9',
+        borderRadius: 12,
+        padding: 16,
+        marginTop: 16,
+        marginBottom: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    sellerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    sellerImg: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        marginRight: 8,
+        backgroundColor: '#eee',
+    },
+    sellerLabel: {
+        fontWeight: 'bold',
+        color: '#222',
+        fontSize: 14,
+        marginRight: 4,
+    },
+    sellerName: {
+        color: '#2A4BA0',
+        fontSize: 14,
+    },
+    sellerRatingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    sellerRatingText: {
+        color: '#888',
+        fontSize: 14,
+        marginLeft: 4,
     },
 });

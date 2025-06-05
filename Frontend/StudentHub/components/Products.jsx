@@ -225,6 +225,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 onClose={() => setModalVisible(false)}
                 formatPrice={formatPrice}
                 navigation={navigation}
+                user={user}
                 setUserToChat={setUserToChat}
                 productUser={selectedProduct?.product_user_id}
                 productUserName={selectedProduct?.product_username}
