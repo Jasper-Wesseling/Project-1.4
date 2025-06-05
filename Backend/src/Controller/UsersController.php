@@ -125,7 +125,7 @@ class UsersController extends AbstractController
     }
 
     #[Route('/get', name: 'api_users_get', methods: ['GET'])]
-    public function get(UsersRepository $usersRepository): Response
+    public function get(UsersRepository $usersRepository, Request $request): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
@@ -136,6 +136,14 @@ class UsersController extends AbstractController
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 400);
         }
+
+        $avatarUrl = $user->getAvatarUrl();
+        if ($avatarUrl && str_starts_with($avatarUrl, '/')) {
+            $avatarUrl = $request->getSchemeAndHttpHost() . $avatarUrl;
+        } elseif (!$avatarUrl) {
+            $avatarUrl = $request->getSchemeAndHttpHost() . '/uploads/avatar-placeholder.png';
+        }
+
         $usersData = [
             'id' => $user->getId() ? $user->getId() : null,
             'email' => $user->getEmail(),
@@ -143,7 +151,7 @@ class UsersController extends AbstractController
             'role' => $user->getRole(),
             'full_name' => $user->getFullName(),
             'bio' => $user->getBio(),
-            'avatar_url' => $user->getAvatarUrl(),
+            'avatar_url' => $avatarUrl,
             'interests' => $user->getInterests(),
             'study_program' => $user->getStudyProgram(),
             'language' => $user->getLanguage(),
@@ -154,5 +162,37 @@ class UsersController extends AbstractController
         return new JsonResponse($usersData, 200);
     }
 
+    #[Route('/getbyid/{id}', name: 'api_users_getbyid', methods: ['GET'])]
+    public function getById(UsersRepository $usersRepository, int $id, Request $request): Response
+    {
+        $user = $usersRepository->find($id);
 
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        $avatarUrl = $user->getAvatarUrl();
+        if ($avatarUrl && str_starts_with($avatarUrl, '/')) {
+            $avatarUrl = $request->getSchemeAndHttpHost() . $avatarUrl;
+        } elseif (!$avatarUrl) {
+            $avatarUrl = $request->getSchemeAndHttpHost() . '/uploads/avatar-placeholder.png';
+        }
+
+        $usersData = [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            'role' => $user->getRole(),
+            'full_name' => $user->getFullName(),
+            'bio' => $user->getBio(),
+            'avatar_url' => $avatarUrl,
+            'interests' => $user->getInterests(),
+            'study_program' => $user->getStudyProgram(),
+            'language' => $user->getLanguage(),
+            'theme' => $user->getTheme(),
+            'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
+        ];
+
+        return new JsonResponse($usersData, 200);
+    }
 }

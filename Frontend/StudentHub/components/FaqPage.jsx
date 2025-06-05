@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity, Appearance } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Icon } from "react-native-elements";
 import { themes } from "./LightDarkComponent";
@@ -112,7 +112,7 @@ export default function FaqPage({ token, user, theme, setTheme }) {
       {/* Sticky zoekbalk + FAQ titel, schuift mee omhoog */}
       <Animated.View style={[styles.stickyBar, { marginTop: stickyBarMarginTop }]}>
         <View style={styles.searchBarInner}>
-          <Feather name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
+          <Icon type="Feather" name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
           <TextInput
             placeholder="Search Help"
             value={search}
