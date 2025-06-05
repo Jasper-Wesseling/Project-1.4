@@ -44,6 +44,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
           if (route.name === "BusinessPage") return <Icon name="briefcase" type="feather" color={color} size={size} />;
           if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
           if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
+          if (route.name === "Frontpage") return <Icon name="home" type="feather" color={color} size={size} />;
         },
       })}
     >
@@ -68,6 +69,9 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
       </Tab.Screen>
       <Tab.Screen name="Profile">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
+      </Tab.Screen>
+      <Tab.Screen name="Frontpage">
+        {props => <Frontpage {...props} token={token} user={user} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
