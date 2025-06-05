@@ -126,6 +126,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
     private ?Profile $profile = null;
 
+    #[ORM\Column(nullable: false)]
+    private ?bool $disabled = false;
+
 
 
     public function getProfile(): ?Profile
@@ -576,6 +579,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
                 $widgetsUser->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isDisabled(): ?bool
+    {
+        return $this->disabled;
+    }
+
+    public function setDisabled(bool $disabled): static
+    {
+        $this->disabled = $disabled;
 
         return $this;
     }

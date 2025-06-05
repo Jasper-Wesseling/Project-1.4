@@ -1,0 +1,311 @@
+/* ===== MODERN NAVBAR STYLING ===== */
+.navbar {
+  width: 280px;
+  min-width: 280px;
+  height: 100vh;
+  background: linear-gradient(180deg, #2A4BA0 0%, #1a365d 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+  pointer-events: none;
+}
+
+/* ===== NAVBAR SECTIONS ===== */
+.navbar-top {
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.navbar-top h2 {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-top button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.navbar-top button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-top hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  margin: 1.5rem 0 0 0;
+}
+
+.navbar-middle {
+  flex: 1;
+  padding: 1.5rem 0;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+}
+
+.navbar-middle ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navbar-middle li {
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-middle a {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  position: relative;
+  margin: 0 0.5rem;
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.navbar-middle a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #ff6b35 0%, #f7931e 100%);
+  border-radius: 0 2px 2px 0;
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+  transform-origin: center;
+}
+
+.navbar-middle a:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.navbar-middle a:hover::before {
+  transform: scaleY(1);
+}
+
+.navbar-middle a.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  border-left-color: #ff6b35;
+  font-weight: 600;
+}
+
+.navbar-middle a.active::before {
+  transform: scaleY(1);
+}
+
+/* Add icons to navigation items */
+.navbar-middle a[href="/users"]::after {
+  content: '👥';
+  font-size: 1.1rem;
+  margin-left: auto;
+}
+
+.navbar-middle a[href="/bussiness"]::after {
+  content: '🏢';
+  font-size: 1.1rem;
+  margin-left: auto;
+}
+
+.navbar-middle a[href="/events"]::after {
+  content: '📅';
+  font-size: 1.1rem;
+  margin-left: auto;
+}
+
+.navbar-middle a[href="/posts"]::after {
+  content: '📝';
+  font-size: 1.1rem;
+  margin-left: auto;
+}
+
+.navbar-bottom {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.navbar-bottom hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  margin: 0 0 1.5rem 0;
+}
+
+.navbar-bottom p {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.navbar-bottom p::before {
+  content: '🎓';
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+  .navbar {
+    width: 240px;
+    min-width: 240px;
+  }
+  
+  .navbar-top {
+    padding: 1.5rem 1rem;
+  }
+  
+  .navbar-middle a {
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .navbar-bottom {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    width: 100%;
+    height: auto;
+    min-width: unset;
+    flex-direction: row;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar-top {
+    display: none;
+  }
+  
+  .navbar-middle {
+    flex: 1;
+    padding: 0;
+  }
+  
+  .navbar-middle ul {
+    flex-direction: row;
+    height: 70px;
+    align-items: center;
+    gap: 0;
+  }
+  
+  .navbar-middle li {
+    flex: 1;
+  }
+  
+  .navbar-middle a {
+    flex-direction: column;
+    text-align: center;
+    padding: 0.5rem;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-top: 4px solid transparent;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+  }
+  
+  .navbar-middle a::before {
+    display: none;
+  }
+  
+  .navbar-middle a::after {
+    margin: 0;
+    order: -1;
+    font-size: 1.2rem;
+  }
+  
+  .navbar-middle a:hover {
+    transform: none;
+    border-top-color: #ff6b35;
+  }
+  
+  .navbar-middle a.active {
+    border-left: none;
+    border-top-color: #ff6b35;
+  }
+  
+  .navbar-bottom {
+    display: none;
+  }
+}
+
+/* ===== SMOOTH SCROLLBAR FOR NAVBAR ===== */
+.navbar-middle::-webkit-scrollbar {
+  width: 4px;
+}
+
+.navbar-middle::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.navbar-middle::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.navbar-middle::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
