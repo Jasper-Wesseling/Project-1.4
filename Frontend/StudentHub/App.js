@@ -1,3 +1,4 @@
+import { useColorScheme } from "react-native";
 import './i18n';
 import React, { useState, useEffect, useRef  } from "react";
 import { NavigationContainer } from '@react-navigation/native';
@@ -15,6 +16,8 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import LightDarkToggle, { themes } from './components/LightDarkComponent';
+import { API_URL } from '@env';
 import BusinessPage from './components/businessPage';
 import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
@@ -23,15 +26,18 @@ import ChatOverview from "./components/ChatOverview";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-
-function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
+function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserToChat }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#2A4BA0",
-        tabBarInactiveTintColor: "#888",
-        tabBarStyle: { height: 60, paddingBottom: 8 },
+        tabBarActiveTintColor: theme?.tabBarActive || "#2A4BA0",
+        tabBarInactiveTintColor: theme?.tabBarInactive || "#888",
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 8,
+          backgroundColor: theme?.tabBarBg || "#fff", // tabbar achtergrond
+        },
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
@@ -42,10 +48,12 @@ function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
       })}
     >
       <Tab.Screen name="Products">
-        {props => <Products {...props} token={token} user={user} onLogout={onLogout} setUserToChat={setUserToChat}/>}
+
+        {props => <Products {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
+
       </Tab.Screen>
       <Tab.Screen name="AddProduct">
-        {props => <AddProduct {...props} token={token} />}
+        {props => <AddProduct {...props} token={token} theme={theme} />}
       </Tab.Screen>
 
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
@@ -56,10 +64,10 @@ function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
         {props => <BountyBoard {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="AddPost">
-        {props => <AddPost {...props} token={token} user={user} />}
+        {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {props => <LightDarkSwitch {...props} onLogout={onLogout} />}
+        {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -85,6 +93,10 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(null);
+  const [systemDefault, setSystemDefault] = useState(false); 
+
+  const colorScheme = useColorScheme();
   const navigationRef = useRef();
 
   // Load token from SecureStore on mount
@@ -112,7 +124,42 @@ export default function App() {
     })();
   }, []);
 
-  // Save token and user to SecureStore/state on login
+  // Theme ophalen van backend
+  useEffect(() => {
+    async function fetchTheme() {
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.theme === "dark" || data.theme === "light") {
+          setTheme(themes[data.theme]);
+          setSystemDefault(false);
+        } else if (data.theme === "system" || data.theme === null) {
+          setTheme(null); // theme is null → volg systeem
+          setSystemDefault(true);
+        } else {
+          setTheme(null);
+          setSystemDefault(true);
+        }
+      } catch (e) {
+        setTheme(null);
+        setSystemDefault(true);
+      }
+    }
+    fetchTheme();
+  }, [token]);
+
+  // Theme updaten bij system default wissel
+  useEffect(() => {
+    if (systemDefault) {
+      setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
+    }
+  }, [colorScheme, systemDefault]);
+
+  // Save token and user to Keychain/state on login
+
   const handleLogin = async (newToken, userObj) => {
     setToken(newToken);
     setUser(userObj);
@@ -160,6 +207,11 @@ export default function App() {
             </Stack.Screen>
           </>
         ) : (
+
+          <Stack.Screen name="Main">
+            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} themes={themes}/>}
+          </Stack.Screen>
+
           <>
             <Stack.Screen name="Main">
               {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
@@ -174,6 +226,7 @@ export default function App() {
               {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
           </>
+
         )}
 
       </Stack.Navigator>
