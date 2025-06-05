@@ -15,9 +15,10 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import BusinessPage from './components/businessPage';
+import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
-
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -34,7 +35,7 @@ function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
-          if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
+          if (route.name === "BusinessPage") return <Icon name="briefcase" type="feather" color={color} size={size} />;
           if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
           if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
         },
@@ -46,6 +47,11 @@ function MainTabs({ token, user, onLogout, userToChat, setUserToChat }) {
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} />}
       </Tab.Screen>
+
+      <Tab.Screen name="BountyBoard" component={BountyBoard} />
+
+      <Tab.Screen name="BusinessPage" component={BusinessPage} />
+
       <Tab.Screen name="BountyBoard">
         {props => <BountyBoard {...props} token={token} user={user} />}
       </Tab.Screen>
@@ -156,6 +162,9 @@ export default function App() {
         ) : (
           <>
             <Stack.Screen name="Main">
+              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
+            </Stack.Screen>
+            <Stack.Screen name="CreateEvent" component={CreateEvent} />
               {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
