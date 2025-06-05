@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView, TextInput } from "react-native";
 
-export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user }) {
+export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply }) {
     const [loading, setLoading] = useState(false);
     const [localTip, setLocalTip] = useState(tip);
+    const [replyText, setReplyText] = useState("");
+    const [sendingReply, setSendingReply] = useState(false);
 
     // Synchroniseer lokale tip met prop-tip bij openen of tip-wijziging
     useEffect(() => {
@@ -58,180 +60,296 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
         }
     };
 
+    // Voeg deze functie toe:
+    const handleAddReply = async () => {
+        if (!replyText.trim()) return;
+        setSendingReply(true);
+        if (typeof onAddReply === "function") {
+            const updatedTip = await onAddReply(replyText);
+            if (updatedTip) {
+                setLocalTip(updatedTip);
+                setReplyText("");
+            }
+        }
+        setSendingReply(false);
+    };
+
     return (
         <Modal
             visible={visible}
+            transparent={true}
             animationType="slide"
-            transparent={false}
             onRequestClose={onClose}
         >
-            <View style={styles.fullscreen}>
-                {loading && (
-                    <View style={{
-                        ...StyleSheet.absoluteFillObject,
-                        backgroundColor: "rgba(255,255,255,0.7)",
-                        zIndex: 10,
-                        justifyContent: "center",
-                        alignItems: "center"
-                    }}>
-                        <ActivityIndicator size="large" color="#2A4BA0" />
-                    </View>
-                )}
-                <ScrollView scrollEnabled={!loading}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.postedBy}>
-                            Geplaatst door <Text style={{ fontWeight: "bold" }}>{localTip.user_name}</Text>
-                        </Text>
-                        <Text style={styles.timeAgo}>{getTimeAgo(localTip.created_at)}</Text>
-                    </View>
-                    {/* Title */}
-                    <Text style={styles.title}>{localTip.title}</Text>
-                    {/* Image */}
-                    {localTip.image && (
-                        <Image source={{ uri: localTip.image }} style={styles.image} resizeMode="contain" />
+            <SafeAreaView style={styles.overlay}>
+                <View style={styles.card}>
+                    {/* Close Button */}
+                    <TouchableOpacity style={styles.backButton} onPress={onClose}>
+                        <View style={styles.backCircle}>
+                            <Text style={styles.backArrow}>←</Text>
+                        </View>
+                    </TouchableOpacity>
+                    {loading && (
+                        <View style={styles.loadingOverlay}>
+                            <ActivityIndicator size="large" color="#2A4BA0" />
+                        </View>
                     )}
-                    {/* Content */}
-                    <Text style={styles.content}>{localTip.content}</Text>
-                    {/* Like/Dislike post */}
-                    <View style={styles.replyActions}>
-                        <TouchableOpacity onPress={handleLikePress} disabled={loading}>
-                            <Text style={[
-                                styles.replyAction,
-                                hasLiked ? { color: "#2A4BA0", fontWeight: "bold" } : { color: "#888" }
-                            ]}>
-                                ⬆ {localTip.likes?.length || 0}
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDislikePress} disabled={loading}>
-                            <Text style={[
-                                styles.replyAction,
-                                hasDisliked ? { color: "#C00", fontWeight: "bold" } : { color: "#888" }
-                            ]}>
-                                ⬇ {localTip.dislikes?.length || 0}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                    {/* Replies */}
-                    <View style={{ marginTop: 16, marginBottom: 32 }}>
-                        {Array.isArray(localTip.replies) && localTip.replies.length > 0 ? (
-                            localTip.replies.map((reply, idx) => {
-                                const replyLiked = reply.upvotes?.includes(currentUserId);
-                                const replyDisliked = reply.downvotes?.includes(currentUserId);
-
-                                const handleReplyLikePress = async () => {
-                                    if (typeof onReplyLike === "function") {
-                                        setLoading(true);
-                                        const updatedTip = await onReplyLike(idx, replyLiked ? "undo" : "like");
-                                        if (updatedTip) setLocalTip(updatedTip);
-                                        setLoading(false);
-                                    }
-                                };
-                                const handleReplyDislikePress = async () => {
-                                    if (typeof onReplyDislike === "function") {
-                                        setLoading(true);
-                                        const updatedTip = await onReplyDislike(idx, replyDisliked ? "undo" : "dislike");
-                                        if (updatedTip) setLocalTip(updatedTip);
-                                        setLoading(false);
-                                    }
-                                };
-
-                                return (
-                                    <View key={idx} style={styles.replyBox}>
-                                        <Text style={styles.replyUser}>
-                                            <Text style={{ fontWeight: "bold" }}>{reply.user_name || "Username"}</Text>
-                                            {"  "}
-                                            <Text style={styles.replyTime}>{getTimeAgo(reply.created_at)}</Text>
-                                        </Text>
-                                        <Text style={styles.replyContent}>{reply.content || "You can reply here."}</Text>
-                                        <View style={styles.replyActions}>
-                                            <TouchableOpacity onPress={handleReplyLikePress} disabled={loading}>
-                                                <Text style={[
-                                                    styles.replyAction,
-                                                    replyLiked ? { color: "#2A4BA0", fontWeight: "bold" } : { color: "#888" }
-                                                ]}>
-                                                    ⬆ {reply.upvotes?.length || 0}
-                                                </Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity onPress={handleReplyDislikePress} disabled={loading}>
-                                                <Text style={[
-                                                    styles.replyAction,
-                                                    replyDisliked ? { color: "#C00", fontWeight: "bold" } : { color: "#888" }
-                                                ]}>
-                                                    ⬇ {reply.downvotes?.length || 0}
-                                                </Text>
-                                            </TouchableOpacity>
-                                            <Text style={styles.replyAction}>Reply</Text>
-                                            <Text style={styles.replyAction}>Share</Text>
-                                            <Text style={styles.replyAction}>•••</Text>
-                                        </View>
-                                    </View>
-                                );
-                            })
-                        ) : (
-                            <Text style={styles.noReplies}>Nog geen reacties.</Text>
+                    <ScrollView
+                        style={{ width: '100%' }}
+                        contentContainerStyle={{ paddingTop: 48, paddingBottom: 32 }}
+                        showsVerticalScrollIndicator={false}
+                        scrollEnabled={!loading}
+                    >
+                        {/* User avatar & name */}
+                        <View style={styles.headerRow}>
+                            <View style={styles.avatarContainer}>
+                                {localTip.user_img ? (
+                                    <Image source={{ uri: localTip.user_img }} style={styles.avatar} />
+                                ) : (
+                                    <View style={[styles.avatar, { backgroundColor: "#eee" }]} />
+                                )}
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.postedBy}>
+                                    {localTip.user_name}
+                                </Text>
+                                <Text style={styles.timeAgo}>{getTimeAgo(localTip.created_at)}</Text>
+                            </View>
+                        </View>
+                        {/* Image */}
+                        {localTip.image && (
+                            <View style={styles.imageContainer}>
+                                <Image source={{ uri: localTip.image }} style={styles.image} resizeMode="cover" />
+                            </View>
                         )}
-                    </View>
-                </ScrollView>
-                <TouchableOpacity style={styles.closeBtn} onPress={onClose} disabled={loading}>
-                    <Text style={{ color: "#fff", fontWeight: "bold" }}>Sluiten</Text>
-                </TouchableOpacity>
-            </View>
+                        {/* Title */}
+                        <Text style={styles.title}>{localTip.title}</Text>
+                        {/* Content */}
+                        <Text style={styles.content}>{localTip.content}</Text>
+                        {/* Like/Dislike post */}
+                        <View style={styles.buttonRow}>
+                            <TouchableOpacity style={styles.outlineButton} onPress={handleLikePress} disabled={loading}>
+                                <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
+                                    ⬆ {localTip.likes?.length || 0} Like
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.outlineButton} onPress={handleDislikePress} disabled={loading}>
+                                <Text style={[styles.outlineButtonText, hasDisliked && { color: "#C00", fontWeight: "bold" }]}>
+                                    ⬇ {localTip.dislikes?.length || 0} Dislike
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                        {/* Replies */}
+                        <Text style={styles.sectionTitle}>Reacties</Text>
+                        <View style={{ marginBottom: 24 }}>
+                            {Array.isArray(localTip.replies) && localTip.replies.length > 0 ? (
+                                localTip.replies.map((reply, idx) => {
+                                    const replyLiked = reply.upvotes?.includes(currentUserId);
+                                    const replyDisliked = reply.downvotes?.includes(currentUserId);
+
+                                    const handleReplyLikePress = async () => {
+                                        if (typeof onReplyLike === "function") {
+                                            setLoading(true);
+                                            const updatedTip = await onReplyLike(idx, replyLiked ? "undo" : "like");
+                                            if (updatedTip) setLocalTip(updatedTip);
+                                            setLoading(false);
+                                        }
+                                    };
+                                    const handleReplyDislikePress = async () => {
+                                        if (typeof onReplyDislike === "function") {
+                                            setLoading(true);
+                                            const updatedTip = await onReplyDislike(idx, replyDisliked ? "undo" : "dislike");
+                                            if (updatedTip) setLocalTip(updatedTip);
+                                            setLoading(false);
+                                        }
+                                    };
+
+                                    return (
+                                        <View key={idx} style={styles.replyBox}>
+                                            <Text style={styles.replyUser}>
+                                                <Text style={{ fontWeight: "bold" }}>{reply.user_name || "Username"}</Text>
+                                                {"  "}
+                                                <Text style={styles.replyTime}>{getTimeAgo(reply.created_at)}</Text>
+                                            </Text>
+                                            <Text style={styles.replyContent}>{reply.content || "You can reply here."}</Text>
+                                            <View style={styles.replyActions}>
+                                                <TouchableOpacity onPress={handleReplyLikePress} disabled={loading}>
+                                                    <Text style={[styles.replyAction, replyLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
+                                                        ⬆ {reply.upvotes?.length || 0}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={handleReplyDislikePress} disabled={loading}>
+                                                    <Text style={[styles.replyAction, replyDisliked && { color: "#C00", fontWeight: "bold" }]}>
+                                                        ⬇ {reply.downvotes?.length || 0}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    );
+                                })
+                            ) : (
+                                <Text style={styles.noReplies}>Nog geen reacties.</Text>
+                            )}
+                        </View>
+                        {/* Reactie toevoegen */}
+                        <View style={styles.replyInputRow}>
+                            <TextInput
+                                style={styles.replyInput}
+                                placeholder="Typ je reactie..."
+                                value={replyText}
+                                onChangeText={setReplyText}
+                                editable={!sendingReply}
+                            />
+                            <TouchableOpacity
+                                style={styles.replySendBtn}
+                                onPress={handleAddReply}
+                                disabled={sendingReply || !replyText.trim()}
+                            >
+                                <Text style={styles.replySendBtnText}>Verstuur</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </View>
+            </SafeAreaView>
         </Modal>
     );
 }
 
 const styles = StyleSheet.create({
-    fullscreen: {
+    overlay: {
         flex: 1,
-        backgroundColor: "#fff",
-        justifyContent: "flex-start",
+        backgroundColor: '#f4f5f7',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    header: {
+    card: {
+        width: '92%',
+        height: '96%',
+        backgroundColor: '#fff',
+        borderRadius: 28,
+        padding: 24,
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+        position: 'relative',
+    },
+    backButton: {
+        position: 'absolute',
+        top: 18,
+        left: 18,
+        zIndex: 10,
+    },
+    backCircle: {
+        backgroundColor: '#f4f5f7',
+        borderRadius: 20,
+        width: 36,
+        height: 36,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    backArrow: {
+        fontSize: 22,
+        color: '#222',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(255,255,255,0.7)",
+        zIndex: 20,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    headerRow: {
         flexDirection: "row",
         alignItems: "center",
-        paddingTop: 18,
-        paddingHorizontal: 18,
-        gap: 8,
+        width: "100%",
+        marginBottom: 12,
+    },
+    avatarContainer: {
+        marginRight: 12,
+    },
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: "#eee",
     },
     postedBy: {
         color: "#2A4BA0",
-        fontSize: 14,
-        marginRight: 8,
+        fontSize: 16,
+        fontWeight: "bold",
     },
     timeAgo: {
         color: "#888",
         fontSize: 13,
     },
-    title: {
-        fontWeight: "bold",
-        fontSize: 22,
-        color: "#222",
-        marginTop: 2,
-        marginBottom: 8,
-        paddingHorizontal: 18,
+    imageContainer: {
+        marginTop: 8,
+        marginBottom: 16,
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: '#f4f5f7',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
     },
     image: {
-        width: "92%",
-        aspectRatio: 1,
-        backgroundColor: "#ddd",
-        alignSelf: "center",
-        borderRadius: 12,
-        marginBottom: 12,
-        resizeMode: "cover",
+        width: 170,
+        height: 170,
+        borderRadius: 85,
+    },
+    title: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#222',
+        alignSelf: 'flex-start',
+        marginTop: 12,
+        marginBottom: 4,
     },
     content: {
         color: "#222",
         fontSize: 16,
         marginBottom: 16,
-        paddingHorizontal: 18,
+        alignSelf: 'flex-start',
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-between',
+        marginVertical: 16,
+    },
+    outlineButton: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#2A4BA0',
+        borderRadius: 16,
+        paddingVertical: 12,
+        marginHorizontal: 8,
+        alignItems: 'center',
+        backgroundColor: "#fff",
+    },
+    outlineButtonText: {
+        color: '#2A4BA0',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    sectionTitle: {
+        fontWeight: 'bold',
+        color: '#222',
+        fontSize: 16,
+        marginTop: 10,
+        marginBottom: 2,
+        alignSelf: 'flex-start',
     },
     replyBox: {
         borderWidth: 1,
         borderColor: "#D1C4E9",
         borderRadius: 12,
         padding: 12,
-        marginHorizontal: 12,
+        marginHorizontal: 2,
         marginBottom: 16,
         backgroundColor: "#fafaff",
     },
@@ -264,12 +382,33 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginTop: 24,
     },
-    closeBtn: {
-        backgroundColor: "#2A4BA0",
-        borderRadius: 20,
-        paddingVertical: 14,
+    replyInputRow: {
+        flexDirection: "row",
         alignItems: "center",
-        margin: 18,
-        marginTop: 0,
+        marginTop: 8,
+        marginBottom: 8,
+        paddingHorizontal: 2,
+    },
+    replyInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: "#D1C4E9",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        fontSize: 15,
+        backgroundColor: "#fafaff",
+        marginRight: 8,
+    },
+    replySendBtn: {
+        backgroundColor: "#2A4BA0",
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+    },
+    replySendBtnText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 15,
     },
 });
