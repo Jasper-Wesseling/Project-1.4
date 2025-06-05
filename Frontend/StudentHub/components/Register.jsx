@@ -1,14 +1,24 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Animated } from "react-native";
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
 
 export default function Register({ navigation, onLogin }) {
-    const [full_name, setUsername] = useState("");
+    const [full_name, setFullName] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const animatedTranslateY = useRef(new Animated.Value(0)).current;
+
+    const animateTranslateY = (toValue) => {
+        Animated.timing(animatedTranslateY, {
+            toValue,
+            duration: 150,
+            useNativeDriver: true,
+        }).start();
+    };
 
     const handleRegister = async () => {
         setLoading(true);
@@ -77,61 +87,69 @@ export default function Register({ navigation, onLogin }) {
     };
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.topHalf}>
-                    <View style={styles.imagePlaceholder}>
-                        <Image
-                            source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
-                            style={{ width: 180, height: 180, borderRadius: 28 }}
-                            resizeMode="cover"
-                        />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <Animated.View style={[styles.container, { transform: [{ translateY: animatedTranslateY }] }]}>
+                <SafeAreaView style={styles.safeArea}>
+                    <View style={styles.topHalf}>
+                        <View style={styles.imagePlaceholder}>
+                            <Image
+                                source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
+                                style={{ width: 180, height: 180, borderRadius: 28 }}
+                                resizeMode="cover"
+                            />
+                        </View>
                     </View>
+                </SafeAreaView>
+                <View style={styles.bottomHalf}>
+                    <Text style={styles.title}>Register</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Username"
+                        value={full_name}
+                        onChangeText={setFullName}
+                        autoCapitalize="none"
+                        placeholderTextColor="#888"
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        placeholderTextColor="#888"
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                        placeholderTextColor="#888"
+                        onFocus={() => animateTranslateY(-100)}
+                        onBlur={() => animateTranslateY(0)}
+                    />
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleRegister}
+                        disabled={loading}
+                    >
+                        <Text style={styles.buttonText}>{loading ? "Registering..." : "Register"}</Text>
+                        <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.registerLink}
+                        onPress={() => navigation.navigate('Login')}
+                    >
+                        <Text style={styles.registerText}>Already have an account? Login</Text>
+                    </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-            <View style={styles.bottomHalf}>
-                <Text style={styles.title}>Register</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Name"
-                    value={full_name}
-                    onChangeText={setUsername}
-                    autoCapitalize="words"
-                    placeholderTextColor="#888"
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    placeholderTextColor="#888"
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholderTextColor="#888"
-                />
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={handleRegister}
-                    disabled={loading}
-                >
-                    <Text style={styles.buttonText}>{loading ? "Registering..." : "Register"}</Text>
-                    <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.registerLink}
-                    onPress={() => navigation.navigate('Login')}
-                >
-                    <Text style={styles.registerText}>Already have an account? Login</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+            </Animated.View>
+        </TouchableWithoutFeedback>
     );
 }
 
@@ -144,15 +162,15 @@ const styles = StyleSheet.create({
         backgroundColor: "#2A4BA0",
     },
     topHalf: {
-        height: 320, // increased for more space
+        height: 320,
         backgroundColor: "#2A4BA0",
         alignItems: "center",
         justifyContent: "center",
     },
     imagePlaceholder: {
-        width: 240, // increased for more space
-        height: 240, // increased for more space
-        borderRadius: 40, // increased for more space
+        width: 240,
+        height: 240,
+        borderRadius: 40,
         borderWidth: 2,
         borderColor: "#bfc8e6",
         alignItems: "center",
@@ -161,7 +179,7 @@ const styles = StyleSheet.create({
     },
     bottomHalf: {
         backgroundColor: "#fff",
-        marginTop: -24, // less negative so it doesn't overlap the icon
+        marginTop: -24,
         paddingTop: 32,
         alignItems: "center",
         paddingHorizontal: 24,

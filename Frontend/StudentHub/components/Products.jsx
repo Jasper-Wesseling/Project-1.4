@@ -6,9 +6,11 @@ import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
+import * as SecureStore from 'expo-secure-store';
+import ChatOverview from "./ChatOverview";
 
-// Accept token and user as props
-export default function Products({ navigation, token, user }) {
+// Accept token, user, and onLogout as props
+export default function Products({ navigation, token, user, onLogout, setUserToChat }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export default function Products({ navigation, token, user }) {
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&category=${encodeURIComponent(filterValue)}`;
 
-            // Fetch products
+            // Fetch product
             const productsRes = await fetch(API_URL + `/api/products/get${query}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -104,6 +106,13 @@ export default function Products({ navigation, token, user }) {
         return price ? priceFormat.format(price / 100): '';
     }
 
+    // TEMP: Logout function for testing
+    const tempLogout = async () => {
+        if (onLogout) {
+            await onLogout();
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.container}>
@@ -116,7 +125,7 @@ export default function Products({ navigation, token, user }) {
                 {/* Static Top Bar */}
                 <View style={styles.topBar}>
                     <View style={styles.topBarRow}>
-                        <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : null}</Text>
+                        <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
                         <View style={styles.topBarIcons}>
                             <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
                                 <Icon name="plus" type="feather" size={34} color="#fff"/>
@@ -124,7 +133,12 @@ export default function Products({ navigation, token, user }) {
                             <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
                                 <Icon name="search" size={34} color="#fff" />
                             </TouchableOpacity>
-                            <TouchableOpacity><Icon name="bag-outline" type="ionicon" size={32} color="#fff"/></TouchableOpacity>
+                            <TouchableOpacity onPress={tempLogout}>
+                                <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
+                                <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -184,6 +198,9 @@ export default function Products({ navigation, token, user }) {
                     product={selectedProduct}
                     onClose={() => setModalVisible(false)}
                     formatPrice={formatPrice}
+                    navigation={navigation}
+                    productUser={selectedProduct?.user_id}
+                    productUserName={selectedProduct?.product_username}
                 />
             </View>
         </View>
