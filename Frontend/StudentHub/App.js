@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
 import { useColorScheme } from "react-native";
+import './i18n';
+import React, { useState, useEffect, useRef  } from "react";
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -9,7 +10,7 @@ import FaqPage from './components/FaqPage';
 import LightDarkSwitch from './components/LightDarkMode';
 import Login from './components/Login';
 import { Icon } from "react-native-elements";
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 import LoadingScreen from './components/LoadingScreen';
 import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
@@ -17,11 +18,15 @@ import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
 import LightDarkToggle, { themes } from './components/LightDarkComponent';
 import { API_URL } from '@env';
+import BusinessPage from './components/businessPage';
+import CreateEvent from './components/CreateEvent';
+import ProductChat from "./components/ProductChat";
+import ChatOverview from "./components/ChatOverview";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ token, user, onLogout, theme, setTheme }) {
+function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserToChat }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -36,21 +41,30 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
         tabBarIcon: ({ color, size }) => {
           if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
           if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
-          if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
+          if (route.name === "BusinessPage") return <Icon name="briefcase" type="feather" color={color} size={size} />;
           if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
           if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
         },
       })}
     >
       <Tab.Screen name="Products">
-        {props => <Products {...props} token={token} user={user} theme={theme} />}
+
+        {props => <Products {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
+
       </Tab.Screen>
       <Tab.Screen name="AddProduct">
         {props => <AddProduct {...props} token={token} theme={theme} />}
       </Tab.Screen>
+
       <Tab.Screen name="BountyBoard" component={BountyBoard} />
+
+      <Tab.Screen name="BusinessPage" component={BusinessPage} />
+
+      <Tab.Screen name="BountyBoard">
+        {props => <BountyBoard {...props} token={token} user={user} />}
+      </Tab.Screen>
       <Tab.Screen name="AddPost">
-        {props => <FaqPage {...props} token={token} user={user} theme={theme}/>}
+        {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
@@ -59,7 +73,23 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
   );
 }
 
+// Helper to decode JWT and check expiration
+function isJwtExpired(token) {
+  if (!token) return true;
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return true;
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    if (!decoded.exp) return true;
+    // exp is in seconds
+    return Date.now() / 1000 > decoded.exp;
+  } catch (e) {
+    return true;
+  }
+}
+
 export default function App() {
+  const [userToChat, setUserToChat] = useState(null);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,17 +97,28 @@ export default function App() {
   const [systemDefault, setSystemDefault] = useState(false); 
 
   const colorScheme = useColorScheme();
+  const navigationRef = useRef();
 
-  // Load token from Keychain on mount
+  // Load token from SecureStore on mount
   useEffect(() => {
     (async () => {
       try {
-        const creds = await Keychain.getGenericPassword();
-        if (creds && creds.password) {
-          setToken(creds.password);
+        const creds = await SecureStore.getItemAsync("auth");
+        if (creds) {
+          // creds format: token||userJson
+          const [savedToken, savedUserJson] = creds.split("||");
+          // Check if token is expired
+          if (isJwtExpired(savedToken)) {
+            await SecureStore.deleteItemAsync("auth");
+            setToken(null);
+            setUser(null);
+          } else {
+            setToken(savedToken);
+            if (savedUserJson) setUser(JSON.parse(savedUserJson));
+          }
         }
       } catch (e) {
-        // ignore
+        console.log("Error loading credentials from SecureStore:", e);
       }
       setLoading(false);
     })();
@@ -118,23 +159,43 @@ export default function App() {
   }, [colorScheme, systemDefault]);
 
   // Save token and user to Keychain/state on login
+
   const handleLogin = async (newToken, userObj) => {
     setToken(newToken);
     setUser(userObj);
-    await Keychain.setGenericPassword("auth", newToken);
+    try {
+      await SecureStore.setItemAsync("auth", `${newToken}||${JSON.stringify(userObj)}`);
+    } catch (e) {
+      console.log("Error saving token to SecureStore:", e);
+    }
   };
 
-  // Remove token and user from Keychain/state on logout
+  // Remove token and user from SecureStore/state on logout
   const handleLogout = async () => {
     setToken(null);
     setUser(null);
-    await Keychain.resetGenericPassword();
+    try {
+      await SecureStore.deleteItemAsync("auth");
+    } catch (e) {
+      console.log("Error deleting credentials from SecureStore:", e);
+    }
   };
+
+  // Listen for navigation changes to check token expiration
+  useEffect(() => {
+    if (!token) return;
+    const unsubscribe = navigationRef.current?.addListener?.("state", () => {
+      if (isJwtExpired(token)) {
+        handleLogout();
+      }
+    });
+    return unsubscribe;
+  }, [token]);
 
   if (loading) return <LoadingScreen />;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!token ? (
           <>
@@ -146,10 +207,28 @@ export default function App() {
             </Stack.Screen>
           </>
         ) : (
+
           <Stack.Screen name="Main">
             {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} themes={themes}/>}
           </Stack.Screen>
+
+          <>
+            <Stack.Screen name="Main">
+              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
+            </Stack.Screen>
+            <Stack.Screen name="CreateEvent" component={CreateEvent} />
+              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
+            </Stack.Screen>
+            <Stack.Screen name="ProductChat">
+              {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}
+            </Stack.Screen>
+            <Stack.Screen name="ChatOverview">
+              {props => <ChatOverview {...props} token={token} user={user} />}
+            </Stack.Screen>
+          </>
+
         )}
+
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -7,7 +7,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 
-export default function AddPost({ navigation }) {
+export default function AddPost({ navigation, token }) {
     
     const [title, onChangeTitle] = useState('');
     const [description, onChangeDescription] = useState('');
@@ -27,22 +27,8 @@ export default function AddPost({ navigation }) {
             return;
         }
 
-
-
         try {
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
             if (!token) throw new Error("No token received");
-
 
             const response = await fetch(API_URL + '/api/posts/new', {
                 method: 'POST',
@@ -56,6 +42,7 @@ export default function AddPost({ navigation }) {
                     "type": type,
                 }),
             });
+            if (!response.ok) throw new Error("add post failed");
             setLoading(false);
             Alert.alert('Succesfully Created!', '', [{
                 text: 'OK',
