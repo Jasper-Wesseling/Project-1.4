@@ -23,6 +23,7 @@ import BusinessPage from './components/businessPage';
 import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
+import TempAccount from "./components/TempAccount";
 import { hasRole } from "./utils/roleUtils";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -216,6 +217,9 @@ export default function App() {
             <Stack.Screen name="Register">
               {props => <Register {...props} onLogin={handleLogin} />}
             </Stack.Screen>
+            <Stack.Screen name="Temp">
+              {props => <TempAccount {...props} onLogin={handleLogin} />}
+            </Stack.Screen>
           </>
         ) : (
           <>
@@ -223,7 +227,7 @@ export default function App() {
               {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
             </Stack.Screen>
             <Stack.Screen name="CreateEvent" >
-              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
+              {props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
               {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}
@@ -231,6 +235,7 @@ export default function App() {
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
+
           </>
         )}
       </Stack.Navigator>

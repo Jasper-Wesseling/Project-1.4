@@ -24,7 +24,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Regex(
-        pattern: '/@(student\.)?nhlstenden\.com$/',
+        pattern: '/@(student\.)?nhlstenden\.com$|^tmp$/',
         message: 'Only emails ending with @nhlstenden.com or @student.nhlstenden.com are allowed.'
     )]
     private ?string $email = null;

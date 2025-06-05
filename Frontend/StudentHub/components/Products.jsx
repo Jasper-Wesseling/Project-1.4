@@ -226,6 +226,7 @@ export default function Products({ navigation, token, user, onLogout }) {
                     navigation={navigation}
                     productUser={selectedProduct?.user_id}
                     productUserName={selectedProduct?.product_username}
+                    user={user}
                 />
             </View>
         </View>
