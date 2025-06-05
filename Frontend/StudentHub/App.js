@@ -16,13 +16,13 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import Profile from "./components/Profile";
 import LightDarkToggle, { themes } from './components/LightDarkComponent';
 import { API_URL } from '@env';
 import BusinessPage from './components/businessPage';
 import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
-
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -68,6 +68,9 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
+
+        {props => <Profile {...props} token={token} user={user} />}   
+
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Frontpage">
