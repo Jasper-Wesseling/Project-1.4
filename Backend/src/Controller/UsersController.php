@@ -37,7 +37,7 @@ class UsersController extends AbstractController
     ): Response {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['email']) || !isset($data['password'])) {
+        if (!isset($data['email']) || !isset($data['password']) || !isset($data['full_name'])) {
             return new JsonResponse(['error' => 'Missing email or password'], 400);
         }
 
@@ -51,13 +51,20 @@ class UsersController extends AbstractController
         $user->setEmail($data['email']);
         $user->setRole('ROLE_USER'); // Or use $data['role'] if you want to allow custom roles
 
-        $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
+        // Password strength check before hashing
+        $password = $data['password'];
+        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
+            return new JsonResponse([
+                'error' => 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.'
+            ], 400);
+        }
+
+        $hashedPassword = $passwordHasher->hashPassword($user, $password);
         $user->setPassword($hashedPassword);
 
+        $user->setFullName($data['full_name']);
+
         // Optional fields
-        if (isset($data['full_name'])) {
-            $user->setFullName($data['full_name']);
-        }
         if (isset($data['bio'])) {
             $user->setBio($data['bio']);
         }
