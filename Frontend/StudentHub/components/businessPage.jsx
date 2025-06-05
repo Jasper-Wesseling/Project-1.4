@@ -1,70 +1,111 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, View, SafeAreaView, Pressable } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useState, useRef } from "react";
+import { SafeAreaView, View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity, Pressable } from "react-native";
+import { Icon } from "react-native-elements";
+import { API_URL } from '@env';
 import { MaterialIcons } from '@expo/vector-icons';
-import ProductPreview from "./ProductPreview";
-import LoadingScreen from "./LoadingScreen";
 
-export default function Products() {
+export default function BountyBoard({ navigation }) {
     const scrollY = useRef(new Animated.Value(0)).current;
-
-    const [products, setProducts] = useState([]);
+    const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedFilter, setSelectedFilter] = useState(null); // for filter selection
+    // Fetch companies for filters
+    const [filters, setFilters] = useState([]);
+    const [activeFilter, setActiveFilter] = useState(null);
 
-    // State for event
-    const [event, setEvent] = useState(null);
-
-    useEffect(() => {
-        // Login and fetch products ONCE
-        fetch('http://192.168.2.7:8000/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                "username": "jasper.wesseling@student.nhlstenden.com",
-                "password": "wesselingjasper",
-                "full_name": "Jasper Wesseling"
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            const token = data.token || data.access_token;
-            if (token) {
-                fetch('http://192.168.2.7:8000/api/products/get', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
+    // Fetch all companies for filters
+    const fetchCompanies = async () => {
+        try {
+            // Get token first (same as fetchEvents)
+            const loginRes = await fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "username": "jasper.wesseling@student.nhlstenden.com",
+                    "password": "wesselingjasper",
+                    "full_name": "Jasper Wesseling"
                 })
-                .then(res => res.json())
-                .then(products => {
-                    setProducts(products);
-                    setLoading(false);
-                });
+            });
+            if (!loginRes.ok) throw new Error("Login failed");
+            const loginData = await loginRes.json();
+            const token = loginData.token || loginData.access_token;
+            if (!token) throw new Error("No token received");
 
-                // Fetch one event (first event)
-                fetch('http://192.168.2.7:8000/api/events', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                .then(res => res.json())
-                .then(events => {
-                    if (Array.isArray(events) && events.length > 0) {
-                        setEvent(events[0]);
-                    }
-                });
+            // Now fetch companies with Authorization header
+            const res = await fetch(API_URL + '/api/companies/get', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!res.ok) throw new Error('Failed to fetch companies');
+            const companies = await res.json();
+            console.log('Fetched companies:', companies); // Debug log
+            // Use id and name for filters
+            if (Array.isArray(companies) && companies.length > 0) {
+                setFilters(companies.map(c => ({ id: c.id, name: c.name })));
+            } else {
+                setFilters([]);
             }
-        });
-    }, []);
+        } catch (err) {
+            console.error('Error fetching companies:', err); // Debug log
+            setFilters([]);
+        }
+    };
 
-    // Animated header height (from 150 to 0)
+    // Fetch events (filtered by company id if selected)
+    const fetchEvents = async () => {
+        try {
+            const loginRes = await fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    "username": "jasper.wesseling@student.nhlstenden.com",
+                    "password": "wesselingjasper",
+                    "full_name": "Jasper Wesseling"
+                })
+            });
+            if (!loginRes.ok) throw new Error("Login failed");
+            const loginData = await loginRes.json();
+            const token = loginData.token || loginData.access_token;
+            if (!token) throw new Error("No token received");
+
+            // Add filter to events fetch if activeFilter is set
+            let eventsUrl = API_URL + '/api/events/get';
+            if (activeFilter) {
+                eventsUrl += `?company_id=${activeFilter}`;
+            }
+            const eventsRes = await fetch(eventsUrl, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!eventsRes.ok) throw new Error("Events fetch failed");
+
+            const eventsData = await eventsRes.json();
+            setEvents(eventsData);
+            setLoading(false);
+        } catch (err) {
+            console.error("API error:", err);
+            setLoading(false);
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchCompanies();
+        }, [])
+    );
+    useFocusEffect(
+        useCallback(() => {
+            fetchEvents();
+        }, [activeFilter])
+    );
+
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [150, 0],
-        extrapolate: "clamp",
-    });
-
-    // Animated filter row top position (starts at 100+150, ends at 100)
-    const filterTop = scrollY.interpolate({
-        inputRange: [0, 100],
-        outputRange: [210, 100], // Adjusted to match the header height
         extrapolate: "clamp",
     });
 
@@ -74,18 +115,86 @@ export default function Products() {
         extrapolate: "clamp",
     });
 
-    // Helper: Only enable buttons if opacity > 0.5
-    const [buttonsEnabled, setButtonsEnabled] = useState(false);
-
-    useEffect(() => {
-        const listener = scrollY.addListener(({ value }) => {
-            setButtonsEnabled(value >= 90); // adjust threshold as needed
-        });
-        return () => scrollY.removeListener(listener);
-    }, [scrollY]);
+    // Filter row position (sticky below header)
+    const filterTop = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [250, 100], // 100 is top bar height, 150 is max header height
+        extrapolate: "clamp",
+    });
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.container}>
+            {/* Static Top Bar */}
+            <View style={styles.topBar}>
+                <View style={styles.topBarRow}>
+                    <Text style={styles.topBarText}>Hey, Jasper</Text>
+                    <View style={styles.topBarIcons}>
+                        <TouchableOpacity onPress={() => navigation.navigate('CreateEvent')}>
+                            <Icon name="plus" type="feather" size={30} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="calendar" type="feather" size={30} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="user" type="feather" size={30} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+
+            {/* Animated Header */}
+            <Animated.View style={[styles.header, { height: headerHeight }]}>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Step up,</Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>Take a bounty</Animated.Text>
+            </Animated.View>
+
+            {/* Filter Row (copied from Products.jsx) */}
+            <Animated.View style={[styles.filterRow, { top: filterTop, height: 50, zIndex: 30, backgroundColor: '#fff' }]}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.filterScrollContent}
+                >
+                    {filters && filters.length > 0 ? (
+                        filters.map((filter, i) => (
+                            <TouchableOpacity key={filter.id} onPress={() => setActiveFilter(activeFilter === filter.id ? null : filter.id)}>
+                                <Text style={[styles.filter, activeFilter === filter.id ? styles.activeFilter : null]}>
+                                    {filter.name}
+                                </Text>
+                            </TouchableOpacity>
+                        ))
+                    ) : (
+                        <Text style={{color: '#888', marginLeft: 16}}>No companies found</Text>
+                    )}
+                </ScrollView>
+            </Animated.View>
+
+            {loading ? (
+                <Text style={styles.loadingText}>Loading...</Text>
+            ) : (
+                <Animated.ScrollView
+                    contentContainerStyle={styles.scrollViewContent}
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
+                    {events && events.length > 0 ? (
+                        events.map((event, idx) => (
+                            <View style={styles.eventContainer} key={event.id || idx}>
+                                <Text style={styles.eventTitle}>{event.title}</Text>
+                                <Text style={styles.eventDate}>{event.date}</Text>
+                                <Text style={styles.eventDescription}>{event.description}</Text>
+                            </View>
+                        ))
+                    ) : (
+                        <View style={styles.eventContainer}>
+                            <Text style={styles.eventTitle}>No events found</Text>
+                        </View>
+                    )}
+                </Animated.ScrollView>
+            )}
             {/* Agenda Button */}
             <Pressable
                 style={styles.agendaButton}
@@ -94,105 +203,46 @@ export default function Products() {
                 <Text style={styles.agendaButtonText}>View Agenda</Text>
                 <MaterialIcons name="event" size={20} color="white" />
             </Pressable>
-            <View style={styles.container}>
-                {/* Static Top Bar */}
-                <View style={styles.topBar}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                        <Text style={{ color: "#fff", fontSize: 24, fontWeight: "bold" }}>Hey, Username</Text>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Text style={{ color: "#fff" }}>Icon1</Text>
-                            <Text style={{ color: "#fff" }}>Icon2</Text>
-                        </View>
-                    </View>
-                </View>
-                {/* Animated Header */}
-                <Animated.View style={[styles.header, { height: headerHeight }]}>
-                    <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontWeight: '300',fontSize: 64}}>Discover</Animated.Text>
-                    <Animated.Text style={{opacity: headerOpacity, alignSelf: 'flex-start', color: "white", fontWeight: 'bold', fontSize: 64}}>By Company</Animated.Text>
-                </Animated.View>
-                {/* Sticky Filter Row */}
-                <Animated.View style={[styles.filterRow, { top: filterTop }]}>
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, index) => (
-                        <View key={index} style={styles.dayContainer}>
-                            <View style={styles.dayBlob}>
-                                <Text style={styles.dayText}>{day}</Text>
-                                <Text style={styles.dayNumber}>{index + 1}</Text> 
-                            </View>
-                        </View>
-                    ))}
-                </Animated.View>
-                {/* Event Box from DB */}
-                {event && (
-                    <View style={styles.eventBoxDb}>
-                        <Text style={styles.eventTitle}>{event.title}</Text>
-                        <Text style={styles.eventDate}>{event.date}</Text>
-                        <Text style={styles.eventDescription}>{event.description}</Text>
-                    </View>
-                )}
-                {/* Scrollable Content */}
-                {!loading ? 
-                <Animated.ScrollView
-                    // contentContainerStyle={{ paddingTop: 300 }} // 100(topBar) + 150(header) + 50(filterRow)
-                    onScroll={Animated.event(
-                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                        { useNativeDriver: false }
-                    )}
-                    scrollEventThrottle={16}
-                >
-                    {products.map((product) => (
-                    <ProductPreview key={product.id} product={product} />
-                    ))}
-                </Animated.ScrollView>
-                :
-                <View style={{ paddingTop: 275, alignItems: 'center' }}> {/* Adjusted paddingTop to move events up */}
-                    <View style={styles.eventBox}>
-                        <Text style={styles.eventTitle}>Event 1</Text>
-                        <Text style={styles.eventDescription}>Meeting with Team</Text>
-                    </View>
-                    <View style={styles.eventBox}>
-                        <Text style={styles.eventTitle}>Event 2</Text>
-                        <Text style={styles.eventDescription}>Project Deadline</Text>
-                    </View>
-                    <View style={styles.eventBox}>
-                        <Text style={styles.eventTitle}>Event 3</Text>
-                        <Text style={styles.eventDescription}>Client Presentation</Text>
-                    </View>
-                    <View style={styles.eventBox}>
-                        <Text style={styles.eventTitle}>Event 4</Text>
-                        <Text style={styles.eventDescription}>Workshop</Text>
-                    </View>
-                </View>
-                }
-                
-            </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: "#2A4BA0", 
-    },
     container: {
         flex: 1,
-        backgroundColor: "#fff",
-        marginBottom: -100, // to avoid overlap with agenda button
+        backgroundColor: "#fff"
     },
     topBar: {
         position: "absolute",
         top: 0,
         left: 0,
         right: 0,
-        height: 50,
+        height: 100,
         backgroundColor: "#2A4BA0",
         justifyContent: "center",
+        paddingTop: 25,
         paddingHorizontal: 16,
         zIndex: 20,
     },
+    topBarRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center"
+    },
+    topBarText: {
+        color: "#fff",
+        fontSize: 24,
+        fontWeight: "bold"
+    },
+    topBarIcons: {
+        flexDirection: 'row',
+        width: 125,
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
     header: {
         position: "absolute",
-        top: 50, 
+        top: 100,
         left: 0,
         right: 0,
         backgroundColor: '#2A4BA0',
@@ -201,35 +251,77 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         zIndex: 10,
     },
+    headerText: {
+        color: "white",
+        fontSize: 64,
+        fontWeight: '300'
+    },
+    headerTextBold: {
+        fontWeight: 'bold',
+    },
     filterRow: {
         position: "absolute",
-        top: 10, 
-        left: "5%", 
-        right: "5%", 
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
         flexDirection: "row",
-        justifyContent: "space-around", 
         alignItems: "center",
-        zIndex: 15,        
-        backgroundColor: "#F9B023", 
-        borderRadius: 20, 
+        zIndex: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
+        gap: 10,
+        flex: 1,
     },
-    dayContainer: {
-        alignItems: "center",
+    filterScrollContent: {
+        alignItems: "center"
     },
-    dayBlob: {
-        borderRadius: 20, 
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        alignItems: "center",
+    filter: {
+        paddingHorizontal: 10,
+        marginHorizontal: 8,
+        paddingVertical: 7,
+        borderWidth: 1,
+        borderColor: 'grey',
+        borderRadius: 100,
     },
-    dayText: {
-        fontSize: 14,
-        fontWeight: "bold",
-        color: "#fff", 
+    activeFilter: {
+        backgroundColor: '#FFC83A'
     },
-    dayNumber: {
-        fontSize: 12,
-        color: "red", 
+    scrollViewContent: {
+        paddingTop: 260, // 100 topbar + 150 header + margin
+        paddingBottom: 0,
+    },
+    loadingText: {
+        paddingTop: 300,
+        fontSize: 24,
+        color: 'black',
+        alignSelf: 'center'
+    },
+    eventContainer: {
+        backgroundColor: '#EAF0FB',
+        borderRadius: 12,
+        padding: 18,
+        marginBottom: 18,
+        marginHorizontal: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    eventTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#2A4BA0',
+        marginBottom: 4,
+    },
+    eventDate: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 8,
+    },
+    eventDescription: {
+        fontSize: 16,
+        color: '#222',
     },
     agendaButton: {
         position: "absolute",
@@ -248,47 +340,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         marginRight: 5,
-    },
-    eventBox: {
-        width: '90%',
-        backgroundColor: '#f0f0f0', // Light gray background
-        padding: 15,
-        marginVertical: 10,
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3, // For Android shadow
-    },
-    eventBoxDb: {
-        width: '90%',
-        alignSelf: 'center',
-        backgroundColor: '#e0eaff',
-        padding: 18,
-        marginTop: 16,
-        marginBottom: 8,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.12,
-        shadowRadius: 6,
-        elevation: 4,
-    },
-    eventTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#2A4BA0',
-    },
-    eventDate: {
-        fontSize: 14,
-        color: '#555',
-        marginTop: 2,
-        marginBottom: 4,
-    },
-    eventDescription: {
-        fontSize: 14,
-        color: '#333',
-        marginTop: 5,
-    },
+        }
 });

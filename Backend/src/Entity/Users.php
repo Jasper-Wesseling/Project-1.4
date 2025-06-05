@@ -38,6 +38,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $role = null;
 
+
+
+
     #[ORM\Column(length: 255)]
     private ?string $full_name = null;
 
@@ -68,12 +71,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTime $updated_at = null;
 
+
     /**
      * @var Collection<int, Products>
      */
     #[ORM\OneToMany(targetEntity: Products::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $products_user;
-
+     
+    /**
+     * @var Collection<int, Posts>
+     */
+    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: Posts::class)]
+    private Collection $posts;
 
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
     private ?Users $user_id = null;
@@ -113,10 +122,25 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $widgets_user;
+    
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
+    private ?Profile $profile = null;
 
     #[ORM\Column(nullable: false)]
     private ?bool $disabled = false;
 
+
+
+    public function getProfile(): ?Profile
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(?Profile $profile): static
+    {
+        $this->profile = $profile;
+        return $this;
+    }
 
     public function __construct()
     {
@@ -126,7 +150,35 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tips_user = new ArrayCollection();
         $this->messages_user = new ArrayCollection();
         $this->messages_receiver = new ArrayCollection();
+        $this->posts = new ArrayCollection();
     }
+
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    public function addPost(Posts $post): static
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts->add($post);
+            $post->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removePost(Posts $post): static
+    {
+        if ($this->posts->removeElement($post)) {
+            if ($post->getUserId() === $this) {
+                $post->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
 
     public function getId(): ?int
     {
