@@ -4,6 +4,7 @@ import { API_URL } from "@env";
 import TipCard from "./TipCard";
 import TipModal from "./TipModal";
 import { Icon } from "react-native-elements";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
 
 const FILTERS = ["aap", "banketstaaf", "Vlaflip", "Tech", "Overig"];
 const PAGE_SIZE = 10;
@@ -27,8 +28,14 @@ export default function TipsFeed({ token, user, navigation }) {
     const scrollY = useRef(new Animated.Value(0)).current;
 
     const headerHeight = scrollY.interpolate({
-        inputRange: [0, 249],
-        outputRange: [166, 0],
+        inputRange: [0, 100],
+        outputRange: [150, 0],
+        extrapolate: "clamp",
+    });
+
+    const filterTop = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [250, 100], // 100 is top bar height, 150 is max header height
         extrapolate: "clamp",
     });
 
@@ -44,16 +51,31 @@ export default function TipsFeed({ token, user, navigation }) {
         extrapolate: "clamp",
     });
 
-    useEffect(() => {
-        setTips([]);
-        setPage(1);
-        setAllLoaded(false);
-        fetchTips(1, true);
-        if (flatListRef.current) {
-            flatListRef.current.scrollToOffset({ offset: 0, animated: false });
-        }
-        scrollY.setValue(0);
-    }, [activeFilters, sort, search, modalVisible]);
+    const route = useRoute();
+
+    useFocusEffect(
+        React.useCallback(() => {
+            // Haal altijd opnieuw de forums op als je terugkomt op deze pagina
+            setTips([]);
+            setPage(1);
+            setAllLoaded(false);
+            fetchTips(1, true);
+            // Scroll eventueel naar boven
+            if (flatListRef.current) {
+                flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+            }
+            scrollY.setValue(0);
+
+            // Open eventueel de modal als er een openTipId is
+            if (route.params?.openTipId) {
+                fetchTipById(route.params.openTipId).then(tip => {
+                    setSelectedTip(tip);
+                    setModalVisible(true);
+                    navigation.setParams({ openTipId: null });
+                });
+            }
+        }, [route.params?.openTipId, activeFilters, sort, search])
+    );
 
     const fetchTips = useCallback(async (pageToLoad = 1, reset = false) => {
         setLoading(true);
@@ -203,93 +225,56 @@ export default function TipsFeed({ token, user, navigation }) {
         <View style={styles.container}>
             {/* Static Top Bar */}
             <View style={styles.topBar}>
-                <Text style={styles.topBarTitle}>{`Hey, ${name}`}</Text>
+                <View style={styles.topBarRow}>
+                    <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
+                    <View style={styles.topBarIcons}>
+                        <TouchableOpacity onPress={() => navigation.navigate("AddForum")}>
+                            <Icon name="plus" type="feather" size={34} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="search" size={34} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="trophy" type="ionicon" size={32} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Icon name="bag-outline" type="ionicon" size={32} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
                 <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>
                     The Forum
                 </Animated.Text>
-                <Animated.Text style={[styles.headerTextBold, { opacity: headerOpacity }]}>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>
                     By Everyone
                 </Animated.Text>
             </Animated.View>
-            {/* Sticky zoekbalk + filters */}
-            <Animated.View style={[styles.stickyBar, { marginTop: stickyBarMarginTop }]}>
-                <View style={styles.searchRow}>
-                    <View style={styles.searchBar}>
-                        <Icon type="Feather" name="search" size={20} color="#A0A0A0" style={{ marginRight: 8 }} />
-                        <TextInput
-                            placeholder="Search for a post"
-                            value={search}
-                            onChangeText={setSearch}
-                            style={styles.searchInput}
-                            placeholderTextColor="#A0A0A0"
-                        />
-                    </View>
-                    <TouchableOpacity style={styles.createBtn} onPress={() => navigation.navigate("AddForum")}>
-                        <Text style={styles.createBtnText}>Create post</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.filterRow}>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ flexGrow: 1, paddingRight: 12 }}
-                        style={{ flex: 1, minWidth: 0 }}
-                    >
-                        {FILTERS.map(filter => (
-                            <TouchableOpacity
-                                key={filter}
-                                style={[
-                                    styles.filterBtn,
-                                    activeFilters.includes(filter) && styles.filterBtnActive
-                                ]}
-                                onPress={() => toggleFilter(filter)}
-                            >
-                                <Text style={[
-                                    styles.filterBtnText,
-                                    activeFilters.includes(filter) && styles.filterBtnTextActive
-                                ]}>{filter}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                    <View style={styles.sortBtns}>
-                        <TouchableOpacity onPress={() => toggleSort("likes")}>
-                            <Text style={{
-                                color: sort.field === "likes" ? "#2A4BA0" : "#888",
-                                fontWeight: "bold",
-                                marginRight: 8,
-                                minWidth: 60,
-                                textAlign: "center",
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}>
-                                Likes
-                                <Text style={{ width: 16, display: "inline-block" }}>
-                                    {sort.field === "likes" ? (sort.order === "asc" ? " ▲" : " ▼") : " "}
-                                </Text>
+            {/* Sticky Filter Row */}
+            <Animated.View style={[
+                styles.filterRow,
+                { top: filterTop, height: 50 }
+            ]}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.filterScrollContent}
+                >
+                    {FILTERS.map((filter, i) => (
+                        <TouchableOpacity key={i} onPress={() => toggleFilter(filter)}>
+                            <Text style={[
+                                styles.filter,
+                                activeFilters.includes(filter) ? styles.activeFilter : null
+                            ]}>
+                                {filter}
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => toggleSort("created_at")}>
-                            <Text style={{
-                                color: sort.field === "created_at" ? "#2A4BA0" : "#888",
-                                fontWeight: "bold",
-                                minWidth: 60,
-                                textAlign: "center",
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}>
-                                Datum
-                                <Text style={{ width: 16, display: "inline-block" }}>
-                                    {sort.field === "created_at" ? (sort.order === "asc" ? " ▲" : " ▼") : " "}
-                                </Text>
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                    ))}
+                </ScrollView>
             </Animated.View>
-            {/* Scrollbare feed */}
+            {/* Scrollable Content */}
             {loading && tips.length === 0 ? (
                 <View style={{ marginTop: 40 }}>
                     {[...Array(3)].map((_, i) => (
@@ -321,7 +306,11 @@ export default function TipsFeed({ token, user, navigation }) {
                         data={tips}
                         keyExtractor={item => `tip-${item.id}`}
                         renderItem={renderTipCard}
-                        contentContainerStyle={{ paddingBottom: 16, paddingTop: 8 }}
+                        contentContainerStyle={{
+                            paddingTop: 300, // 100(topBar) + 150(header) + 50(filterRow)
+                            paddingBottom: 16,
+                            paddingHorizontal: 0 // geen extra padding, net als Products
+                        }}
                         onScroll={Animated.event(
                             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                             { useNativeDriver: false }
@@ -355,8 +344,6 @@ export default function TipsFeed({ token, user, navigation }) {
     );
 }
 
-// ...styles blijven ongewijzigd...
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -374,113 +361,72 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         zIndex: 20,
     },
-    topBarTitle: {
+    topBarRow: {
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },
+    topBarText: {
         color: "#fff",
         fontSize: 24,
-        fontWeight: "bold",
+        fontWeight: "bold"
+    },
+    topBarIcons: {
+        flexDirection: 'row',
+        width: 125,
+        justifyContent: 'space-around',
+        alignContent: 'center'
     },
     header: {
         position: "absolute",
         top: 100,
         left: 0,
         right: 0,
-        backgroundColor: "#2A4BA0",
+        backgroundColor: '#2A4BA0',
         justifyContent: "center",
         alignItems: "flex-start",
         paddingHorizontal: 16,
         zIndex: 10,
     },
     headerText: {
-        color: "#fff",
+        alignSelf: 'flex-start',
+        color: "white",
         fontSize: 64,
-        fontWeight: "300",
-    },
-    headerTextBold: {
-        color: "#fff",
-        fontSize: 64,
-        fontWeight: "bold",
-    },
-    stickyBar: {
-        backgroundColor: "#fff",
-        zIndex: 5,
-        paddingBottom: 8,
-        paddingTop: 8,
-        paddingHorizontal: 0,
-    },
-    searchRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 8,
-        marginHorizontal: 16,
-    },
-    searchBar: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: "#E0E0E0",
-        paddingHorizontal: 16,
-        marginRight: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        elevation: 2,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: "#222",
-    },
-    createBtn: {
-        backgroundColor: "#FFC83A",
-        borderRadius: 24,
-        paddingHorizontal: 18,
-        paddingVertical: 10,
-    },
-    createBtnText: {
-        color: "#fff",
-        fontWeight: "bold",
-        fontSize: 16,
     },
     filterRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 4,
-        marginHorizontal: 8,
-    },
-    filterBtn: {
+        position: "absolute",
+        left: 0,
+        right: 0,
         backgroundColor: "#fff",
-        borderRadius: 16,
-        paddingHorizontal: 14,
-        paddingVertical: 7,
-        marginHorizontal: 4,
-        borderWidth: 1,
-        borderColor: "#2A4BA0",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
-        shadowRadius: 3,
-        elevation: 1,
-    },
-    filterBtnActive: {
-        backgroundColor: "#FFC83A",
-        borderColor: "#FFC83A",
-    },
-    filterBtnText: {
-        color: "#2A4BA0",
-        fontWeight: "bold",
-    },
-    filterBtnTextActive: {
-        color: "#fff",
-    },
-    sortBtns: {
         flexDirection: "row",
-        marginLeft: 8,
         alignItems: "center",
-        minWidth: 130,
-        justifyContent: "flex-end"
+        zIndex: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
+        gap: 10,
+        flex: 1,
     },
+    filterScrollContent: {
+        alignItems: "center"
+    },
+    filter: {
+        paddingHorizontal: 10,
+        marginHorizontal: 8,
+        paddingVertical: 7,
+        borderWidth: 1,
+        borderColor: 'grey',
+        borderRadius: 100,
+    },
+    activeFilter: {
+        backgroundColor: '#FFC83A'
+    },
+    scrollViewContent: {
+        paddingTop: 300,
+        paddingBottom: 40,
+    },
+    loadingText: {
+        paddingTop: 300,
+        fontSize: 64,
+        color: 'black',
+        alignSelf: 'center'
+    }
 });

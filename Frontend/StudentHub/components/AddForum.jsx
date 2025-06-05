@@ -21,8 +21,7 @@ export default function AddForum({ navigation, token }) {
 
 
     const uploadForum = async () => {
-        if (!title || !content || !category)
-        {
+        if (!title || !content || !category) {
             Alert.alert('Error', 'Fill in all fields');
             return;
         }
@@ -33,7 +32,6 @@ export default function AddForum({ navigation, token }) {
             const response = await fetch(API_URL + '/api/forums/new', {
                 method: 'POST',
                 headers: {
-                    // Do NOT set Content-Type for FormData; let fetch set it
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
@@ -43,11 +41,10 @@ export default function AddForum({ navigation, token }) {
                 }),
             });
             if (!response.ok) throw new Error("add forum failed");
+            const data = await response.json();
             setLoading(false);
-            Alert.alert('Succesfully Created!', '', [{
-                text: 'OK',
-                onPress : () => navigation.goBack()
-            }]);
+            navigation.goBack();
+
         } catch (error) {
             console.error(error);
             Alert.alert('Upload Failed', 'Try again');
