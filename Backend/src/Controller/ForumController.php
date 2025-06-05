@@ -299,4 +299,44 @@ class ForumController extends AbstractController
 
         return $this->json(['success' => true, 'replies' => $replies]);
     }
+
+    #[Route('/{id}', name: 'api_forums_get_one', methods: ['GET'])]
+    public function getOne(int $id, ForumsRepository $forumsRepository, Request $request): JsonResponse
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        $forum = $forumsRepository->find($id);
+        if (!$forum) {
+            return new JsonResponse(['error' => 'Forum not found'], 404);
+        }
+
+        $image = $forum->getImage();
+        if ($image && !str_starts_with($image, "http")) {
+            $image = $request->getSchemeAndHttpHost() . $image;
+        }
+        $userImg = $forum->getUserId()->getAvatarUrl();
+        if ($userImg && !str_starts_with($userImg, "http")) {
+            $userImg = $request->getSchemeAndHttpHost() . $userImg;
+        }
+
+        $data = [
+            'id' => $forum->getId(),
+            'user_id_id' => $forum->getUserId()->getId(),
+            'user_name' => $forum->getUserId()->getFullName(),
+            'user_img' => $userImg,
+            'title' => $forum->getTitle(),
+            'content' => $forum->getContent(),
+            'created_at' => $forum->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'category' => $forum->getCategory(),
+            'image' => $image,
+            'replies' => $forum->getReplies() ?? [],
+            'likes' => $forum->getLikes() ?? [],
+            'dislikes' => $forum->getDislikes() ?? [],
+        ];
+
+        return $this->json($data);
+    }
 }

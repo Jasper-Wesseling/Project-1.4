@@ -18,6 +18,7 @@ import Frontpage from './components/Frontpage';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
 import TipsFeed from "./components/TipsFeed";
+import AddForum from './components/AddForum';
 
 
 const Stack = createStackNavigator();
@@ -164,6 +165,9 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
+            </Stack.Screen>
+            <Stack.Screen name="AddForum">
+              {props => <AddForum {...props} token={token} user={user} />}
             </Stack.Screen>
           </>
         )}

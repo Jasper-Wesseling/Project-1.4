@@ -8,7 +8,7 @@ import { Icon } from "react-native-elements";
 const FILTERS = ["aap", "banketstaaf", "Vlaflip", "Tech", "Overig"];
 const PAGE_SIZE = 10;
 
-export default function TipsFeed({ token, user }) {
+export default function TipsFeed({ token, user, navigation }) {
     const [tips, setTips] = useState([]);
     const [search, setSearch] = useState("");
     const [activeFilters, setActiveFilters] = useState([]);
@@ -133,7 +133,7 @@ export default function TipsFeed({ token, user }) {
         if (!selectedTip) return;
         await fetch(`${API_URL}/api/forums/${selectedTip.id}/like`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
             body: JSON.stringify({ action })
         });
         const updatedTip = await fetchTipById(selectedTip.id);
@@ -227,7 +227,7 @@ export default function TipsFeed({ token, user }) {
                             placeholderTextColor="#A0A0A0"
                         />
                     </View>
-                    <TouchableOpacity style={styles.createBtn}>
+                    <TouchableOpacity style={styles.createBtn} onPress={() => navigation.navigate("AddForum")}>
                         <Text style={styles.createBtnText}>Create post</Text>
                     </TouchableOpacity>
                 </View>

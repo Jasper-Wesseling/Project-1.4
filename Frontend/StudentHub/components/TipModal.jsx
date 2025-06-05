@@ -38,7 +38,8 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                 return;
             }
             // Als gebruiker disliked heeft: eerst dislike weghalen, dan like toevoegen
-            await onLike("like");
+            const updatedTip = await onLike("like");
+            if (updatedTip) setLocalTip(updatedTip); 
             setLoading(false);
         }
     };
@@ -51,7 +52,8 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                 return;
             }
             // Als gebruiker geliked heeft: eerst like weghalen, dan dislike toevoegen
-            await onDislike("dislike");
+            const updatedTip = await onDislike("dislike");
+            if (updatedTip) setLocalTip(updatedTip); 
             setLoading(false);
         }
     };
