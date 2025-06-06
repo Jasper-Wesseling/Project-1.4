@@ -2,18 +2,18 @@ import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
 
 export default function PostPreview({ post, onQuickHelp, user }) {
-    if (!post) return null;
+    if (!post || typeof post !== 'object') return <View />;
 
     return (
         <View style={styles.card}>
             <View style={styles.cardContent}>
-                <View>
+                <View>                    
                     <Text
                         style={styles.cardTitle}
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        {post.title}
+                        {post.title || "Untitled"}
                     </Text>
                     <Text
                         style={styles.cardSubtitle}
@@ -27,7 +27,7 @@ export default function PostPreview({ post, onQuickHelp, user }) {
                         numberOfLines={3}
                         ellipsizeMode="tail"
                     >
-                        {post.description}
+                        {post.description || "No description"}
                     </Text>
                 </View>
                 {/* button + status+location */}
@@ -37,13 +37,12 @@ export default function PostPreview({ post, onQuickHelp, user }) {
                         onPress={onQuickHelp}
                     >
                         <Text style={styles.footerButtonText}>Quick Help</Text>
-                    </TouchableOpacity>
-                    <View style={[styles.footerButton, styles.statusButton]}>
-                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status}</Text>
+                    </TouchableOpacity>                    <View style={[styles.footerButton, styles.statusButton]}>
+                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status || 'Active'}</Text>
                     </View>
                     <View style={[styles.footerButton, styles.locationButton]}>
                         <Icon name="location-on" type="material" size={16} color="#000" />
-                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type}</Text>
+                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type || 'Local'}</Text>
                     </View>
                 </View>
             </View>
@@ -100,13 +99,7 @@ const styles = StyleSheet.create({
         height: 40,
         marginHorizontal: 4,
         backgroundColor: '#2A4BA0', // default voor Quick Help
-    },
-    footerButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    footerButtonText: {
+    },    footerButtonText: {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 14,
@@ -116,15 +109,7 @@ const styles = StyleSheet.create({
     },
     locationButton: {
         backgroundColor: '#FFC83A',
-    },
-    blackText: {
+    },    blackText: {
         color: '#000',
-    },
-    cardFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 16,
-        gap: 6,
     },
 });

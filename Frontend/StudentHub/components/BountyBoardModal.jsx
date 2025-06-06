@@ -1,52 +1,130 @@
-import React, { useState } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
+import { useState, useEffect } from "react";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { Icon } from "react-native-elements";
+import { API_URL } from '@env';
 
-export default function BountyBoardModal({ visible, bounty, onClose, user }) {
+export default function BountyBoardModal({ visible, bounty, onClose, user, token, onPostDeleted }) {
     const [showOverige, setShowOverige] = useState(false);
+    
+    // Edit mode state
+    const [editMode, setEditMode] = useState(false);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+    const [saving, setSaving] = useState(false);
 
-    if (!bounty) return null;
+    useEffect(() => {
+        setEditMode(false); // Reset edit mode when bounty changes
+        setEditTitle(bounty?.title || '');
+        setEditDescription(bounty?.description || '');
+    }, [bounty]);
 
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_URL}/api/posts/edit?id=${bounty.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    title: editTitle,
+                    description: editDescription,
+                }),
+            });            if (!res.ok) throw new Error("Edit failed");
+            setEditMode(false);
+            Alert.alert("Success", "Post updated!");
+            if (onPostDeleted) onPostDeleted(); // Refresh the list
+        } catch (err) {
+            Alert.alert("Error", "Could not save changes.");
+        }        setSaving(false);
+    };
+
+    const handleDelete = async () => {
+        Alert.alert(
+            "Delete Post", 
+            "Are you sure you want to delete this post? This action cannot be undone.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const res = await fetch(`${API_URL}/api/posts/delete?id=${bounty.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                },
+                            });                            if (!res.ok) throw new Error("Delete failed");
+                            Alert.alert("Success", "Post deleted!", [
+                                { text: "OK", onPress: () => {
+                                    onClose();
+                                    if (onPostDeleted) onPostDeleted();
+                                }}
+                            ]);
+                        } catch (err) {
+                            Alert.alert("Error", "Could not delete post.");
+                        }
+                    }
+                }
+            ]
+        );
+    };    if (!bounty) return null;
+    const isCreator = user && user.id === bounty.post_user_id;
+    
     return (
         <Modal
             visible={visible}
             transparent={true}
             animationType="slide"
             onRequestClose={onClose}
-        >
-            <SafeAreaView style={styles.overlay}>
-                <View style={styles.card}>
+        >            <SafeAreaView style={styles.overlay}>
+                <KeyboardAvoidingView
+                    style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
+                >
+                    <View style={styles.card}>
                     {/* Back Arrow Button */}
                     <TouchableOpacity style={styles.backButton} onPress={onClose}>
                         <View style={styles.backCircle}>
                             <Text style={styles.backArrow}>←</Text>
                         </View>
-                    </TouchableOpacity>
-                    <ScrollView
+                    </TouchableOpacity>                    <ScrollView
                         style={{ width: '100%' }}
                         contentContainerStyle={{ paddingBottom: 32 }}
                         showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
                     >
-                        {/* User info */}
-                        {user && (
+                        {/* User info - Show post creator info */}
+                        {bounty && (
                             <View style={styles.userRow}>
-                                {user.avatar_url && user.avatar_url.startsWith('http') ? (
+                                {bounty.post_user_avatar && bounty.post_user_avatar.startsWith('http') ? (
                                     <Image
-                                        source={{ uri: user.avatar_url }}
+                                        source={{ uri: bounty.post_user_avatar }}
                                         style={styles.avatar}
                                     />
                                 ) : (
                                     <View style={[styles.avatar, styles.avatarFallback]}>
-                                        <Text style={styles.avatarFallbackText}>?</Text>
+                                        <Text style={styles.avatarFallbackText}>
+                                            {bounty.post_user_name ? bounty.post_user_name.charAt(0).toUpperCase() : '?'}
+                                        </Text>
                                     </View>
                                 )}
                                 <Text style={styles.userName}>
-                                    {user.full_name || "Onbekende gebruiker"}
+                                    {bounty.post_user_name || "Onbekende gebruiker"}
                                 </Text>
-                            </View>
+                            </View>                        )}{/* Title and Price */}
+                        {editMode ? (
+                            <TextInput
+                                value={editTitle}
+                                onChangeText={setEditTitle}
+                                style={[styles.title, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4 }]}
+                            />
+                        ) : (
+                            <Text style={styles.title}>{bounty.title}</Text>
                         )}
-                        {/* Title and Price */}
-                        <Text style={styles.title}>{bounty.title}</Text>
                         <View style={styles.priceRow}>
                             <View style={styles.badge}><Text style={styles.badgeText}>{bounty.days_ago} days ago</Text></View>
                             <View style={styles.locationBox}>
@@ -57,10 +135,64 @@ export default function BountyBoardModal({ visible, bounty, onClose, user }) {
                         {/* Chat button */}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.filledButton}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
-                        </View>
-                        {/* Description */}
+                        </View>                        {/* Description */}
                         <Text style={styles.sectionTitle}>Beschrijving</Text>
-                        <Text style={styles.details}>{bounty.description}</Text>
+                        {editMode ? (
+                            <TextInput
+                                value={editDescription}
+                                onChangeText={setEditDescription}
+                                style={[
+                                    styles.details,
+                                    {
+                                        backgroundColor: '#f4f5f7',
+                                        borderRadius: 8,
+                                        padding: 4,
+                                        minHeight: 100,
+                                        maxHeight: 200,
+                                    }
+                                ]}
+                                multiline
+                                scrollEnabled={true}
+                                textAlignVertical="top"
+                            />
+                        ) : (
+                            <Text style={styles.details}>{bounty.description}</Text>                        )}
+                          {/* Edit/Delete Buttons */}
+                        {isCreator && !editMode && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
+                                    onPress={() => setEditMode(true)}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Edit</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#d32f2f', padding: 8, borderRadius: 8 }}
+                                    onPress={handleDelete}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        {isCreator && editMode && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
+                                    onPress={handleSave}
+                                    disabled={saving}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
+                                    onPress={() => setEditMode(false)}
+                                    disabled={saving}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        
                         {/* Overige (expandable) */}
                         <TouchableOpacity
                             style={styles.sectionRow}
@@ -80,6 +212,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user }) {
                         )}
                     </ScrollView>
                 </View>
+                </KeyboardAvoidingView>
             </SafeAreaView>
         </Modal>
     );

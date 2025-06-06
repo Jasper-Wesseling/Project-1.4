@@ -18,6 +18,7 @@ import Frontpage from './components/Frontpage';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
 import EditProducts from './components/EditProducts';
+import EditPosts from './components/EditPosts';
 
 
 const Stack = createStackNavigator();
@@ -167,6 +168,9 @@ export default function App() {
 						</Stack.Screen>
 						<Stack.Screen name="EditProducts">
 							{props => <EditProducts {...props} token={token} user={user} />}
+						</Stack.Screen>
+						<Stack.Screen name="EditPosts">
+							{props => <EditPosts {...props} token={token} user={user} />}
 						</Stack.Screen>
 					</>
 				)}

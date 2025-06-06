@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text } from "react-native";
-import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 
 
 export default function AddPost({ navigation, token }) {
