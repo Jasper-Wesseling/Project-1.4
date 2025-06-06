@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Animated, scrollViewRef } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Animated, Dimensions } from "react-native";
 import { API_URL } from "@env";
 import TipCard from "./TipCard";
 import TipModal from "./TipModal";
@@ -29,10 +29,8 @@ export default function TipsFeed({ token, user, navigation }) {
     const [allLoaded, setAllLoaded] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedTip, setSelectedTip] = useState(null);
-
-    const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
     const loadingMoreRef = useRef(false);
-    const flatListRef = useRef(null);
+    const scrollViewRef = useRef(null);
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -65,8 +63,8 @@ export default function TipsFeed({ token, user, navigation }) {
             setAllLoaded(false);
             fetchTips(1, true);
             // Scroll eventueel naar boven
-            if (flatListRef.current) {
-                flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+            if (scrollViewRef.current && scrollViewRef.current.scrollTo) {
+                scrollViewRef.current.scrollTo({ y: 0, animated: false });
             }
             scrollY.setValue(0);
 
@@ -110,20 +108,6 @@ export default function TipsFeed({ token, user, navigation }) {
         setLoading(false);
     }, [activeFilters, sort, search, token]);
 
-    const onViewableItemsChanged = useRef(({ viewableItems }) => {
-        if (
-            !loading &&
-            !allLoaded &&
-            tips.length >= PAGE_SIZE &&
-            !loadingMoreRef.current &&
-            viewableItems.some(item => item.index === 5)
-        ) {
-            loadingMoreRef.current = true;
-            fetchTips(page + 1);
-            setPage(p => p + 1);
-        }
-    }).current;
-
     useEffect(() => {
         loadingMoreRef.current = false;
     }, [tips]);
@@ -131,7 +115,7 @@ export default function TipsFeed({ token, user, navigation }) {
     const handleScroll = ({ nativeEvent }) => {
         const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
         const scrollPosition = contentOffset.y + layoutMeasurement.height;
-        const halfway = contentSize.height * 0.5;
+        const halfway = contentSize.height * 0.7;
 
         if (
             scrollPosition >= halfway &&
@@ -148,7 +132,7 @@ export default function TipsFeed({ token, user, navigation }) {
 
     function toggleFilter(filter) {
         setActiveFilters(f =>
-            f.includes(filter) ? f.filter(x => x !== filter) : [...f, filter]
+            f[0] === filter ? [] : [filter]
         );
     }
 
@@ -334,13 +318,13 @@ export default function TipsFeed({ token, user, navigation }) {
                                 key={filter}
                                 style={[
                                     styles.filterBtn,
-                                    activeFilters.includes(filter) && styles.filterBtnActive
+                                    activeFilters[0] === filter && styles.filterBtnActive
                                 ]}
                                 onPress={() => toggleFilter(filter)}
                             >
                                 <Text style={[
                                     styles.filterBtnText,
-                                    activeFilters.includes(filter) && styles.filterBtnTextActive
+                                    activeFilters[0] === filter && styles.filterBtnTextActive
                                 ]}>{filter}</Text>
                             </TouchableOpacity>
                         ))}
@@ -378,7 +362,7 @@ export default function TipsFeed({ token, user, navigation }) {
             </Animated.View>
             {/* Scrollable Content */}
             {loading && tips.length === 0 ? (
-                <View style={{ marginTop: 40 }}>
+                <View style={{ marginTop: 360 }}>
                     {[...Array(3)].map((_, i) => (
                         <View key={i} style={{
                             backgroundColor: "#f3f3f3",
@@ -407,22 +391,30 @@ export default function TipsFeed({ token, user, navigation }) {
                         ref={scrollViewRef}
                         style={{
                             flex: 1,
-                            paddingTop: 360,
                             paddingBottom: 16,
                             paddingHorizontal: 0
+                        }}
+                        contentContainerStyle={{
+                            paddingTop: 360,
+                            paddingHorizontal: 0,
+                            minHeight: Dimensions.get("window").height
                         }}
                         onScroll={Animated.event(
                             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                             {
                                 useNativeDriver: false,
-                                listener: handleScroll // <-- hier de 50% check
+                                listener: handleScroll
                             }
                         )}
                         scrollEventThrottle={16}
                     >
-                        {tips.map((item, idx) => renderTipCard({ item, index: idx }))}
+                        {tips.map((item, idx) => (
+                            <React.Fragment key={item.id || idx}>
+                                {renderTipCard({ item, index: idx })}
+                            </React.Fragment>
+                        ))}
                         {allLoaded && tips.length > 0 ? (
-                            <Text style={{ textAlign: "center", color: "#000" }}>
+                            <Text style={{ textAlign: "center", color: "#000", margin: 16 }}>
                                 Je hebt elke post gezien
                             </Text>
                         ) : null}

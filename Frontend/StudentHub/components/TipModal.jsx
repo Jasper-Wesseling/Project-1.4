@@ -155,16 +155,22 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         )}
                         {/* Title */}
                         <Text style={styles.title}>{localTip.title}</Text>
+                        {/* Category */}
+                        {localTip.category && (
+                            <View style={styles.tag}>
+                                <Text style={styles.tagText}>{localTip.category}</Text>
+                            </View>
+                        )}
                         {/* Content */}
                         <Text style={styles.content}>{localTip.content}</Text>
                         {/* Like/Dislike post */}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={[styles.outlineButton, hasLiked && { borderColor: '#2A4BA0' }]} onPress={handleLikePress} disabled={loading}>
-                                <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold"}]}>
+                                <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
                                     ⬆ {localTip.likes?.length || 0} Like
                                 </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.outlineButton, hasDisliked && { borderColor: '#C00'}]} onPress={handleDislikePress} disabled={loading}>
+                            <TouchableOpacity style={[styles.outlineButton, hasDisliked && { borderColor: '#C00' }]} onPress={handleDislikePress} disabled={loading}>
                                 <Text style={[styles.outlineButtonText, hasDisliked && { color: "#C00", fontWeight: "bold" }]}>
                                     ⬇ {localTip.dislikes?.length || 0} Dislike
                                 </Text>
@@ -174,26 +180,26 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         <Text style={styles.sectionTitle}>Reacties</Text>
                         <View style={{ marginBottom: 24 }}>
                             {Array.isArray(localTip.replies) && localTip.replies.length > 0 ? (
-                                    localTip.replies.map((reply, idx) => {
-                                        const replyLiked = reply.upvotes?.includes(currentUserId);
-                                        const replyDisliked = reply.downvotes?.includes(currentUserId);
+                                localTip.replies.map((reply, idx) => {
+                                    const replyLiked = reply.upvotes?.includes(currentUserId);
+                                    const replyDisliked = reply.downvotes?.includes(currentUserId);
 
-                                        const handleReplyLikePress = async () => {
-                                            if (typeof onReplyLike === "function") {
-                                                setLoading(true);
-                                                const updatedTip = await onReplyLike(idx, replyLiked ? "undo" : "like");
-                                                if (updatedTip) setLocalTip(updatedTip);
-                                                setLoading(false);
-                                            }
-                                        };
-                                        const handleReplyDislikePress = async () => {
-                                            if (typeof onReplyDislike === "function") {
-                                                setLoading(true);
-                                                const updatedTip = await onReplyDislike(idx, replyDisliked ? "undo" : "dislike");
-                                                if (updatedTip) setLocalTip(updatedTip);
-                                                setLoading(false);
-                                            }
-                                        };
+                                    const handleReplyLikePress = async () => {
+                                        if (typeof onReplyLike === "function") {
+                                            setLoading(true);
+                                            const updatedTip = await onReplyLike(idx, replyLiked ? "undo" : "like");
+                                            if (updatedTip) setLocalTip(updatedTip);
+                                            setLoading(false);
+                                        }
+                                    };
+                                    const handleReplyDislikePress = async () => {
+                                        if (typeof onReplyDislike === "function") {
+                                            setLoading(true);
+                                            const updatedTip = await onReplyDislike(idx, replyDisliked ? "undo" : "dislike");
+                                            if (updatedTip) setLocalTip(updatedTip);
+                                            setLoading(false);
+                                        }
+                                    };
 
                                     return (
                                         <View key={idx} style={styles.replyBox}>
@@ -442,5 +448,19 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "bold",
         fontSize: 15,
+    },
+    tag: {
+        backgroundColor: "#FFC83A",
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        paddingVertical: 5,
+        marginRight: 8,
+        marginBottom: 8,
+        alignSelf: "flex-start",
+    },
+    tagText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 16,
     },
 });
