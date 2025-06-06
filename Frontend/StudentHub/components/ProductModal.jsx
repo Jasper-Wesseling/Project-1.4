@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { API_URL } from '@env';
 
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token }) {
@@ -10,12 +10,14 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     const [editMode, setEditMode] = useState(false);
     const [editTitle, setEditTitle] = useState('');
     const [editDescription, setEditDescription] = useState('');
+    const [editPrice, setEditPrice] = useState('');
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         setEditMode(false); // Reset edit mode when product changes
         setEditTitle(product?.title || '');
         setEditDescription(product?.description || '');
+        setEditPrice(product?.price ? String(product.price) : '');
     }, [product]);
 
     useEffect(() => {
@@ -44,8 +46,8 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     const handleSave = async () => {
         setSaving(true);
         try {
-            const res = await fetch(`${API_URL}/api/products/edit/${product.id}`, {
-                method: 'PUT', // or PATCH
+            const res = await fetch(`${API_URL}/api/products/edit?id=${product.id}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -53,10 +55,10 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                 body: JSON.stringify({
                     title: editTitle,
                     description: editDescription,
+                    price: parseFloat(editPrice),
                 }),
             });
             if (!res.ok) throw new Error("Edit failed");
-            // Optionally update local product state/UI here
             setEditMode(false);
             Alert.alert("Success", "Product updated!");
         } catch (err) {
@@ -76,136 +78,163 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
             onRequestClose={onClose}
         >
             <SafeAreaView style={styles.overlay}>
-                <View style={styles.card}>
-                    {/* Back Arrow Button */}
-                    <TouchableOpacity style={styles.backButton} onPress={onClose}>
-                        <View style={styles.backCircle}>
-                            <Text style={styles.backArrow}>←</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <ScrollView
-                        style={{ width: '100%' }}
-                        contentContainerStyle={{ paddingBottom: 32 }}
-                        showsVerticalScrollIndicator={false}
-                    >
-                        {/* Placeholder Image */}
-                        <View style={styles.imageContainer}>
-                            <TouchableOpacity onPress={() => setFullscreenImg(true)} activeOpacity={0.8}>
-                                <Image
-                                    source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
-                                    style={styles.image}
-                                    resizeMode="cover"
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        {/* Title and Price */}
-                        <Text style={styles.title}>
+                <KeyboardAvoidingView
+                    style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24} // adjust if needed
+                >
+                    <View style={styles.card}>
+                        {/* Back Arrow Button */}
+                        <TouchableOpacity style={styles.backButton} onPress={onClose}>
+                            <View style={styles.backCircle}>
+                                <Text style={styles.backArrow}>←</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <ScrollView
+                            style={{ width: '100%' }}
+                            contentContainerStyle={{ paddingBottom: 32 }}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                        >
+                            {/* Placeholder Image */}
+                            <View style={styles.imageContainer}>
+                                <TouchableOpacity onPress={() => setFullscreenImg(true)} activeOpacity={0.8}>
+                                    <Image
+                                        source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
+                                        style={styles.image}
+                                        resizeMode="cover"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {/* Title and Price */}
+                            <Text style={styles.title}>
+                                {editMode ? (
+                                    <TextInput
+                                        value={editTitle}
+                                        onChangeText={setEditTitle}
+                                        style={[styles.title, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4 }]}
+                                    />
+                                ) : (
+                                    product.title
+                                )}
+                            </Text>
+                            <View style={styles.priceRow}>
+                                {editMode ? (
+                                    <TextInput
+                                        value={editPrice}
+                                        onChangeText={setEditPrice}
+                                        style={[styles.price, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4, minWidth: 80 }]}
+                                        keyboardType="numeric"
+                                    />
+                                ) : (
+                                    <Text style={styles.price}>{formatPrice(product.price)}</Text>
+                                )}
+                                <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} days ago</Text></View>
+                            </View>
+                            
+                            {/* Buttons */}
+                            <View style={styles.buttonRow}>
+                                <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
+                                <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                            </View>
+                            {/* Seller Info - improved */}
+                            <Text style={styles.sectionTitle}>Seller info</Text>
+                            <View style={styles.sellerContainer}>
+                                <View style={styles.sellerRow}>
+                                    <Image
+                                        source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
+                                        style={styles.sellerImg}
+                                    />
+                                    <Text style={styles.sellerName}>{product.product_username}</Text>
+                                </View>
+                                <View style={styles.sellerRatingRow}>
+                                    <Text style={styles.stars}>★★★★★</Text>
+                                    <Text style={styles.sellerRatingText}>Seller rating (coming soon)</Text>
+                                </View>
+                            </View>
+                            {/* Details */}
+                            <Text style={styles.sectionTitle}>Details</Text>
                             {editMode ? (
                                 <TextInput
-                                    value={editTitle}
-                                    onChangeText={setEditTitle}
-                                    style={[styles.title, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4 }]}
-                                />
+                                    value={editDescription}
+                                    onChangeText={setEditDescription}
+                                    style={[
+                                        styles.details,
+                                        {
+                                            backgroundColor: '#f4f5f7',
+                                            borderRadius: 8,
+                                            padding: 4,
+                                            minHeight: 100, // Increased for better scrolling
+                                            maxHeight: 200, // Optional: limit max height
+                                        }
+                                    ]}
+                                    multiline
+                                    scrollEnabled={true}
+                                    textAlignVertical="top"
+                            />
                             ) : (
-                                product.title
+                                <Text style={styles.details}>{product.description}</Text>
                             )}
-                        </Text>
-                        <View style={styles.priceRow}>
-                            <Text style={styles.price}>{formatPrice(product.price)}</Text>
-                            <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} days ago</Text></View>
-                        </View>
-                        
-                        {/* Buttons */}
-                        <View style={styles.buttonRow}>
-                            <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
-                        </View>
-                        {/* Seller Info - improved */}
-                        <Text style={styles.sectionTitle}>Seller info</Text>
-                        <View style={styles.sellerContainer}>
-                            <View style={styles.sellerRow}>
-                                <Image
-                                    source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
-                                    style={styles.sellerImg}
-                                />
-                                <Text style={styles.sellerName}>{product.product_username}</Text>
-                            </View>
-                            <View style={styles.sellerRatingRow}>
-                                <Text style={styles.stars}>★★★★★</Text>
-                                <Text style={styles.sellerRatingText}>Seller rating (coming soon)</Text>
-                            </View>
-                        </View>
-                        {/* Details */}
-                        <Text style={styles.sectionTitle}>Details</Text>
-                        {editMode ? (
-                            <TextInput
-                                value={editDescription}
-                                onChangeText={setEditDescription}
-                                style={[styles.details, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4, minHeight: 60 }]}
-                                multiline
-                        />
-                        ) : (
-                            <Text style={styles.details}>{product.description}</Text>
-                        )}
 
-                        {/* Edit/Save Buttons */}
-                        {isCreator && !editMode && (
-                            <TouchableOpacity
-                                style={{ alignSelf: 'flex-end', marginBottom: 10, backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8 }}
-                                onPress={() => setEditMode(true)}
+                            {/* Edit/Save Buttons */}
+                            {isCreator && !editMode && (
+                                <TouchableOpacity
+                                    style={{ alignSelf: 'flex-end', marginBottom: 10, backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8 }}
+                                    onPress={() => setEditMode(true)}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Edit</Text>
+                                </TouchableOpacity>
+                            )}
+                            {isCreator && editMode && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                                    <TouchableOpacity
+                                        style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
+                                        onPress={handleSave}
+                                        disabled={saving}
+                                    >
+                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
+                                        onPress={() => setEditMode(false)}
+                                        disabled={saving}
+                                    >
+                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            {/* for later use when there needs to be more infomation added to the modal */}
+                            {/* <TouchableOpacity
+                                style={styles.sectionRow}
+                                onPress={() => setShowOverige(!showOverige)}
+                                activeOpacity={0.7}
                             >
-                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Edit</Text>
+                                <Text style={styles.sectionTitle}>overige</Text>
+                                <Text style={styles.sectionArrow}>{showOverige ? "▲" : "▼"}</Text>
                             </TouchableOpacity>
-                        )}
-                        {isCreator && editMode && (
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
-                                <TouchableOpacity
-                                    style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
-                                    onPress={handleSave}
-                                    disabled={saving}
-                                >
-                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
-                                    onPress={() => setEditMode(false)}
-                                    disabled={saving}
-                                >
-                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-
-                        {/* for later use when there needs to be more infomation added to the modal */}
-                        {/* <TouchableOpacity
-                            style={styles.sectionRow}
-                            onPress={() => setShowOverige(!showOverige)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={styles.sectionTitle}>overige</Text>
-                            <Text style={styles.sectionArrow}>{showOverige ? "▲" : "▼"}</Text>
-                        </TouchableOpacity>
-                        {showOverige && (
-                            <Text style={styles.details}>
-                                test
-                            </Text>
-                        )}
-                        
-                        <TouchableOpacity
-                            style={styles.sectionRow}
-                            onPress={() => setShowReviews(!showReviews)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={styles.sectionTitle}>Reviews</Text>
-                            <Text style={styles.sectionArrow}>{showReviews ? "▲" : "▼"}</Text>
-                        </TouchableOpacity>
-                        {showReviews && (
-                            <Text style={styles.details}>
-                                Hier komen de reviews van het product.
-                            </Text>
-                        )} */}
-                    </ScrollView>
-                </View>
+                            {showOverige && (
+                                <Text style={styles.details}>
+                                    test
+                                </Text>
+                            )}
+                            
+                            <TouchableOpacity
+                                style={styles.sectionRow}
+                                onPress={() => setShowReviews(!showReviews)}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={styles.sectionTitle}>Reviews</Text>
+                                <Text style={styles.sectionArrow}>{showReviews ? "▲" : "▼"}</Text>
+                            </TouchableOpacity>
+                            {showReviews && (
+                                <Text style={styles.details}>
+                                    Hier komen de reviews van het product.
+                                </Text>
+                            )} */}
+                        </ScrollView>
+                    </View>
+                </KeyboardAvoidingView>
                 {/* Fullscreen Image Modal */}
                 <Modal
                     visible={fullscreenImg}
