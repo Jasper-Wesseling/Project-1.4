@@ -3,27 +3,35 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, S
 import { API_URL } from '@env';
 
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token }) {
-    const [showOverige, setShowOverige] = useState(false);
-    const [showReviews, setShowReviews] = useState(false);
+    // const [showOverige, setShowOverige] = useState(false);
+    // const [showReviews, setShowReviews] = useState(false);
     const [fullscreenImg, setFullscreenImg] = useState(false);
 
     // Add this state for seller data
     const [sellerData, setSellerData] = useState(null);
 
     useEffect(() => {
-        if (product && product.product_user_id && token) {
-            fetch(`${API_URL}/api/users/getbyid?id=${product.product_user_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
+        const fetchSeller = async () => {
+            try {
+                if (!product || !product.product_user_id || !token) {
+                    setSellerData(null);
+                    return;
                 }
-            })
-                .then(res => res.json())
-                .then(data => setSellerData(data))
-                .catch(err => setSellerData(null));
-        } else {
-            setSellerData(null);
-        }
-    }, [product]);
+                const res = await fetch(`${API_URL}/api/users/getbyid?id=${product.product_user_id}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Seller fetch failed");
+                const data = await res.json();
+                setSellerData(data);
+            } catch (err) {
+                console.error("Seller API error:", err);
+                setSellerData(null);
+            }
+        };
+
+        fetchSeller();
+    }, [product, token]);
 
 
 
@@ -75,7 +83,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         <View style={styles.sellerContainer}>
                             <View style={styles.sellerRow}>
                                 <Image
-                                    source={sellerData.avatar_url ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
+                                    source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
                                     style={styles.sellerImg}
                                 />
                                 <Text style={styles.sellerName}>{product.product_username}</Text>
