@@ -18,10 +18,13 @@ class ProfileController extends AbstractController
     public function getProfile(TokenStorageInterface $tokenStorage, ProfileRepository $repo): JsonResponse
     {
         $user = $tokenStorage->getToken()?->getUser();
-        $profile = $repo->findOneBy(['user' => $user]);
+        if (!$user || !is_object($user)) {
+            return new JsonResponse(['message' => 'User not authenticated'], 401);
+        }
+        $profile = $repo->findOneBy(['user' => $user]);   
 
         if (!$profile) {
-            return new JsonResponse(['message' => 'Profile not found'], 404);
+            return new JsonResponse(['message' => 'Profile not found'], 400);
         }
 
         return $this->json($profile, 200, [], ['groups' => 'profile:read']);

@@ -1,18 +1,13 @@
-import React, { useState } from "react";
-import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Animated, TouchableOpacity, Alert, View, Text, Switch, useColorScheme, StyleSheet } from "react-native";
 import { useFocusEffect } from '@react-navigation/native'; 
-import { StyleSheet } from "react-native";
-import { API_URL } from '@env';
+import { API_URL, BACKEND_URL } from '@env';
 
-export default function LightDarkToggle({ token, initialMode, onThemeChange, theme }) {
-  const [mode, setMode] = useState(initialMode || null);
-  const [systemDefault, setSystemDefault] = useState(false);
-  const colorScheme = useColorScheme();
-
-
-export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange }) {
+export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange, theme }) {
   const [mode, setMode] = useState(initialMode || "light");
   const [token, setToken] = useState(propToken || null);
+  const [systemDefault, setSystemDefault] = useState(false);
+  const colorScheme = useColorScheme();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // Ophalen van token als die niet als prop wordt meegegeven
@@ -34,13 +29,15 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
       } catch (error) {
         Alert.alert("Fout", error.message || "Kon niet inloggen.");
       }
+    }
+    fetchJwtToken();
+  }, [token]);
 
   // Theme ophalen bij mount of token change
   const fetchUserTheme = async () => {
     if (!token || !API_URL) {
       Alert.alert("Fout", "Geen geldige token of API_URL");
       return;
-
     }
     try {
       const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
@@ -138,8 +135,8 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
       }
     }
   };
-  
- // Tekstuele toggle met system default knop
+
+  // Tekstuele toggle met system default knop
   return (
     <View style={styles.container}>
       <View style={styles.row}>

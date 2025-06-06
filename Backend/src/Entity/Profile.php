@@ -14,52 +14,61 @@ class Profile
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['profile:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Assert\Positive]
+    #[Groups(['profile:read'])]
     private ?int $age = null;
 
-    
-    #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups('profile:read')]
-    private ?string $bio = null;
-
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups('profile:read')]
-    private ?string $location = null;
-
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Groups('profile:read')]
-    private ?string $fullName = null;
-
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
     private ?string $gender = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
     private ?string $website = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
     private ?string $linkedin = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups('profile:read')]
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
+    private ?string $github = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
+    private ?string $bio = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
+    private ?string $location = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['profile:read'])]
     private ?string $studyProgram = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $github = null;
+    #[Groups(['profile:read'])]
+    private ?string $fullName = null;
+
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['profile:read'])]
     private ?\DateTime $createdAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['profile:read'])]
     private ?\DateTime $updatedAt = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', targetEntity: Users::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['profile:read'])]
     private ?Users $user = null;
 
     public function getId(): ?int
