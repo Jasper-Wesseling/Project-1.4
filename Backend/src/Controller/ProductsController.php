@@ -184,12 +184,6 @@ class ProductsController extends AbstractController
         $entityManager->persist($product);
         $entityManager->flush();
 
-        return new JsonResponse([
-            'message' => 'Product updated!',
-            'id' => $product->getId(),
-            'title' => $product->getTitle(),
-            'description' => $product->getDescription(),
-            'price' => $product->getPrice()
-        ], 200);
+        return new JsonResponse("Product updated", 200);
     }
 }
