@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Animated } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Animated, scrollViewRef } from "react-native";
 import { API_URL } from "@env";
 import TipCard from "./TipCard";
 import TipModal from "./TipModal";
