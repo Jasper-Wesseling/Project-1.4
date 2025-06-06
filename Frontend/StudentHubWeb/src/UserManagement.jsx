@@ -83,15 +83,15 @@ const UserManagement = () => {
         }
     };
 
-    const roles = ['ROLE_USER', 'ROLE_ADMIN'];
-
-    const getRoleBadgeClass = (userRoles) => {
+    const roles = ['ROLE_USER', 'ROLE_ADMIN', 'ROLE_TEMP'];    const getRoleBadgeClass = (userRoles) => {
         if (userRoles.includes('ROLE_ADMIN')) return 'role-badge role-badge-admin';
+        if (userRoles.includes('ROLE_TEMP')) return 'role-badge role-badge-temp';
         return 'role-badge role-badge-user';
     };
 
     const getRoleDisplayName = (userRoles) => {
         if (userRoles.includes('ROLE_ADMIN')) return 'Admin';
+        if (userRoles.includes('ROLE_TEMP')) return 'Temp';
         return 'User';
     };
 
@@ -184,7 +184,10 @@ const UserManagement = () => {
                                             <select
                                                 className="modal-select"
                                                 style={{ width: 'auto', padding: '0.5rem', fontSize: '0.875rem' }}
-                                                value={user.roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' : 'ROLE_USER'}
+                                                value={
+                                                    user.roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' :
+                                                    user.roles.includes('ROLE_TEMP') ? 'ROLE_TEMP' : 'ROLE_USER'
+                                                }
                                                 onChange={e => handleRoleChange(user.id, e.target.value)}
                                             >
                                                 {roles.map(role => (

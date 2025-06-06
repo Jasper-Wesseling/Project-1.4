@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import './Business.css';
 import './AdminComponents.css';
 
-const Bussiness = () => {
+const API_URL = import.meta.env.VITE_API_URL;
+
+const Bussiness = () => {    
     const [form, setForm] = useState({
+        bio: "",
         name: "",
         email: "",
         password: "",
+        interests: "",
     });
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -15,18 +19,67 @@ const Bussiness = () => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();        setLoading(true);
-        
-        setTimeout(() => {
-            setSubmitted(true);
-            setLoading(false);
-        }, 1000);
+    const resetForm = () => {
+        setForm({
+            bio: "",
+            name: "",
+            email: "",
+            password: "",
+            interests: "",
+        });
+        setSubmitted(false);
     };
 
-    const resetForm = () => {
-        setForm({ name: "", email: "", password: "" });
-        setSubmitted(false);
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(API_URL + '/api/users/bussiness/new', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    full_name: form.name,
+                    email: form.email,
+                    password: form.password,
+                    bio: form.bio,
+                    interests: form.interests,
+                }),
+            });
+            
+            if (!res.ok) {
+                // Fix: Only read the response body once
+                let errorMessage = "Registration failed";
+                try {
+                    const errorData = await res.json();
+                    if (errorData.violations && Array.isArray(errorData.violations)) {
+                        const messages = errorData.violations.map(v => `${v.propertyPath}: ${v.message}`).join('\n');
+                        errorMessage = "Registration failed:\n" + messages;
+                    } else {
+                        errorMessage = "Registration failed: " + (errorData.error || errorData.message || "Unknown error");
+                    }
+                } catch (jsonErr) {
+                    // If JSON parsing fails, it means the response isn't JSON
+                    errorMessage = `Registration failed: ${res.status} - ${res.statusText}`;
+                }
+                
+                alert(errorMessage);
+                setLoading(false);
+                return;
+            }
+            
+            const data = await res.json();
+            console.log('Business account created:', data);
+            setSubmitted(true);
+            
+        } catch (e) {
+            console.error('Registration error:', e);
+            alert("Registration failed: " + e.message);
+        }
+        setLoading(false);
     };
 
     return (
@@ -57,7 +110,7 @@ const Bussiness = () => {
                             🎉 Business account created successfully! The admin can now login with the provided credentials.
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="modal-form">
+                        <form onSubmit={handleRegister} className="modal-form">
                             <div>
                                 <label style={{ 
                                     display: 'block', 
@@ -75,6 +128,27 @@ const Bussiness = () => {
                                     required
                                     className="modal-input"
                                     placeholder="Enter business name"
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ 
+                                    display: 'block', 
+                                    marginBottom: '0.5rem', 
+                                    fontWeight: '600', 
+                                    color: '#333' 
+                                }}>
+                                    Business Bio
+                                </label>
+                                <textarea
+                                    name="bio"
+                                    value={form.bio}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                    placeholder="Describe your business..."
+                                    rows="4"
+                                    style={{ resize: 'vertical' }}
                                 />
                             </div>
                             
@@ -115,6 +189,26 @@ const Bussiness = () => {
                                     required
                                     className="modal-input"
                                     placeholder="Create a secure password"
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ 
+                                    display: 'block', 
+                                    marginBottom: '0.5rem', 
+                                    fontWeight: '600', 
+                                    color: '#333' 
+                                }}>
+                                    Business Interests
+                                </label>
+                                <input
+                                    type="text"
+                                    name="interests"
+                                    value={form.interests}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                    placeholder="e.g., Technology, Education, Healthcare"
                                 />
                             </div>
                             

@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Users;
 use App\Entity\Profile;
+use App\Entity\Companies;
+use App\Entity\Locations;
+use App\Repository\LocationsRepository;
 use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -121,7 +124,7 @@ class UsersController extends AbstractController
                 'language' => $user->getLanguage(),
                 'theme' => $user->getTheme(),
                 'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
-                'disabled' => $user->isDisabled(),
+                'disabled' => $user->getRoles() ? in_array('ROLE_DISABLED', $user->getRoles()) : false,
             ];
         }
 
@@ -149,19 +152,19 @@ class UsersController extends AbstractController
         }
         
         if ($data['type'] === false) {
-            if (!$user->isDisabled()) {
+            if (!in_array('ROLE_DISABLED', $user->getRoles())) {
                 return new JsonResponse(['error' => 'User is already enabled'], 400);
             }
-            $user->setDisabled($data['type']);
+            $user->setRoles(array_diff($user->getRoles(), ['ROLE_DISABLED']));
             $entityManager->persist($user);
             $entityManager->flush();
             return new JsonResponse(['message' => 'User unbanned successfully'], 200);
         }
         if ($data['type'] === true) {
-            if ($user->isDisabled()) {
+            if (in_array('ROLE_DISABLED', $user->getRoles())) {
                 return new JsonResponse(['error' => 'User is already disabled'], 400);
             }
-            $user->setDisabled($data['type']);
+            $user->setRoles(['ROLE_DISABLED']);
             $entityManager->persist($user);
             $entityManager->flush();
             return new JsonResponse(['error' => 'User banned successfully'], 200);
@@ -188,18 +191,18 @@ class UsersController extends AbstractController
         }
 
         $role = $data['role'] ?? null;
-        if (!$role || !in_array($role, ['ROLE_USER', 'ROLE_ADMIN'])) {
+        if (!$role || !in_array($role, ['ROLE_USER', 'ROLE_ADMIN', 'ROLE_TEMP'])) {
             return new JsonResponse(['error' => 'Invalid role'], 400);
         }
-        if ($role === 'ROLE_ADMIN' && in_array('ROLE_ADMIN', $user->getRoles())) {
-            return new JsonResponse(['error' => 'User is already an admin'], 400);
+        if (in_array($role, $user->getRoles())) {
+            return new JsonResponse(['error' => 'User already has this role'], 400);
         }
 
         if ($role === 'ROLE_USER') {
             $user->setRoles([]);
         }
-        if ($role === 'ROLE_ADMIN') {
-            $user->setRoles(['ROLE_ADMIN']);
+        if ($role === 'ROLE_ADMIN' || $role === 'ROLE_TEMP') {
+            $user->setRoles([$role]);
         }
         $entityManager->persist($user);
         $entityManager->flush();
@@ -222,7 +225,6 @@ class UsersController extends AbstractController
             return new JsonResponse(['error' => 'Missing email or password'], 400);
         }
 
-        // Check if user with this email already exists
         $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['email' => $data['email']]);
         if ($existingUser) {
             return new JsonResponse(['error' => 'Email already in use'], 409);
@@ -230,9 +232,8 @@ class UsersController extends AbstractController
 
         $user = new Users();
         $user->setEmail($data['email']);
-        $user->setRole('ROLE_USER'); // Or use $data['role'] if you want to allow custom roles
+        $user->setRole('ROLE_USER');
 
-        // Password strength check before hashing
         $password = $data['password'];
         if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
             return new JsonResponse([
@@ -394,8 +395,8 @@ class UsersController extends AbstractController
     ): Response {
         $user = new Users();
         $user->setEmail(uniqid('tmp_'));
-        $user->setRole('ROLE_TEMP'); // Or use $data['role'] if you want to allow custom roles
-        $user->setRoles(['ROLE_TEMP']); // Or use $data['role'] if you want to allow custom roles
+        $user->setRole('ROLE_TEMP');
+        $user->setRoles(['ROLE_TEMP']);
 
         $password = $this->generateSecurePassword(12);
         $hashedPassword = $passwordHasher->hashPassword($user, $password);
@@ -418,4 +419,85 @@ class UsersController extends AbstractController
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
     }
+    #[Route('/bussiness/new', name: 'api_users_bussiness_new', methods: ['POST'])]
+    public function bussinessNew(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        ValidatorInterface $validator
+    ): Response {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['email']) || !isset($data['password']) || !isset($data['full_name'])) {
+            return new JsonResponse(['error' => 'Missing email or password'], 400);
+        }
+
+        $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['email' => $data['email']]);
+        if ($existingUser) {
+            return new JsonResponse(['error' => 'Email already in use'], 409);
+        }
+
+        $user = new Users();
+        $user->setEmail($data['email']);
+        $user->setRoles(['ROLE_BUSSINESS']);
+        $user->setRole('ROLE_BUSSINESS');
+        $user->setCompanyId($entityManager->getRepository(Companies::class)->findOneBy(['name' => $data['name'] ?? 'Business User']));
+        $user->setCreatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+        $user->setUpdatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+        $user->setTheme('light');
+
+
+        
+        $password = $data['password'];
+        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
+            return new JsonResponse([
+                'error' => 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.'
+            ], 400);
+        }
+
+        $hashedPassword = $passwordHasher->hashPassword($user, $password);
+        $user->setPassword($hashedPassword);
+
+        $user->setFullName($data['full_name']);
+        $user->setLanguage('en');
+
+        if (isset($data['bio'])) {
+            $user->setBio($data['bio']);
+        }
+        if (isset($data['name'])) {
+            $user->setFullName($data['name']);
+        }
+        if (isset($data['interests'])) {
+            $user->setInterests($data['interests']);
+        }
+
+        $profile = new Profile();
+        $profile->setUser($user);
+        $profile->setFullName('');
+        $profile->setAge(null);
+        $profile->setStudyProgram('');
+        $profile->setLocation('');
+        $profile->setBio('');
+
+
+        $company = new Companies();
+        $company->setName($data['name'] ?? 'Business User');
+        $company->setDescription($data['bio'] ?? '');
+        $company->setType($data['interests'] ?? 'General');
+        $company->setContactInfo($data['email']);
+        $location = $entityManager->getRepository(Locations::class)->findOneBy(['name' => 'emmen']);
+        $company->setLocationId($location);
+        $company->setCreatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+        $company->setUpdatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+
+
+        $entityManager->persist($user);
+        $entityManager->persist($profile);
+        $entityManager->persist($company);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Business user created'], 201);
+        }
+
+
 }

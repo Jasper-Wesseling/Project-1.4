@@ -24,7 +24,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Regex(
-        pattern: '/@(student\.)?nhlstenden\.com$|^tmp$/',
+        pattern: '/@(student\.)?nhlstenden\.com$|^tmp$|^info@/',
         message: 'Only emails ending with @nhlstenden.com or @student.nhlstenden.com are allowed.'
     )]
     private ?string $email = null;
@@ -125,6 +125,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
     private ?Profile $profile = null;
+
+    #[ORM\ManyToOne(inversedBy: 'users')]
+    private ?Companies $company_id = null;
 
 
 
@@ -577,6 +580,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
                 $widgetsUser->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCompanyId(): ?Companies
+    {
+        return $this->company_id;
+    }
+
+    public function setCompanyId(?Companies $company_id): static
+    {
+        $this->company_id = $company_id;
 
         return $this;
     }

@@ -49,6 +49,7 @@ function App() {
             <Route path="/bussiness" element={<Bussiness />} />
             <Route path="/events" element={<div>Events Management (coming soon)</div>} />
             <Route path="/posts" element={<div>Posts Management (coming soon)</div>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>

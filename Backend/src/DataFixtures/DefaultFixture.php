@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Locations;
 use App\Entity\Posts;
 use App\Entity\Users;
 use App\Entity\Products;
@@ -123,6 +124,12 @@ class DefaultFixture extends Fixture
         $post->setUpdatedAt(new \DateTime('2024-05-16T12:00:00'));
 
         $manager->persist($post);
+        $manager->flush();
+
+        $location = new Locations();
+        $location->setName('Emmen');
+
+        $manager->persist($location);
         $manager->flush();
     }
 }
