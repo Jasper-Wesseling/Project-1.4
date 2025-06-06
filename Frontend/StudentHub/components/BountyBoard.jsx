@@ -116,8 +116,6 @@ export default function BountyBoard({ navigation, token, theme }) {
 
     const styles = createBountyStyles(safeTheme);
 
-    // DEBUG: Log posts array and filtered posts before rendering
-    console.log('BountyBoard DEBUG: posts', posts);
     const filteredPosts = posts
         .filter(post => post && typeof post === 'object' && post.title)
         .filter(post =>
@@ -136,7 +134,7 @@ export default function BountyBoard({ navigation, token, theme }) {
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
-                    <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'hoi'}</Text>
+                    <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'Hey'}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />

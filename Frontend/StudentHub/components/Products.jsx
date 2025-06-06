@@ -109,7 +109,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
     });
 
     function formatPrice(price) {
-        return price ? priceFormat.format(price / 100): '';
+        return price ? priceFormat.format(price / 100): '€0.00';
     }
 
     // TEMP: Logout function for testing

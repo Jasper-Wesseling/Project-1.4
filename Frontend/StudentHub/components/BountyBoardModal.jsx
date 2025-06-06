@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, S
 import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 
-export default function BountyBoardModal({ visible, bounty, onClose, user, token, onPostDeleted }) {
+export default function BountyBoardModal({ visible, bounty, onClose, user, token, onPostDeleted, navigation }) {
     const [showOverige, setShowOverige] = useState(false);
     
     // Edit mode state
@@ -134,7 +134,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                         </View>
                         {/* Chat button */}
                         <View style={styles.buttonRow}>
-                            <TouchableOpacity style={styles.filledButton}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
+                            <TouchableOpacity onPress={() => { navigation.navigate('ProductChat', { userToChat: bounty.user_id, receiverName: bounty.product_username, bountyTitle: bounty.title, bounty: bounty }); onClose();}} style={styles.filledButton}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
                         </View>                        {/* Description */}
                         <Text style={styles.sectionTitle}>Beschrijving</Text>
                         {editMode ? (
@@ -156,7 +156,8 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                                 textAlignVertical="top"
                             />
                         ) : (
-                            <Text style={styles.details}>{bounty.description}</Text>                        )}
+                                <Text style={styles.details}>{bounty.description}</Text>                        
+                            )}
                           {/* Edit/Delete Buttons */}
                         {isCreator && !editMode && (
                             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
