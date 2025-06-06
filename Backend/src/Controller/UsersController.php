@@ -118,12 +118,6 @@ class UsersController extends AbstractController
         return new JsonResponse(['message' => 'User created'], 201);
     }
 
-    #[Route('/test', name: 'api_users_test', methods: ['GET'])]
-    public function test(): Response
-    {
-        return new JsonResponse(['message' => 'test'], 201);
-    }
-
     #[Route('/get', name: 'api_users_get', methods: ['GET'])]
     public function get(UsersRepository $usersRepository): Response
     {
@@ -149,6 +143,53 @@ class UsersController extends AbstractController
             'language' => $user->getLanguage(),
             'theme' => $user->getTheme(),
             'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
+        ];
+
+        return new JsonResponse($usersData, 200);
+    }
+
+    #[Route('/getbyid', name: 'api_users_get_by_id', methods: ['GET'])]
+    public function getById(Request $request, UsersRepository $usersRepository): Response
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+
+        $id = $request->query->get('id');
+        if (!$id) {
+            return new JsonResponse(['error' => 'No id provided'], 400);
+        }
+
+        $user = $usersRepository->find($id);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        $location = $user->getLocationId();
+        $locationData = null;
+        if ($location) {
+            $locationData = [
+                'id' => $location->getId(),
+                'name' => $location->getName(),
+                // Add more fields from Locations entity if needed
+            ];
+        }
+
+        $usersData = [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            'role' => $user->getRole(),
+            'full_name' => $user->getFullName(),
+            'bio' => $user->getBio(),
+            'avatar_url' => $user->getAvatarUrl(),
+            'interests' => $user->getInterests(),
+            'study_program' => $user->getStudyProgram(),
+            'language' => $user->getLanguage(),
+            'theme' => $user->getTheme(),
+            'location' => $locationData,
         ];
 
         return new JsonResponse($usersData, 200);

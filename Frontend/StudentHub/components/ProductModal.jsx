@@ -1,11 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
 import { API_URL } from '@env';
 
-export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user }) {
+export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token }) {
     const [showOverige, setShowOverige] = useState(false);
     const [showReviews, setShowReviews] = useState(false);
     const [fullscreenImg, setFullscreenImg] = useState(false);
+
+    // Add this state for seller data
+    const [sellerData, setSellerData] = useState(null);
+
+    useEffect(() => {
+        if (product && product.product_user_id && token) {
+            fetch(`${API_URL}/api/users/getbyid?id=${product.product_user_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(res => res.json())
+                .then(data => setSellerData(data))
+                .catch(err => setSellerData(null));
+        } else {
+            setSellerData(null);
+        }
+    }, [product]);
+
+
 
     if (!product) return null;
     return (
@@ -55,7 +75,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         <View style={styles.sellerContainer}>
                             <View style={styles.sellerRow}>
                                 <Image
-                                    source={product.avatar_url ? { uri: API_URL + product.avatar_url } : { uri: 'https://placecats.com/300/200' }}
+                                    source={sellerData.avatar_url ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
                                     style={styles.sellerImg}
                                 />
                                 <Text style={styles.sellerName}>{product.product_username}</Text>
@@ -68,8 +88,10 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         {/* Details */}
                         <Text style={styles.sectionTitle}>Details</Text>
                         <Text style={styles.details}>{product.description}</Text>
-                        {/* Overige (expandable) */}
-                        <TouchableOpacity
+                        
+
+                        {/* for later use when there needs to be more infomation added to the modal */}
+                        {/* <TouchableOpacity
                             style={styles.sectionRow}
                             onPress={() => setShowOverige(!showOverige)}
                             activeOpacity={0.7}
@@ -79,14 +101,10 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         </TouchableOpacity>
                         {showOverige && (
                             <Text style={styles.details}>
-                                {/* Replace this with your actual "overige" content */}
-                                Hier komt overige informatie over het product.
-                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsam corporis vitae natus fuga ratione quasi laudantium deleniti non repellendus aperiam modi atque, suscipit aliquid veniam architecto. Voluptatem natus fugiat magni.
-                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis minima quam praesentium esse ab saepe, nam voluptate minus eum corporis similique in laboriosam expedita cum, sed asperiores nulla velit neque?
-                                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Odit earum minima, deleniti, dolore cumque rem fugiat officia excepturi eligendi rerum laborum provident temporibus necessitatibus, deserunt veritatis maxime illum magnam dolor.
+                                test
                             </Text>
                         )}
-                        {/* Reviews (expandable) */}
+                        
                         <TouchableOpacity
                             style={styles.sectionRow}
                             onPress={() => setShowReviews(!showReviews)}
@@ -97,10 +115,9 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         </TouchableOpacity>
                         {showReviews && (
                             <Text style={styles.details}>
-                                {/* Replace this with your actual reviews */}
                                 Hier komen de reviews van het product.
                             </Text>
-                        )}
+                        )} */}
                     </ScrollView>
                 </View>
                 {/* Fullscreen Image Modal */}

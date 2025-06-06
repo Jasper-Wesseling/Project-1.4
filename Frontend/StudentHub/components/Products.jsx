@@ -229,6 +229,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 setUserToChat={setUserToChat}
                 productUser={selectedProduct?.product_user_id}
                 productUserName={selectedProduct?.product_username}
+                token={token}
             />
         </View>
     );
