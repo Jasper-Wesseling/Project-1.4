@@ -1,24 +1,40 @@
 import { useState } from "react";
-import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-
 
 export default function AddForum({ navigation, token }) {
-    
     const [title, onChangeTitle] = useState('');
     const [content, onChangecontent] = useState('');
     const [open, setOpen] = useState(false);
     const [category, setCategory] = useState('');
     const [items, setItems] = useState([
-        { label: 'Local', value: 'Local' },
-        { label: 'Remote', value: 'Remote' },
+        { label: 'Plannen', value: 'Plannen' },
+        { label: 'Stress', value: 'Stress' },
+        { label: 'Vakken', value: 'Vakken' },
+        { label: 'Sociale tips', value: 'Sociale tips' },
+        { label: 'Huiswerk', value: 'Huiswerk' },
+        { label: 'Presentaties', value: 'Presentaties' },
+        { label: 'Samenwerken', value: 'Samenwerken' },
+        { label: 'Stage', value: 'Stage' },
+        { label: 'Overig', value: 'Overig' },
     ]);
-    const [loading, setLoading] = useState(true);
+    const [image, setImage] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.7,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setImage(result.assets[0].uri);
+        }
+    };
 
     const uploadForum = async () => {
         if (!title || !content || !category) {
@@ -26,30 +42,46 @@ export default function AddForum({ navigation, token }) {
             return;
         }
 
+        setUploading(true);
+
         try {
             if (!token) throw new Error("No token received");
+
+            let formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
+            formData.append("category", category);
+
+            if (image) {
+                const filename = image.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image`;
+                formData.append("image", {
+                    uri: image,
+                    name: filename,
+                    type,
+                });
+            }
 
             const response = await fetch(API_URL + '/api/forums/new', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
                 },
-                body: JSON.stringify({
-                    "title": title,
-                    "content": content,
-                    "category": category,
-                }),
+                body: formData,
             });
+
             if (!response.ok) throw new Error("add forum failed");
-            const data = await response.json();
-            setLoading(false);
+            setUploading(false);
             navigation.goBack();
 
         } catch (error) {
+            setUploading(false);
             console.error(error);
             Alert.alert('Upload Failed', 'Try again');
         }
-    }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -69,12 +101,23 @@ export default function AddForum({ navigation, token }) {
                         value={title}
                         placeholder="Title"
                     />
+                    <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+                        <Text style={styles.imagePickerText}>
+                            {image ? "Change Image" : "Upload Image"}
+                        </Text>
+                    </TouchableOpacity>
+                    {image && (
+                        <Image
+                            source={{ uri: image }}
+                            style={styles.previewImage}
+                        />
+                    )}
                     <TextInput
                         multiline
                         style={[styles.input, styles.inputcontent]}
                         onChangeText={onChangecontent}
                         value={content}
-                        placeholder="content"
+                        placeholder="Content"
                     />
                     <DropDownPicker
                         open={open}
@@ -88,7 +131,11 @@ export default function AddForum({ navigation, token }) {
                     />
                 </View>
                 <View style={styles.uploadButtonWrapper}>
-                    <Button title="Upload" onPress={uploadForum} color={'white'}/>
+                    {uploading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Button title="Upload" onPress={uploadForum} color={'white'}/>
+                    )}
                 </View>
             </View>
         </SafeAreaView>
@@ -142,6 +189,25 @@ const styles = StyleSheet.create({
     },
     inputcontent: {
         height: 100,
+    },
+    imagePicker: {
+        backgroundColor: "#FFC83A",
+        borderRadius: 16,
+        padding: 12,
+        alignItems: "center",
+    },
+    imagePickerText: {
+        color: "#2A4BA0",
+        fontWeight: "bold",
+        fontSize: 16,
+    },
+    previewImage: {
+        width: "100%",
+        height: 180,
+        borderRadius: 16,
+        marginTop: 8,
+        marginBottom: 8,
+        resizeMode: "cover",
     },
     uploadButtonWrapper: {
         marginBottom: 50,

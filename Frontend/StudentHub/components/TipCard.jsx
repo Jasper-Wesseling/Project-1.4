@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 function getTimeAgo(dateString) {
@@ -38,7 +37,10 @@ export default function TipCard({ tip, onPress }) {
                         />
                     ) : null}
                     {/* Content */}
-                    <View style={{ flex: 1 }}>
+                    <View style={[
+                        { flex: 1 },
+                        !tip.image && { marginLeft: 56 + 16 } // zelfde ruimte als image+marginRight
+                    ]}>
                         <Text style={styles.title} numberOfLines={2}>{tip.title}</Text>
                         <Text style={styles.timeAgo}>{getTimeAgo(tip.created_at)}</Text>
                         <Text style={styles.content} numberOfLines={3}>{tip.content}</Text>

@@ -1,12 +1,22 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, TextInput, Animated } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Animated } from "react-native";
 import { API_URL } from "@env";
 import TipCard from "./TipCard";
 import TipModal from "./TipModal";
 import { Icon } from "react-native-elements";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 
-const FILTERS = ["aap", "banketstaaf", "Vlaflip", "Tech", "Overig"];
+const FILTERS = [
+    "Plannen",
+    "Stress",
+    "Vakken",
+    "Sociale tips",
+    "Huiswerk",
+    "Presentaties",
+    "Samenwerken",
+    "Stage",
+    "Overig",
+];
 const PAGE_SIZE = 10;
 
 export default function TipsFeed({ token, user, navigation }) {
@@ -28,14 +38,8 @@ export default function TipsFeed({ token, user, navigation }) {
     const scrollY = useRef(new Animated.Value(0)).current;
 
     const headerHeight = scrollY.interpolate({
-        inputRange: [0, 100],
-        outputRange: [150, 0],
-        extrapolate: "clamp",
-    });
-
-    const filterTop = scrollY.interpolate({
-        inputRange: [0, 100],
-        outputRange: [250, 100], // 100 is top bar height, 150 is max header height
+        inputRange: [0, 166],
+        outputRange: [156, 0],
         extrapolate: "clamp",
     });
 
@@ -112,7 +116,7 @@ export default function TipsFeed({ token, user, navigation }) {
             !allLoaded &&
             tips.length >= PAGE_SIZE &&
             !loadingMoreRef.current &&
-            viewableItems.some(item => item.index === 6)
+            viewableItems.some(item => item.index === 5)
         ) {
             loadingMoreRef.current = true;
             fetchTips(page + 1);
@@ -124,8 +128,19 @@ export default function TipsFeed({ token, user, navigation }) {
         loadingMoreRef.current = false;
     }, [tips]);
 
-    const handleEndReached = () => {
-        if (!loading && !allLoaded && tips.length >= PAGE_SIZE * page) {
+    const handleScroll = ({ nativeEvent }) => {
+        const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
+        const scrollPosition = contentOffset.y + layoutMeasurement.height;
+        const halfway = contentSize.height * 0.5;
+
+        if (
+            scrollPosition >= halfway &&
+            !loading &&
+            !allLoaded &&
+            tips.length >= PAGE_SIZE * page &&
+            !loadingMoreRef.current
+        ) {
+            loadingMoreRef.current = true;
             fetchTips(page + 1);
             setPage(p => p + 1);
         }
@@ -207,9 +222,38 @@ export default function TipsFeed({ token, user, navigation }) {
         return updatedTip;
     };
 
+    const handleAddReply = async (replyText) => {
+        if (!selectedTip || !replyText.trim()) return;
+        try {
+            const response = await fetch(`${API_URL}/api/forums/${selectedTip.id}/reply`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ content: replyText }),
+            });
+            if (!response.ok) throw new Error("Reply failed");
+
+            // Haal altijd de volledige, actuele forum op na reply
+            const updatedTip = await fetchTipById(selectedTip.id);
+
+            setSelectedTip(updatedTip);
+            setTips(tips => tips.map(t => t.id === updatedTip.id ? updatedTip : t));
+
+            return updatedTip;
+        } catch (e) {
+            alert("Reactie plaatsen mislukt");
+            return null;
+        }
+    };
+
     function handleTipPress(tip) {
-        setSelectedTip(tip);
-        setModalVisible(true);
+        if (!tip || !tip.id) return;
+        fetchTipById(tip.id).then(freshTip => {
+            setSelectedTip(freshTip);
+            setModalVisible(true);
+        });
     }
 
     function renderTipCard({ item }) {
@@ -245,34 +289,92 @@ export default function TipsFeed({ token, user, navigation }) {
             </View>
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity, fontWeight: "300" }]}>
                     The Forum
                 </Animated.Text>
                 <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>
                     By Everyone
                 </Animated.Text>
             </Animated.View>
-            {/* Sticky Filter Row */}
-            <Animated.View style={[
-                styles.filterRow,
-                { top: filterTop, height: 50 }
-            ]}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.filterScrollContent}
-                >
-                    {FILTERS.map((filter, i) => (
-                        <TouchableOpacity key={i} onPress={() => toggleFilter(filter)}>
-                            <Text style={[
-                                styles.filter,
-                                activeFilters.includes(filter) ? styles.activeFilter : null
-                            ]}>
-                                {filter}
+
+            {/* Sticky zoekbalk + filters */}
+            <Animated.View
+                style={[
+                    styles.stickyBar,
+                    { position: "absolute", left: 0, right: 0, marginTop: stickyBarMarginTop, zIndex: 5 }
+                ]}
+            >
+                <View style={styles.searchRow}>
+                    <View style={styles.searchBar}>
+                        <Icon type="Feather" name="search" size={20} color="#A0A0A0" style={{ marginRight: 8 }} />
+                        <TextInput
+                            placeholder="Search for a post"
+                            value={search}
+                            onChangeText={setSearch}
+                            style={styles.searchInput}
+                            placeholderTextColor="#A0A0A0"
+                        />
+                    </View>
+                    <TouchableOpacity
+                        style={styles.createBtn}
+                        onPress={() => navigation.navigate("AddForum")}
+                    >
+                        <Text style={styles.createBtnText}>Create post</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.filterRow}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ flexGrow: 1, paddingRight: 12 }}
+                        style={{ flex: 1, minWidth: 0 }}
+                    >
+                        {FILTERS.map(filter => (
+                            <TouchableOpacity
+                                key={filter}
+                                style={[
+                                    styles.filterBtn,
+                                    activeFilters.includes(filter) && styles.filterBtnActive
+                                ]}
+                                onPress={() => toggleFilter(filter)}
+                            >
+                                <Text style={[
+                                    styles.filterBtnText,
+                                    activeFilters.includes(filter) && styles.filterBtnTextActive
+                                ]}>{filter}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                    <View style={styles.sortBtns}>
+                        <TouchableOpacity onPress={() => toggleSort("likes")}>
+                            <Text style={{
+                                color: sort.field === "likes" ? "#2A4BA0" : "#888",
+                                fontWeight: "bold",
+                                marginRight: 8,
+                                minWidth: 60,
+                                textAlign: "center",
+                            }}>
+                                Likes
+                                <Text>
+                                    {sort.field === "likes" ? (sort.order === "asc" ? " ▲" : " ▼") : " "}
+                                </Text>
                             </Text>
                         </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                        <TouchableOpacity onPress={() => toggleSort("created_at")}>
+                            <Text style={{
+                                color: sort.field === "created_at" ? "#2A4BA0" : "#888",
+                                fontWeight: "bold",
+                                minWidth: 60,
+                                textAlign: "center",
+                            }}>
+                                Datum
+                                <Text>
+                                    {sort.field === "created_at" ? (sort.order === "asc" ? " ▲" : " ▼") : " "}
+                                </Text>
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </Animated.View>
             {/* Scrollable Content */}
             {loading && tips.length === 0 ? (
@@ -301,33 +403,30 @@ export default function TipsFeed({ token, user, navigation }) {
                 <Text style={{ textAlign: "center", marginTop: 40, color: "#000" }}>Geen tips gevonden</Text>
             ) : (
                 <>
-                    <Animated.FlatList
-                        ref={flatListRef}
-                        data={tips}
-                        keyExtractor={item => `tip-${item.id}`}
-                        renderItem={renderTipCard}
-                        contentContainerStyle={{
-                            paddingTop: 300, // 100(topBar) + 150(header) + 50(filterRow)
+                    <Animated.ScrollView
+                        ref={scrollViewRef}
+                        style={{
+                            flex: 1,
+                            paddingTop: 360,
                             paddingBottom: 16,
-                            paddingHorizontal: 0 // geen extra padding, net als Products
+                            paddingHorizontal: 0
                         }}
                         onScroll={Animated.event(
                             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                            { useNativeDriver: false }
+                            {
+                                useNativeDriver: false,
+                                listener: handleScroll // <-- hier de 50% check
+                            }
                         )}
                         scrollEventThrottle={16}
-                        onEndReached={handleEndReached}
-                        onEndReachedThreshold={0.2}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        viewabilityConfig={viewabilityConfig}
-                        ListFooterComponent={
-                            allLoaded && tips.length > 0 ? (
-                                <Text style={{ textAlign: "center", color: "#000" }}>
-                                    Je hebt elke post gezien
-                                </Text>
-                            ) : null
-                        }
-                    />
+                    >
+                        {tips.map((item, idx) => renderTipCard({ item, index: idx }))}
+                        {allLoaded && tips.length > 0 ? (
+                            <Text style={{ textAlign: "center", color: "#000" }}>
+                                Je hebt elke post gezien
+                            </Text>
+                        ) : null}
+                    </Animated.ScrollView>
                     <TipModal
                         visible={modalVisible}
                         tip={selectedTip}
@@ -337,6 +436,8 @@ export default function TipsFeed({ token, user, navigation }) {
                         onDislike={handleDislike}
                         onReplyLike={(idx, action) => handleReplyLike(selectedTip.id, idx, action)}
                         onReplyDislike={(idx, action) => handleReplyDislike(selectedTip.id, idx, action)}
+                        onAddReply={handleAddReply}
+                        token={token}
                     />
                 </>
             )}
@@ -363,70 +464,122 @@ const styles = StyleSheet.create({
     },
     topBarRow: {
         flexDirection: "row",
-        justifyContent: "space-between"
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
     },
     topBarText: {
         color: "#fff",
         fontSize: 24,
-        fontWeight: "bold"
+        fontWeight: "bold",
     },
     topBarIcons: {
-        flexDirection: 'row',
-        width: 125,
-        justifyContent: 'space-around',
-        alignContent: 'center'
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
     },
     header: {
         position: "absolute",
         top: 100,
         left: 0,
         right: 0,
-        backgroundColor: '#2A4BA0',
+        backgroundColor: "#2A4BA0",
         justifyContent: "center",
         alignItems: "flex-start",
         paddingHorizontal: 16,
         zIndex: 10,
     },
     headerText: {
-        alignSelf: 'flex-start',
-        color: "white",
+        color: "#fff",
         fontSize: 64,
+        fontWeight: "bold",
     },
-    filterRow: {
-        position: "absolute",
-        left: 0,
-        right: 0,
+    headerTextBold: {
+        color: "#fff",
+        fontSize: 64,
+        fontWeight: "bold",
+    },
+    stickyBar: {
         backgroundColor: "#fff",
+        zIndex: 5,
+        paddingBottom: 8,
+        paddingTop: 8,
+        paddingHorizontal: 0,
+    },
+    searchRow: {
         flexDirection: "row",
         alignItems: "center",
-        zIndex: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: "#eee",
-        gap: 10,
+        marginBottom: 8,
+        marginHorizontal: 16,
+    },
+    searchBar: {
         flex: 1,
-    },
-    filterScrollContent: {
-        alignItems: "center"
-    },
-    filter: {
-        paddingHorizontal: 10,
-        marginHorizontal: 8,
-        paddingVertical: 7,
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        borderRadius: 24,
         borderWidth: 1,
-        borderColor: 'grey',
-        borderRadius: 100,
+        borderColor: "#E0E0E0",
+        paddingHorizontal: 16,
+        marginRight: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 2,
     },
-    activeFilter: {
-        backgroundColor: '#FFC83A'
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: "#222",
     },
-    scrollViewContent: {
-        paddingTop: 300,
-        paddingBottom: 40,
+    createBtn: {
+        backgroundColor: "#FFC83A",
+        borderRadius: 24,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
     },
-    loadingText: {
-        paddingTop: 300,
-        fontSize: 64,
-        color: 'black',
-        alignSelf: 'center'
-    }
+    createBtnText: {
+        color: "#fff",
+        fontWeight: "bold",
+        fontSize: 16,
+    },
+    filterRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 4,
+        marginHorizontal: 8,
+    },
+    filterBtn: {
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        marginHorizontal: 4,
+        borderWidth: 1,
+        borderColor: "#2A4BA0",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+        elevation: 1,
+    },
+    filterBtnActive: {
+        backgroundColor: "#FFC83A",
+        borderColor: "#FFC83A",
+    },
+    filterBtnText: {
+        color: "#2A4BA0",
+        fontWeight: "bold",
+    },
+    filterBtnTextActive: {
+        color: "#fff",
+    },
+    sortBtns: {
+        flexDirection: "row",
+        marginLeft: 8,
+        alignItems: "center",
+        minWidth: 130,
+        justifyContent: "flex-end"
+    },
 });

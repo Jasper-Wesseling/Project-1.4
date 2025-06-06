@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView, TextInput } from "react-native";
+import { API_URL } from "@env"; // Zorg dat je de juiste API_URL importeert
 
-export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply }) {
+export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply, token }) {
     const [loading, setLoading] = useState(false);
     const [localTip, setLocalTip] = useState(tip);
     const [replyText, setReplyText] = useState("");
     const [sendingReply, setSendingReply] = useState(false);
+    const [imgSize, setImgSize] = useState({ width: 300, height: 300 });
 
     // Synchroniseer lokale tip met prop-tip bij openen of tip-wijziging
     useEffect(() => {
@@ -32,43 +34,54 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
 
     // Handler voor togglen van like/dislike
     const handleLikePress = async () => {
-        if (typeof onLike === "function") {
+        if (typeof onLike === "function" && localTip?.id) {
             setLoading(true);
-            // Als gebruiker al geliked heeft: doe niks
-            if (hasLiked) {
-                setLoading(false);
-                return;
-            }
-            // Als gebruiker disliked heeft: eerst dislike weghalen, dan like toevoegen
-            const updatedTip = await onLike("like");
-            if (updatedTip) setLocalTip(updatedTip); 
-            setLoading(false);
-        }
-    };
-    const handleDislikePress = async () => {
-        if (typeof onDislike === "function") {
-            setLoading(true);
-            // Als gebruiker al disliked heeft: doe niks
-            if (hasDisliked) {
-                setLoading(false);
-                return;
-            }
-            // Als gebruiker geliked heeft: eerst like weghalen, dan dislike toevoegen
-            const updatedTip = await onDislike("dislike");
-            if (updatedTip) setLocalTip(updatedTip); 
+            await onLike(hasLiked ? "undo" : "like");
+            // Altijd de nieuwste versie ophalen mét token
+            const updatedTip = await fetch(`${API_URL}/api/forums/${localTip.id}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                }
+            }).then(res => res.json());
+            setLocalTip(updatedTip);
             setLoading(false);
         }
     };
 
-    // Voeg deze functie toe:
+    const handleDislikePress = async () => {
+        if (typeof onDislike === "function" && localTip?.id) {
+            setLoading(true);
+            await onDislike(hasDisliked ? "undo" : "dislike");
+            // Altijd de nieuwste versie ophalen
+            const updatedTip = await fetch(`${API_URL}/api/forums/${localTip.id}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                }
+            }).then(res => res.json());
+            setLocalTip(updatedTip);
+            setLoading(false);
+        }
+    };
+
     const handleAddReply = async () => {
-        if (!replyText.trim()) return;
+        if (!replyText.trim() || !localTip?.id) return;
         setSendingReply(true);
         if (typeof onAddReply === "function") {
-            const updatedTip = await onAddReply(replyText);
-            if (updatedTip) {
-                setLocalTip(updatedTip);
-                setReplyText("");
+            await onAddReply(replyText);
+            // Alleen ophalen als localTip.id bestaat
+            if (localTip.id) {
+                const updatedTip = await fetch(`${API_URL}/api/forums/${localTip.id}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    }
+                }).then(res => res.json());
+                if (updatedTip) {
+                    setLocalTip(updatedTip);
+                    setReplyText("");
+                }
             }
         }
         setSendingReply(false);
@@ -119,7 +132,25 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         {/* Image */}
                         {localTip.image && (
                             <View style={styles.imageContainer}>
-                                <Image source={{ uri: localTip.image }} style={styles.image} resizeMode="cover" />
+                                <Image
+                                    source={{ uri: localTip.image }}
+                                    style={{
+                                        width: imgSize.width,
+                                        height: imgSize.height,
+                                        borderRadius: 16,
+                                        resizeMode: "contain",
+                                        maxWidth: 300,
+                                        maxHeight: 300,
+                                    }}
+                                    onLoad={e => {
+                                        const { width, height } = e.nativeEvent.source;
+                                        let ratio = Math.min(300 / width, 300 / height);
+                                        setImgSize({
+                                            width: Math.round(width * ratio),
+                                            height: Math.round(height * ratio),
+                                        });
+                                    }}
+                                />
                             </View>
                         )}
                         {/* Title */}
@@ -128,12 +159,12 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         <Text style={styles.content}>{localTip.content}</Text>
                         {/* Like/Dislike post */}
                         <View style={styles.buttonRow}>
-                            <TouchableOpacity style={styles.outlineButton} onPress={handleLikePress} disabled={loading}>
-                                <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
+                            <TouchableOpacity style={[styles.outlineButton, hasLiked && { borderColor: '#2A4BA0' }]} onPress={handleLikePress} disabled={loading}>
+                                <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold"}]}>
                                     ⬆ {localTip.likes?.length || 0} Like
                                 </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.outlineButton} onPress={handleDislikePress} disabled={loading}>
+                            <TouchableOpacity style={[styles.outlineButton, hasDisliked && { borderColor: '#C00'}]} onPress={handleDislikePress} disabled={loading}>
                                 <Text style={[styles.outlineButtonText, hasDisliked && { color: "#C00", fontWeight: "bold" }]}>
                                     ⬇ {localTip.dislikes?.length || 0} Dislike
                                 </Text>
@@ -143,26 +174,26 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         <Text style={styles.sectionTitle}>Reacties</Text>
                         <View style={{ marginBottom: 24 }}>
                             {Array.isArray(localTip.replies) && localTip.replies.length > 0 ? (
-                                localTip.replies.map((reply, idx) => {
-                                    const replyLiked = reply.upvotes?.includes(currentUserId);
-                                    const replyDisliked = reply.downvotes?.includes(currentUserId);
+                                    localTip.replies.map((reply, idx) => {
+                                        const replyLiked = reply.upvotes?.includes(currentUserId);
+                                        const replyDisliked = reply.downvotes?.includes(currentUserId);
 
-                                    const handleReplyLikePress = async () => {
-                                        if (typeof onReplyLike === "function") {
-                                            setLoading(true);
-                                            const updatedTip = await onReplyLike(idx, replyLiked ? "undo" : "like");
-                                            if (updatedTip) setLocalTip(updatedTip);
-                                            setLoading(false);
-                                        }
-                                    };
-                                    const handleReplyDislikePress = async () => {
-                                        if (typeof onReplyDislike === "function") {
-                                            setLoading(true);
-                                            const updatedTip = await onReplyDislike(idx, replyDisliked ? "undo" : "dislike");
-                                            if (updatedTip) setLocalTip(updatedTip);
-                                            setLoading(false);
-                                        }
-                                    };
+                                        const handleReplyLikePress = async () => {
+                                            if (typeof onReplyLike === "function") {
+                                                setLoading(true);
+                                                const updatedTip = await onReplyLike(idx, replyLiked ? "undo" : "like");
+                                                if (updatedTip) setLocalTip(updatedTip);
+                                                setLoading(false);
+                                            }
+                                        };
+                                        const handleReplyDislikePress = async () => {
+                                            if (typeof onReplyDislike === "function") {
+                                                setLoading(true);
+                                                const updatedTip = await onReplyDislike(idx, replyDisliked ? "undo" : "dislike");
+                                                if (updatedTip) setLocalTip(updatedTip);
+                                                setLoading(false);
+                                            }
+                                        };
 
                                     return (
                                         <View key={idx} style={styles.replyBox}>
@@ -288,18 +319,19 @@ const styles = StyleSheet.create({
     imageContainer: {
         marginTop: 8,
         marginBottom: 16,
-        width: 200,
-        height: 200,
-        borderRadius: 100,
+        maxWidth: 300,
+        maxHeight: 300,
+        borderRadius: 16,
         backgroundColor: '#f4f5f7',
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
     },
     image: {
-        width: 170,
-        height: 170,
-        borderRadius: 85,
+        maxWidth: 300,
+        maxHeight: 300,
+        borderRadius: 16,
+        resizeMode: "cover",
     },
     title: {
         fontSize: 22,
@@ -324,7 +356,7 @@ const styles = StyleSheet.create({
     outlineButton: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#2A4BA0',
+        borderColor: '#888',
         borderRadius: 16,
         paddingVertical: 12,
         marginHorizontal: 8,
@@ -332,7 +364,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     outlineButtonText: {
-        color: '#2A4BA0',
+        color: '#888',
         fontWeight: 'bold',
         fontSize: 16,
     },

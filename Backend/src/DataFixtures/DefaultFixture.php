@@ -126,30 +126,73 @@ class DefaultFixture extends Fixture
         $manager->persist($post);
         $manager->flush();
 
-        $forumCategories = ["aap", "banketstaaf", "Vlaflip", "Tech", "Overig"];
+        $forumCategories = [
+            "Plannen",
+            "Stress",
+            "Vakken",
+            "Sociale tips",
+            "Huiswerk",
+            "Presentaties",
+            "Samenwerken",
+            "Stage",
+            "Overig",
+        ];
+
+        // Forum titles and contents per category
         $forumTitles = [
+            "Hoe maak jij een goede planning?",
+            "Plannen met een app of op papier?",
+            "Hoe ga jij om met studiestress?",
+            "Tips om te ontspannen tijdens tentamens?",
+            "Moeilijkste vak tot nu toe?",
+            "Welke vakken zijn het leukst?",
+            "Hoe maak je makkelijk nieuwe vrienden?",
+            "Tips voor samenwerken in groepen?",
+            "Hoeveel tijd besteed jij aan huiswerk?",
+            "Beste plek om huiswerk te maken?",
+            "Hoe bereid jij je voor op een presentatie?",
+            "Tips tegen zenuwen bij presenteren?",
+            "Wat maakt een team succesvol?",
+            "Hoe verdeel je taken eerlijk?",
+            "Hoe vind je een goede stageplek?",
+            "Wat heb je geleerd tijdens je stage?",
             "Wat is je favoriete snack?",
-            "Tips voor Tech studenten",
             "Vlaflip: recept gezocht!",
             "Aap in de collegezaal?",
-            "Banketstaaf of kerststol?",
             "Tech gadgets 2025",
-            "Overig: alles mag hier",
             "Wie houdt er van kaas?",
+            "Banketstaaf of kerststol?",
+            "Overig: alles mag hier",
             "Beste studietip ooit",
-            "Hoe motiveer jij jezelf?"
+            "Hoe motiveer jij jezelf?",
         ];
+
         $forumContents = [
+            "Deel jouw beste planningsstrategie!",
+            "Wat werkt voor jou het beste: digitaal of papier?",
+            "Welke tips heb jij om stress te verminderen?",
+            "Wat doe jij om te ontspannen tijdens drukke periodes?",
+            "Welk vak vond je het lastigst en waarom?",
+            "Welke vakken vind je het leukst en waarom?",
+            "Hoe leg jij makkelijk contact met anderen?",
+            "Wat zijn jouw tips voor groepswerk?",
+            "Hoeveel uur per week besteed jij aan huiswerk?",
+            "Waar werk jij het liefst aan je huiswerk?",
+            "Hoe bereid jij je voor op een presentatie?",
+            "Wat helpt tegen zenuwen voor de klas?",
+            "Wat maakt een samenwerking succesvol volgens jou?",
+            "Hoe zorg je dat iedereen in het team meedoet?",
+            "Hoe heb jij je stage gevonden?",
+            "Wat was jouw grootste leermoment tijdens je stage?",
             "Laat hieronder weten wat jouw favoriete snack is!",
-            "Welke tips heb jij voor nieuwe tech studenten?",
             "Wie heeft een goed recept voor vlaflip?",
             "Er liep vandaag een aap door de collegezaal, iemand gezien?",
-            "Wat vinden jullie lekkerder: banketstaaf of kerststol?",
             "Welke gadgets gebruik jij voor school?",
-            "Plaats hier alles wat niet in een andere categorie past.",
             "Kaas is leven. Eens of oneens?",
+            "Wat vinden jullie lekkerder: banketstaaf of kerststol?",
+            "Plaats hier alles wat niet in een andere categorie past.",
             "Deel jouw beste studietip!",
-            "Hoe blijf jij gemotiveerd tijdens het studeren?"
+            "Hoe blijf jij gemotiveerd tijdens het studeren?",
         ];
 
         for ($i = 0; $i < 30; $i++) {

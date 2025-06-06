@@ -63,11 +63,16 @@ class ForumController extends AbstractController
             if ($sortField === 'likes') {
                 $aCount = count($a->getLikes() ?? []);
                 $bCount = count($b->getLikes() ?? []);
+                if ($aCount === $bCount) {
+                    // Sorteer op datum als likes gelijk zijn
+                    $aDate = $a->getCreatedAt()?->getTimestamp() ?? 0;
+                    $bDate = $b->getCreatedAt()?->getTimestamp() ?? 0;
+                    return $sortOrder === 'asc' ? $aDate <=> $bDate : $bDate <=> $aDate;
+                }
             } elseif ($sortField === 'created_at') {
                 $aCount = $a->getCreatedAt()?->getTimestamp() ?? 0;
                 $bCount = $b->getCreatedAt()?->getTimestamp() ?? 0;
             } else {
-                // fallback: sorteer op id
                 $aCount = $a->getId();
                 $bCount = $b->getId();
             }
@@ -119,27 +124,41 @@ class ForumController extends AbstractController
             return new JsonResponse(['error' => 'Invalid token'], 401);
         }
 
-        $data = json_decode($request->getContent(), true);
+        // Haal data uit form-data
+        $title = $request->request->get('title');
+        $content = $request->request->get('content');
+        $category = $request->request->get('category');
+        $imageFile = $request->files->get('image');
 
-        if (
-            empty($data['title']) ||
-            empty($data['content']) ||
-            empty($data['category'])
-        ) {
+        if (empty($title) || empty($content) || empty($category)) {
             return new JsonResponse(['error' => 'Missing fields'], 400);
         }
 
         $user = $this->getUser();
         $forum = new Forums();
-        $forum->setTitle($data['title']);
-        $forum->setContent($data['content']);
-        $forum->setCategory($data['category']);
+        $forum->setTitle($title);
+        $forum->setContent($content);
+        $forum->setCategory($category);
         $forum->setUserId($user);
-        $forum->setCreatedAt(new \DateTime());
+        $forum->setCreatedAt(new \DateTime('Europe/Amsterdam'));
         $forum->setReplies([]);
         $forum->setLikes([]);
         $forum->setDislikes([]);
-        $forum->setImage($data['image'] ?? null);
+
+        // Afbeelding opslaan indien aanwezig
+        if ($imageFile) {
+            $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads/forums';
+            $newFileName = uniqid() . '.' . pathinfo($imageFile->getClientOriginalName(), PATHINFO_EXTENSION);
+
+            try {
+                $imageFile->move($uploadsDir, $newFileName);
+                $forum->setImage('/uploads/forums/' . $newFileName);
+            } catch (\Exception $e) {
+                return new JsonResponse(['error' => 'File upload failed: ' . $e->getMessage()], 400);
+            }
+        } else {
+            $forum->setImage(null);
+        }
 
         $em->persist($forum);
         $em->flush();
@@ -169,7 +188,7 @@ class ForumController extends AbstractController
         $replies[] = [
             'user_name' => $this->getUser()->getFullName(),
             'user_id' => $this->getUser()->getId(), 
-            'created_at' => (new \DateTime())->format('Y-m-d H:i:s'),
+            'created_at' => (new \DateTime('Europe/Amsterdam'))->format('Y-m-d H:i:s'),
             'content' => $data['content'],
             'upvotes' => [],
             'downvotes' => []
@@ -181,7 +200,7 @@ class ForumController extends AbstractController
     }
 
     #[Route('/{id}/like', name: 'api_forums_like', methods: ['POST'])]
-    public function like(int $id, ForumsRepository $forumsRepository, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
+    public function like(int $id, ForumsRepository $forumsRepository, Request $request, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
@@ -193,17 +212,22 @@ class ForumController extends AbstractController
             return new JsonResponse(['error' => 'Forum not found'], 404);
         }
 
-        $userId = $this->getUser()->getId(); 
+        $data = json_decode($request->getContent(), true);
+        $action = $data['action'] ?? 'like';
+
+        $userId = $this->getUser()->getId();
         $likes = $forum->getLikes() ?? [];
         $dislikes = $forum->getDislikes() ?? [];
 
-        // Voeg toe aan likes als nog niet geliked
-        if (!in_array($userId, $likes)) {
-            $likes[] = $userId;
-            // Verwijder uit dislikes als daar aanwezig
-            $dislikes = array_diff($dislikes, [$userId]);
+        if ($action === 'like') {
+            if (!in_array($userId, $likes)) {
+                $likes[] = $userId;
+                $dislikes = array_diff($dislikes, [$userId]);
+            }
+        } elseif ($action === 'undo') {
+            $likes = array_diff($likes, [$userId]);
         }
-        $forum->setLikes($likes);
+        $forum->setLikes(array_values($likes));
         $forum->setDislikes(array_values($dislikes));
         $em->flush();
 
@@ -211,7 +235,7 @@ class ForumController extends AbstractController
     }
 
     #[Route('/{id}/dislike', name: 'api_forums_dislike', methods: ['POST'])]
-    public function dislike(int $id, ForumsRepository $forumsRepository, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
+    public function dislike(int $id, ForumsRepository $forumsRepository, Request $request, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
@@ -223,22 +247,23 @@ class ForumController extends AbstractController
             return new JsonResponse(['error' => 'Forum not found'], 404);
         }
 
-        $user = $this->getUser();
-        if (!$user || !method_exists($user, 'getId')) {
-            return new JsonResponse(['error' => 'User not found or invalid'], 401);
-        }
-        $userId = $user->getId();
+        $data = json_decode($request->getContent(), true);
+        $action = $data['action'] ?? 'dislike';
+
+        $userId = $this->getUser()->getId();
         $likes = $forum->getLikes() ?? [];
         $dislikes = $forum->getDislikes() ?? [];
 
-        // Voeg toe aan dislikes als nog niet gedisliked
-        if (!in_array($userId, $dislikes)) {
-            $dislikes[] = $userId;
-            // Verwijder uit likes als daar aanwezig
-            $likes = array_diff($likes, [$userId]);
+        if ($action === 'dislike') {
+            if (!in_array($userId, $dislikes)) {
+                $dislikes[] = $userId;
+                $likes = array_diff($likes, [$userId]);
+            }
+        } elseif ($action === 'undo') {
+            $dislikes = array_diff($dislikes, [$userId]);
         }
         $forum->setLikes(array_values($likes));
-        $forum->setDislikes($dislikes);
+        $forum->setDislikes(array_values($dislikes));
         $em->flush();
 
         return $this->json(['success' => true, 'dislikes' => $dislikes]);
@@ -271,25 +296,23 @@ class ForumController extends AbstractController
             return new JsonResponse(['error' => 'Reply not found'], 404);
         }
 
-        // Init arrays als ze niet bestaan
         if (!isset($replies[$replyIndex]['upvotes'])) $replies[$replyIndex]['upvotes'] = [];
         if (!isset($replies[$replyIndex]['downvotes'])) $replies[$replyIndex]['downvotes'] = [];
 
-        // Upvote
         if ($voteType === 'up') {
             if (!in_array($userId, $replies[$replyIndex]['upvotes'])) {
                 $replies[$replyIndex]['upvotes'][] = $userId;
-                // Verwijder uit downvotes als aanwezig
                 $replies[$replyIndex]['downvotes'] = array_values(array_diff($replies[$replyIndex]['downvotes'], [$userId]));
             }
-        }
-        // Downvote
-        elseif ($voteType === 'down') {
+        } elseif ($voteType === 'down') {
             if (!in_array($userId, $replies[$replyIndex]['downvotes'])) {
                 $replies[$replyIndex]['downvotes'][] = $userId;
-                // Verwijder uit upvotes als aanwezig
                 $replies[$replyIndex]['upvotes'] = array_values(array_diff($replies[$replyIndex]['upvotes'], [$userId]));
             }
+        } elseif ($voteType === 'undo-up') {
+            $replies[$replyIndex]['upvotes'] = array_values(array_diff($replies[$replyIndex]['upvotes'], [$userId]));
+        } elseif ($voteType === 'undo-down') {
+            $replies[$replyIndex]['downvotes'] = array_values(array_diff($replies[$replyIndex]['downvotes'], [$userId]));
         } else {
             return new JsonResponse(['error' => 'Invalid vote type'], 400);
         }
