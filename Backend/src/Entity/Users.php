@@ -24,7 +24,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Regex(
-        pattern: '/@(student\.)?nhlstenden\.com$/',
+        pattern: '/@(student\.)?nhlstenden\.com$|^tmp$/',
         message: 'Only emails ending with @nhlstenden.com or @student.nhlstenden.com are allowed.'
     )]
     private ?string $email = null;
@@ -126,8 +126,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
     private ?Profile $profile = null;
 
-    #[ORM\Column(nullable: false)]
-    private ?bool $disabled = false;
 
 
 
@@ -583,15 +581,4 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isDisabled(): ?bool
-    {
-        return $this->disabled;
-    }
-
-    public function setDisabled(bool $disabled): static
-    {
-        $this->disabled = $disabled;
-
-        return $this;
-    }
 }
