@@ -57,7 +57,6 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddProduct {...props} token={token} theme={theme} />}
       </Tab.Screen>
 
-      <Tab.Screen name="BountyBoard" component={BountyBoard} />
 
       <Tab.Screen name="BusinessPage" component={BusinessPage} />
 
@@ -211,17 +210,12 @@ export default function App() {
             </Stack.Screen>
           </>
         ) : (
-
-          <Stack.Screen name="Main">
-            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} themes={themes}/>}
-          </Stack.Screen>
-
           <>
             <Stack.Screen name="Main">
               {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
             </Stack.Screen>
-            <Stack.Screen name="CreateEvent" component={CreateEvent} />
-              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
+            <Stack.Screen name="CreateEvent" >
+              {props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
               {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}

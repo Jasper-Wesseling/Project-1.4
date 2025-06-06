@@ -1,18 +1,14 @@
-import React, { useState } from "react";
-import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated } from "react-native";
 import { useFocusEffect } from '@react-navigation/native'; 
 import { StyleSheet } from "react-native";
 import { API_URL } from '@env';
 
-export default function LightDarkToggle({ token, initialMode, onThemeChange, theme }) {
-  const [mode, setMode] = useState(initialMode || null);
-  const [systemDefault, setSystemDefault] = useState(false);
-  const colorScheme = useColorScheme();
-
-
-export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange }) {
+export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange, theme }) {
   const [mode, setMode] = useState(initialMode || "light");
   const [token, setToken] = useState(propToken || null);
+  const [systemDefault, setSystemDefault] = useState(false);
+  const colorScheme = useColorScheme();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // Ophalen van token als die niet als prop wordt meegegeven
@@ -20,7 +16,7 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
     if (token) return;
     async function fetchJwtToken() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/login`, {
+        const response = await fetch(`${API_URL}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -34,13 +30,15 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
       } catch (error) {
         Alert.alert("Fout", error.message || "Kon niet inloggen.");
       }
+    }
+    fetchJwtToken();
+  }, [token]);
 
   // Theme ophalen bij mount of token change
   const fetchUserTheme = async () => {
     if (!token || !API_URL) {
       Alert.alert("Fout", "Geen geldige token of API_URL");
       return;
-
     }
     try {
       const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
