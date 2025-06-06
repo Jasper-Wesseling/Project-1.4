@@ -8,6 +8,8 @@ import { TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
 import BountyBoardModal from "./BountyBoardModal";
+import i18n from 'i18next';
+
 
 export default function BountyBoard({ navigation, token }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -99,6 +101,13 @@ export default function BountyBoard({ navigation, token }) {
         outputRange: [1, 0],
         extrapolate: "clamp",
     });
+
+    const stickyBarMarginTop = headerHeight.interpolate({
+        inputRange: [0, 166],
+        outputRange: [120, 290],
+        extrapolate: "clamp",
+    });
+
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
 
     return (
@@ -153,24 +162,46 @@ export default function BountyBoard({ navigation, token }) {
                 </View>
             </View>
             {/* Sticky Filter Row  */}
-            <Animated.View style={[
-                styles.filterRow,
-                { top: filterTop, height: 50 }
-            ]}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.filterScrollContent}
-                >
-                    {filters.map((filter, i) => (
-                        <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
-                            <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </Animated.View>
+            <Animated.View style={[styles.stickyBar, { marginTop: stickyBarMarginTop }]}>
+                            {/* Zoekbalk */}
+                            <View style={styles.searchBarInner}>
+                                <Icon type="Feather" name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
+                                <TextInput
+                                    placeholder="Zoek producten"
+                                    value={search}
+                                    onChangeText={setSearch}
+                                    style={styles.searchBarInput}
+                                    placeholderTextColor="#A0A0A0"
+                                />
+                            </View>
+                            {/* Filters */}
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.filterScrollContent}
+                                style={{ marginVertical: 8, marginHorizontal: 12 }}
+                            >
+                                {filters.map((filter, i) => {
+                                    const isActive = activeFilters.includes(filter);
+                                    return (
+                                        <TouchableOpacity
+                                            key={i}
+                                            onPress={() => {
+                                                setActiveFilters(prev =>
+                                                    isActive
+                                                        ? prev.filter(f => f !== filter)
+                                                        : [...prev, filter]
+                                                );
+                                            }}
+                                        >
+                                            <Text style={[styles.filter, isActive ? styles.activeFilter : null]}>
+                                                {filter}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
+                        </Animated.View>
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
                 <Animated.Text style={[styles.headerText, { opacity: headerOpacity, marginTop: -20, fontWeight: '300' }]}>Step up,</Animated.Text>

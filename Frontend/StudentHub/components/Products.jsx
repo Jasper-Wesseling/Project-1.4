@@ -260,7 +260,7 @@ function createProductsStyles(theme) {
         topBarText: {
             color: theme.headerText,
             fontSize: 24,
-            fontWeight: "bold"
+            fontWeight: "bold",
         },
         topBarIcons: {
             flexDirection: 'row',
