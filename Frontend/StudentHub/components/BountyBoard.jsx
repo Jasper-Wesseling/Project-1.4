@@ -13,7 +13,7 @@ import { themes } from "./LightDarkComponent";
 export default function BountyBoard({ navigation, token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null); // Huidige ingelogde user
+    const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -29,8 +29,7 @@ export default function BountyBoard({ navigation, token, theme }) {
             ? theme
             : typeof theme === "string" && themes[theme]
                 ? themes[theme]
-                : themes.light; // fallback naar light theme
-
+                : themes.light;
     // niet laden als theme niet geldig is
     if (!safeTheme) {
         return null;
@@ -106,11 +105,12 @@ export default function BountyBoard({ navigation, token, theme }) {
         inputRange: [0, 40],
         outputRange: [1, 0],
         extrapolate: "clamp",
-    });    const stickyBarMarginTop = headerHeight.interpolate({
+    });
+    const stickyBarMarginTop = headerHeight.interpolate({
         inputRange: [0, 249],
         outputRange: [166, 290],
         extrapolate: "clamp",
-      });
+    });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
 
@@ -138,7 +138,8 @@ export default function BountyBoard({ navigation, token, theme }) {
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
-                        </TouchableOpacity>                        <TouchableOpacity onPress={() => navigation.navigate('EditPosts')}>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditPosts')}>
                             <Icon name="cog" type="material-community" size={34} color="#fff" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
@@ -174,7 +175,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                     {filters.map((filter, i) => (
                         <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
                             <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter}
+                                {filter ? filter : null}
                             </Text>
                         </TouchableOpacity>
                     ))}

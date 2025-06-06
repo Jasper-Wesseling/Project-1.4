@@ -7,7 +7,7 @@ export default function PostPreview({ post, onQuickHelp, user }) {
     return (
         <View style={styles.card}>
             <View style={styles.cardContent}>
-                <View>                    
+                <View>
                     <Text
                         style={styles.cardTitle}
                         numberOfLines={1}
@@ -37,7 +37,8 @@ export default function PostPreview({ post, onQuickHelp, user }) {
                         onPress={onQuickHelp}
                     >
                         <Text style={styles.footerButtonText}>Quick Help</Text>
-                    </TouchableOpacity>                    <View style={[styles.footerButton, styles.statusButton]}>
+                    </TouchableOpacity>
+                    <View style={[styles.footerButton, styles.statusButton]}>
                         <Text style={[styles.footerButtonText, styles.blackText]}>{post.status || 'Active'}</Text>
                     </View>
                     <View style={[styles.footerButton, styles.locationButton]}>
@@ -99,7 +100,8 @@ const styles = StyleSheet.create({
         height: 40,
         marginHorizontal: 4,
         backgroundColor: '#2A4BA0', // default voor Quick Help
-    },    footerButtonText: {
+    },
+    footerButtonText: {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 14,
@@ -109,7 +111,8 @@ const styles = StyleSheet.create({
     },
     locationButton: {
         backgroundColor: '#FFC83A',
-    },    blackText: {
+    },
+    blackText: {
         color: '#000',
     },
 });

@@ -5,7 +5,6 @@ import { API_URL } from '@env';
 
 export default function BountyBoardModal({ visible, bounty, onClose, user, token, onPostDeleted, navigation }) {
     const [showOverige, setShowOverige] = useState(false);
-    
     // Edit mode state
     const [editMode, setEditMode] = useState(false);
     const [editTitle, setEditTitle] = useState('');
@@ -222,7 +221,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.25)', // semi-transparant zwart voor overlay
+        backgroundColor: 'rgba(0,0,0,0.25)',
         justifyContent: 'center',
         alignItems: 'center',
     },
