@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert } from "react-native";
 import { API_URL } from '@env';
 
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token }) {
-    // const [showOverige, setShowOverige] = useState(false);
-    // const [showReviews, setShowReviews] = useState(false);
     const [fullscreenImg, setFullscreenImg] = useState(false);
-
-    // Add this state for seller data
     const [sellerData, setSellerData] = useState(null);
+
+    // Edit mode state
+    const [editMode, setEditMode] = useState(false);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setEditMode(false); // Reset edit mode when product changes
+        setEditTitle(product?.title || '');
+        setEditDescription(product?.description || '');
+    }, [product]);
 
     useEffect(() => {
         const fetchSeller = async () => {
@@ -33,9 +41,33 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
         fetchSeller();
     }, [product, token]);
 
-
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_URL}/api/products/edit/${product.id}`, {
+                method: 'PUT', // or PATCH
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    title: editTitle,
+                    description: editDescription,
+                }),
+            });
+            if (!res.ok) throw new Error("Edit failed");
+            // Optionally update local product state/UI here
+            setEditMode(false);
+            Alert.alert("Success", "Product updated!");
+        } catch (err) {
+            Alert.alert("Error", "Could not save changes.");
+        }
+        setSaving(false);
+    };
 
     if (!product) return null;
+    const isCreator = user && user.id === product.product_user_id;
+
     return (
         <Modal
             visible={visible}
@@ -67,7 +99,17 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             </TouchableOpacity>
                         </View>
                         {/* Title and Price */}
-                        <Text style={styles.title}>{product.title}</Text>
+                        <Text style={styles.title}>
+                            {editMode ? (
+                                <TextInput
+                                    value={editTitle}
+                                    onChangeText={setEditTitle}
+                                    style={[styles.title, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4 }]}
+                                />
+                            ) : (
+                                product.title
+                            )}
+                        </Text>
                         <View style={styles.priceRow}>
                             <Text style={styles.price}>{formatPrice(product.price)}</Text>
                             <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} days ago</Text></View>
@@ -95,8 +137,44 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                         </View>
                         {/* Details */}
                         <Text style={styles.sectionTitle}>Details</Text>
-                        <Text style={styles.details}>{product.description}</Text>
-                        
+                        {editMode ? (
+                            <TextInput
+                                value={editDescription}
+                                onChangeText={setEditDescription}
+                                style={[styles.details, { backgroundColor: '#f4f5f7', borderRadius: 8, padding: 4, minHeight: 60 }]}
+                                multiline
+                        />
+                        ) : (
+                            <Text style={styles.details}>{product.description}</Text>
+                        )}
+
+                        {/* Edit/Save Buttons */}
+                        {isCreator && !editMode && (
+                            <TouchableOpacity
+                                style={{ alignSelf: 'flex-end', marginBottom: 10, backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8 }}
+                                onPress={() => setEditMode(true)}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Edit</Text>
+                            </TouchableOpacity>
+                        )}
+                        {isCreator && editMode && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
+                                    onPress={handleSave}
+                                    disabled={saving}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
+                                    onPress={() => setEditMode(false)}
+                                    disabled={saving}
+                                >
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
 
                         {/* for later use when there needs to be more infomation added to the modal */}
                         {/* <TouchableOpacity
