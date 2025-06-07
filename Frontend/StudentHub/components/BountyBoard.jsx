@@ -13,7 +13,7 @@ import { themes } from "./LightDarkComponent";
 export default function BountyBoard({ navigation, token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null); // Huidige ingelogde user
+    const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -29,8 +29,7 @@ export default function BountyBoard({ navigation, token, theme }) {
             ? theme
             : typeof theme === "string" && themes[theme]
                 ? themes[theme]
-                : themes.light; // fallback naar light theme
-
+                : themes.light;
     // niet laden als theme niet geldig is
     if (!safeTheme) {
         return null;
@@ -108,14 +107,19 @@ export default function BountyBoard({ navigation, token, theme }) {
         extrapolate: "clamp",
     });
     const stickyBarMarginTop = headerHeight.interpolate({
-        inputRange: [0, 166],
-        outputRange: [120, 290], // 150(topBar) + headerHeight + 24 margin
+        inputRange: [0, 249],
+        outputRange: [166, 290],
         extrapolate: "clamp",
-      });
+    });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
-
     const styles = createBountyStyles(safeTheme);
+    const filteredPosts = posts
+        .filter(post => post && typeof post === 'object' && post.title)
+        .filter(post =>
+            (!activeFilter || post.type === activeFilter) &&
+            post.title.toLowerCase().includes(search.toLowerCase())
+        );
 
     return (
         <SafeAreaView style={styles.container} >
@@ -128,10 +132,16 @@ export default function BountyBoard({ navigation, token, theme }) {
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
-                    <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'hoi'}</Text>
+                    <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'Hey'}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditPosts')}>
+                            <Icon name="cog" type="material-community" size={34} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
+                            <Icon name="chat" type="material-community" size={32} color="#fff"/>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -163,7 +173,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                     {filters.map((filter, i) => (
                         <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
                             <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter}
+                                {filter ? filter : null}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -179,30 +189,39 @@ export default function BountyBoard({ navigation, token, theme }) {
                     scrollEventThrottle={16}
                     onScrollEndDrag={loadMore}
                 >
-                    {posts
-                        .filter(post =>
-                            (!activeFilter || post.type === activeFilter) &&
-                            post.title.toLowerCase().includes(search.toLowerCase())
-                        )
-                        .map(post => (
+                    {filteredPosts.length === 0 ? (
+                        <Text style={styles.loadingText}>No bounties found.</Text>
+                    ) : (
+                        filteredPosts.map(post => (
                             <View key={post.id}>
                                 <PostPreview
                                     post={post}
+                                    user={{ full_name: post.post_user_name || "Unknown User" }}
                                     token={token}
                                     onQuickHelp={() => openBountyModal(post)}
                                 />
                             </View>
-                        ))}
+                        ))
+                    )}
                 </Animated.ScrollView>
                 :
-                <Text style={styles.loadingText}>Loading...</Text>}
-
+                <Text style={styles.loadingText}>Loading...</Text>
+            }
+            
             {/* BountyModal */}
             <BountyBoardModal
                 visible={bountyModalVisible}
-                bounty={selectedPost ? { ...selectedPost, token } : null}
+                bounty={selectedPost}
                 onClose={() => setBountyModalVisible(false)}
                 navigation={navigation}
+                user={currentUser}
+                token={token}
+                onPostDeleted={() => {
+                    setBountyModalVisible(false);
+                    // Refresh the posts list
+                    setPage(1);
+                    fetchAll(1, false, search, activeFilter);
+                }}
             />
         </SafeAreaView>
     );
@@ -283,7 +302,7 @@ function createBountyStyles(theme) {
         headerText: {
             alignSelf: 'flex-start',
             color: theme.headerText,
-            fontSize: 60,
+            fontSize: 52,
         },
         headerTextBold: {
             fontWeight: 'bold',
@@ -348,9 +367,9 @@ function createBountyStyles(theme) {
             backgroundColor: "transparent",
             borderWidth: 0,
             paddingVertical: 0,
-            color: theme.text,
-        },
-        scrollViewContent: {
+            color: theme.text,        
+        },       
+         scrollViewContent: {
             paddingTop: 16,
             paddingBottom: 80,
         },

@@ -1,6 +1,6 @@
 import { useColorScheme } from "react-native";
 import './i18n';
-import React, { useState, useEffect, useRef  } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -22,6 +22,8 @@ import BusinessPage from './components/businessPage';
 import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
+import EditProducts from './components/EditProducts';
+import EditPosts from './components/EditPosts';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -78,17 +80,17 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 
 // Helper to decode JWT and check expiration
 function isJwtExpired(token) {
-  if (!token) return true;
-  try {
-    const [, payload] = token.split(".");
-    if (!payload) return true;
-    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-    if (!decoded.exp) return true;
-    // exp is in seconds
-    return Date.now() / 1000 > decoded.exp;
-  } catch (e) {
-    return true;
-  }
+    if (!token) return true;
+    try {
+        const [, payload] = token.split(".");
+        if (!payload) return true;
+        const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+        if (!decoded.exp) return true;
+        // exp is in seconds
+        return Date.now() / 1000 > decoded.exp;
+    } catch (e) {
+        return true;
+    }
 }
 
 export default function App() {
@@ -173,29 +175,39 @@ export default function App() {
     }
   };
 
-  // Remove token and user from SecureStore/state on logout
-  const handleLogout = async () => {
-    setToken(null);
-    setUser(null);
-    try {
-      await SecureStore.deleteItemAsync("auth");
-    } catch (e) {
-      console.log("Error deleting credentials from SecureStore:", e);
-    }
-  };
+    // Save token and user to SecureStore/state on login
+    const handleLogin = async (newToken, userObj) => {
+        setToken(newToken);
+        setUser(userObj);
+        try {
+            await SecureStore.setItemAsync("auth", `${newToken}||${JSON.stringify(userObj)}`);
+        } catch (e) {
+            console.log("Error saving token to SecureStore:", e);
+        }
+    };
 
-  // Listen for navigation changes to check token expiration
-  useEffect(() => {
-    if (!token) return;
-    const unsubscribe = navigationRef.current?.addListener?.("state", () => {
-      if (isJwtExpired(token)) {
-        handleLogout();
-      }
-    });
-    return unsubscribe;
-  }, [token]);
+    // Remove token and user from SecureStore/state on logout
+    const handleLogout = async () => {
+        setToken(null);
+        setUser(null);
+        try {
+            await SecureStore.deleteItemAsync("auth");
+        } catch (e) {
+            console.log("Error deleting credentials from SecureStore:", e);
+        }
+    };
 
-  if (loading) return <LoadingScreen />;
+    // Listen for navigation changes to check token expiration
+    useEffect(() => {
+        if (!token) return;
+        const unsubscribe = navigationRef.current?.addListener?.("state", () => {
+            if (isJwtExpired(token)) {
+                handleLogout();
+            }
+        });
+        return unsubscribe;
+    }, [token]);
+
 
   return (
     <NavigationContainer ref={navigationRef}>
@@ -231,3 +243,4 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
