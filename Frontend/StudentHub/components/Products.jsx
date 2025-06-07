@@ -7,6 +7,9 @@ import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 import { themes } from "./LightDarkComponent";
+import * as SecureStore from 'expo-secure-store';
+import ChatOverview from "./ChatOverview";
+import { hasRole } from "../utils/roleUtils.js";
 
 export default function Products({ navigation, token, user, onLogout, setUserToChat, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -33,6 +36,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
     // Filters should match your backend's product categories
     const filters = ['Boeken', 'Electra', 'Huis en tuin'];
     const [activeFilters, setActiveFilters] = useState([]);
+
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValues = activeFilters) => {
         try {

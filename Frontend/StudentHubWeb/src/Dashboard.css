@@ -1,0 +1,233 @@
+/* ===== DASHBOARD STYLING ===== */
+.dashboard-container {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.dashboard-card p {
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.dashboard-card-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.dashboard-stat {
+  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+  color: white;
+}
+
+.dashboard-stat h3 {
+  color: white;
+}
+
+.dashboard-stat p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-quick-action {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+}
+
+.dashboard-quick-action h3 {
+  color: white;
+}
+
+.dashboard-quick-action p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #333;
+}
+
+.dashboard-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.dashboard-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  color: white;
+}
+
+.dashboard-secondary h3 {
+  color: white;
+}
+
+.dashboard-secondary p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.dashboard-button-warning {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.dashboard-button-warning:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dashboard-overview {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+}
+
+.dashboard-overview-title {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-stat-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+.dashboard-stat-blue {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.dashboard-stat-purple {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+}
+
+.dashboard-stat-green {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+}
+
+.dashboard-stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-stat-blue .dashboard-stat-value {
+  color: #1976d2;
+}
+
+.dashboard-stat-purple .dashboard-stat-value {
+  color: #7b1fa2;
+}
+
+.dashboard-stat-green .dashboard-stat-value {
+  color: #388e3c;
+}
+
+.dashboard-stat-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* ===== RESPONSIVE DESIGN FOR DASHBOARD ===== */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1.5rem;
+    border-radius: 1rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .dashboard-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-card {
+    padding: 1rem;
+  }
+}

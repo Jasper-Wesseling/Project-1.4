@@ -16,6 +16,7 @@ import Register from './components/Register';
 import BountyBoard from './components/BountyBoard';
 import AddPost from './components/AddPost';
 import Frontpage from './components/Frontpage';
+import Profile from "./components/Profile";
 import LightDarkToggle, { themes } from './components/LightDarkComponent';
 import { API_URL } from '@env';
 import BusinessPage from './components/businessPage';
@@ -24,7 +25,10 @@ import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
 import EditProducts from './components/EditProducts';
 import EditPosts from './components/EditPosts';
-
+import TipsFeed from "./components/TipsFeed";
+import AddForum from './components/AddForum';
+import TempAccount from "./components/TempAccount";
+import { hasRole } from "./utils/roleUtils";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -63,12 +67,19 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
       <Tab.Screen name="BusinessPage" component={BusinessPage} />
 
       <Tab.Screen name="BountyBoard">
-        {props => <BountyBoard {...props} token={token} user={user} />}
+        {props => <FaqPage {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="AddPost">
+
+        {props => <TipsFeed {...props} token={token} user={user} />}
+
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
+
       </Tab.Screen>
       <Tab.Screen name="Profile">
+        {props => <Profile {...props} token={token} user={user} />}   
+      </Tab.Screen>
+      <Tab.Screen name="LightDark">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Frontpage">
@@ -163,16 +174,32 @@ export default function App() {
     }
   }, [colorScheme, systemDefault]);
 
-    // Save token and user to SecureStore/state on login
-    const handleLogin = async (newToken, userObj) => {
-        setToken(newToken);
-        setUser(userObj);
-        try {
-            await SecureStore.setItemAsync("auth", `${newToken}||${JSON.stringify(userObj)}`);
-        } catch (e) {
-            console.log("Error saving token to SecureStore:", e);
-        }
-    };
+  // Save token and user to Keychain/state on login
+
+  const handleLogin = async (newToken, userObj) => {
+    if (hasRole(userObj, "ROLE_DISABLED")) {
+      console.log("User is disabled, cannot login.");
+      return;
+    }
+    setToken(newToken);
+    setUser(userObj);
+    try {
+      await SecureStore.setItemAsync("auth", `${newToken}||${JSON.stringify(userObj)}`);
+    } catch (e) {
+      console.log("Error saving token to SecureStore:", e);
+    }
+  };
+
+  // Remove token and user from SecureStore/state on logout
+  const handleLogout = async () => {
+    setToken(null);
+    setUser(null);
+    try {
+      await SecureStore.deleteItemAsync("auth");
+    } catch (e) {
+      console.log("Error deleting credentials from SecureStore:", e);
+    }
+  };
 
     // Remove token and user from SecureStore/state on logout
     const handleLogout = async () => {
@@ -208,6 +235,9 @@ export default function App() {
             <Stack.Screen name="Register">
               {props => <Register {...props} onLogin={handleLogin} />}
             </Stack.Screen>
+            <Stack.Screen name="Temp">
+              {props => <TempAccount {...props} onLogin={handleLogin} />}
+            </Stack.Screen>
           </>
         ) : (
           <>
@@ -228,11 +258,11 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="EditPosts">
               {props => <EditPosts {...props} token={token} user={user} />}
+            <Stack.Screen name="AddForum">
+              {props => <AddForum {...props} token={token} user={user} />}
             </Stack.Screen>
           </>
-
         )}
-
       </Stack.Navigator>
     </NavigationContainer>
   );

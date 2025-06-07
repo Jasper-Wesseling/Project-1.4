@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { API_URL } from '@env';
+import { hasRole } from "../utils/roleUtils";
 
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token }) {
     const [fullscreenImg, setFullscreenImg] = useState(false);

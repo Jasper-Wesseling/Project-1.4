@@ -136,6 +136,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                         <View style={styles.buttonRow}>
                             <TouchableOpacity onPress={() => { navigation.navigate('ProductChat', { userToChat: bounty.user_id, receiverName: bounty.product_username, bountyTitle: bounty.title, bounty: bounty }); onClose();}} style={styles.filledButton}><Text style={styles.filledButtonText}>Chat nu</Text></TouchableOpacity>
                         </View>                        {/* Description */}
+
                         <Text style={styles.sectionTitle}>Beschrijving</Text>
                         {editMode ? (
                             <TextInput
