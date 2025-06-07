@@ -103,6 +103,12 @@ export default function Login({ navigation, onLogin }) {
                     >
                         <Text style={styles.registerText}>Don't have an account? Register</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.registerLink}
+                        onPress={() => navigation.navigate('Temp')}
+                    >
+                        <Text style={styles.registerText}>Want a look around? Get a temporary account</Text>
+                    </TouchableOpacity>
                 </View>
             </Animated.View>
         </TouchableWithoutFeedback>

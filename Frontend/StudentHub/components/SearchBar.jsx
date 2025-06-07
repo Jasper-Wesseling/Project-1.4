@@ -1,7 +1,6 @@
 import { Modal, TextInput, View, StyleSheet } from "react-native";
 
-export default function SearchBar({ visible , value, onChange, onClose }) {
-    
+export default function SearchBar({ visible, value, onChange, onClose }) {
     return (
         <Modal
             visible={visible}

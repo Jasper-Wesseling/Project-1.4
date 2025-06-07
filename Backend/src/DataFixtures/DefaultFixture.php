@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Posts;
 use App\Entity\Users;
 use App\Entity\Products;
+use App\Entity\Forums;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -123,6 +124,127 @@ class DefaultFixture extends Fixture
         $post->setUpdatedAt(new \DateTime('2024-05-16T12:00:00'));
 
         $manager->persist($post);
+        $manager->flush();
+
+        $forumCategories = [
+            "Plannen",
+            "Stress",
+            "Vakken",
+            "Sociale tips",
+            "Huiswerk",
+            "Presentaties",
+            "Samenwerken",
+            "Stage",
+            "Overig",
+        ];
+
+        // Forum titles and contents per category
+        $forumTitles = [
+            "Hoe maak jij een goede planning?",
+            "Plannen met een app of op papier?",
+            "Hoe ga jij om met studiestress?",
+            "Tips om te ontspannen tijdens tentamens?",
+            "Moeilijkste vak tot nu toe?",
+            "Welke vakken zijn het leukst?",
+            "Hoe maak je makkelijk nieuwe vrienden?",
+            "Tips voor samenwerken in groepen?",
+            "Hoeveel tijd besteed jij aan huiswerk?",
+            "Beste plek om huiswerk te maken?",
+            "Hoe bereid jij je voor op een presentatie?",
+            "Tips tegen zenuwen bij presenteren?",
+            "Wat maakt een team succesvol?",
+            "Hoe verdeel je taken eerlijk?",
+            "Hoe vind je een goede stageplek?",
+            "Wat heb je geleerd tijdens je stage?",
+            "Wat is je favoriete snack?",
+            "Vlaflip: recept gezocht!",
+            "Aap in de collegezaal?",
+            "Tech gadgets 2025",
+            "Wie houdt er van kaas?",
+            "Banketstaaf of kerststol?",
+            "Overig: alles mag hier",
+            "Beste studietip ooit",
+            "Hoe motiveer jij jezelf?",
+        ];
+
+        $forumContents = [
+            "Deel jouw beste planningsstrategie!",
+            "Wat werkt voor jou het beste: digitaal of papier?",
+            "Welke tips heb jij om stress te verminderen?",
+            "Wat doe jij om te ontspannen tijdens drukke periodes?",
+            "Welk vak vond je het lastigst en waarom?",
+            "Welke vakken vind je het leukst en waarom?",
+            "Hoe leg jij makkelijk contact met anderen?",
+            "Wat zijn jouw tips voor groepswerk?",
+            "Hoeveel uur per week besteed jij aan huiswerk?",
+            "Waar werk jij het liefst aan je huiswerk?",
+            "Hoe bereid jij je voor op een presentatie?",
+            "Wat helpt tegen zenuwen voor de klas?",
+            "Wat maakt een samenwerking succesvol volgens jou?",
+            "Hoe zorg je dat iedereen in het team meedoet?",
+            "Hoe heb jij je stage gevonden?",
+            "Wat was jouw grootste leermoment tijdens je stage?",
+            "Laat hieronder weten wat jouw favoriete snack is!",
+            "Wie heeft een goed recept voor vlaflip?",
+            "Er liep vandaag een aap door de collegezaal, iemand gezien?",
+            "Welke gadgets gebruik jij voor school?",
+            "Kaas is leven. Eens of oneens?",
+            "Wat vinden jullie lekkerder: banketstaaf of kerststol?",
+            "Plaats hier alles wat niet in een andere categorie past.",
+            "Deel jouw beste studietip!",
+            "Hoe blijf jij gemotiveerd tijdens het studeren?",
+        ];
+
+        for ($i = 0; $i < 30; $i++) {
+            $forum = new Forums();
+            $forum->setUserId($users[array_rand($users)]);
+            $forum->setTitle($forumTitles[$i % count($forumTitles)]);
+            $forum->setContent($forumContents[$i % count($forumContents)]);
+            $forum->setCreatedAt(new \DateTime($dates[array_rand($dates)]));
+            $forum->setCategory($forumCategories[$i % count($forumCategories)]);
+            $forum->setImage('/uploads/' . $photos[array_rand($photos)]);
+
+            // Forum likes/dislikes (beide users stemmen random)
+            $forumLikes = [];
+            $forumDislikes = [];
+            foreach ($users as $user) {
+                if (rand(0, 1)) {
+                    $forumLikes[] = $user->getId();
+                } else {
+                    $forumDislikes[] = $user->getId();
+                }
+            }
+
+            // Replies met likes/dislikes per reply
+            $replies = [];
+            for ($r = 0; $r < rand(1, 3); $r++) {
+                $replyUser = $users[array_rand($users)];
+                $replyUpvotes = [];
+                $replyDownvotes = [];
+                foreach ($users as $user) {
+                    if (rand(0, 1)) {
+                        $replyUpvotes[] = $user->getId();
+                    } else {
+                        $replyDownvotes[] = $user->getId();
+                    }
+                }
+                $replies[] = [
+                    'user_name' => $replyUser->getFullName(),
+                    'user_id' => $replyUser->getId(),
+                    'created_at' => (new \DateTime($dates[array_rand($dates)]))->format('Y-m-d H:i:s'),
+                    'content' => 'Reply van ' . $replyUser->getFullName(),
+                    'upvotes' => $replyUpvotes,
+                    'downvotes' => $replyDownvotes,
+                ];
+            }
+
+            $forum->setReplies($replies);
+            $forum->setLikes($forumLikes);
+            $forum->setDislikes($forumDislikes);
+
+            $manager->persist($forum);
+        }
+
         $manager->flush();
     }
 }

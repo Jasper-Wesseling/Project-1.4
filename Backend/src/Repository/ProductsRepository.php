@@ -40,4 +40,49 @@ class ProductsRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    // notes
+    // moving this query from controller to repository keeps the controller clean and leverages Doctrine's query caching.
+    public function findProductsByUserAsArray($userId, $search = '', $limit = 20, $offset = 0)
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('p.id, p.title, p.description, p.price, p.study_tag, p.status, p.wishlist, p.photo, p.created_at, p.updated_at, IDENTITY(p.user_id) as product_user_id, u.full_name as product_username')
+            ->join('p.user_id', 'u')
+            ->where('p.user_id = :user')
+            ->setParameter('user', $userId)
+            ->orderBy('p.created_at', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        if ($search) {
+            $qb->andWhere('LOWER(p.title) LIKE :search')
+               ->setParameter('search', '%' . strtolower($search) . '%');
+        }
+
+        return $qb->getQuery()->getArrayResult();
+    }
+
+    public function findPreviewProductsExcludingUser($userId, $category = null, $search = '', $limit = 20, $offset = 0)
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('p.id, p.title, p.description, p.price, p.study_tag, p.status, p.wishlist, p.photo, p.created_at, p.updated_at, u.full_name as product_username, u.id as product_user_id')
+            ->join('p.user_id', 'u')
+            ->where('p.user_id != :user')
+            ->setParameter('user', $userId)
+            ->orderBy('p.created_at', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        if ($category) {
+            $categories = array_map('trim', explode(',', $category));
+            $qb->andWhere('p.study_tag IN (:categories)')
+               ->setParameter('categories', $categories);
+        }
+        if ($search) {
+            $qb->andWhere('LOWER(p.title) LIKE :search')
+               ->setParameter('search', '%' . strtolower($search) . '%');
+        }
+
+        return $qb->getQuery()->getArrayResult();
+    }
 }

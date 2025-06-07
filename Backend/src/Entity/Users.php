@@ -24,7 +24,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Regex(
-        pattern: '/@(student\.)?nhlstenden\.com$/',
+        pattern: '/@(student\.)?nhlstenden\.com$|^tmp$/',
         message: 'Only emails ending with @nhlstenden.com or @student.nhlstenden.com are allowed.'
     )]
     private ?string $email = null;
@@ -128,6 +128,13 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
 
 
+    /**
+     * @var Collection<int, Forums>
+     */
+    #[ORM\OneToMany(targetEntity: Forums::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $forums_user;
+
+
     public function getProfile(): ?Profile
     {
         return $this->profile;
@@ -147,6 +154,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tips_user = new ArrayCollection();
         $this->messages_user = new ArrayCollection();
         $this->messages_receiver = new ArrayCollection();
+        $this->forums_user = new ArrayCollection();
         $this->posts = new ArrayCollection();
     }
 
@@ -574,6 +582,36 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($widgetsUser->getUserId() === $this) {
                 $widgetsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Forums>
+     */
+    public function getForumsUser(): Collection
+    {
+        return $this->forums_user;
+    }
+
+    public function addForumsUser(Forums $forumsUser): static
+    {
+        if (!$this->forums_user->contains($forumsUser)) {
+            $this->forums_user->add($forumsUser);
+            $forumsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForumsUser(Forums $forumsUser): static
+    {
+        if ($this->forums_user->removeElement($forumsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($forumsUser->getUserId() === $this) {
+                $forumsUser->setUserId(null);
             }
         }
 

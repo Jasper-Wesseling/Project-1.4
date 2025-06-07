@@ -1,45 +1,53 @@
 import { useState, useRef } from "react";
-import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity, Appearance } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import { themes } from "./LightDarkComponent";
 
 const faqs = [
-  { id: 1, question: "blaaablaaa", answer: "Antwoord 1" },
-  { id: 2, question: "blaaablaaaa", answer: "Antwoord 2" },
-  { id: 3, question: "bloooo bloooo", answer: "Antwoord 3, ben het antwoord vergeten" },
-  { id: 4, question: "blooooblllaaa", answer: "Antwoord 4" },
-  { id: 5, question: "luke het aapje", answer: "Antwoord 5" },
-  { id: 6, question: "luke het aapje", answer: "Antwoord 6" },
-  { id: 7, question: "luke het aapje", answer: "Antwoord 7" },
-  { id: 8, question: "luke het aapje", answer: "Antwoord 8" },
-  { id: 9, question: "luke het aapje", answer: "Antwoord 9" },
-  { id: 10, question: "luke het aapje", answer: "Antwoord 10" },
-  { id: 11, question: "luke het aapje", answer: "Antwoord 11" },
-  { id: 12, question: "luke het aapje", answer: "Antwoord 12" },
-  { id: 13, question: "luke het aapje", answer: "Antwoord 13, is geen 12" },
-  { id: 14, question: "luke het aapje", answer: "Antwoord 14" },
-  { id: 15, question: "luke het aapje", answer: "Antwoord 15" },
-  { id: 16, question: "luke het aapje", answer: "Antwoord 16" },
-  { id: 17, question: "luke het aapje", answer: "Antwoord 17" },
-  { id: 18, question: "luke het aapje", answer: "Antwoord 18" },
-  { id: 19, question: "luke het aapje", answer: "Antwoord 19" },
-  { id: 20, question: "luke het aapje", answer: "Antwoord 20" },
-  { id: 21, question: "luke het aapje", answer: "Antwoord 21" },
-  { id: 22, question: "luke het aapje", answer: "Antwoord 22" },
-  { id: 23, question: "luke het aapje", answer: "Antwoord 23" },
-  { id: 24, question: "luke het aapje", answer: "Antwoord 24" },  
-  { id: 25, question: "luke het aapje", answer: "Antwoord 25" },
-  { id: 26, question: "luke het aapje", answer: "Antwoord 26" },
-  { id: 27, question: "luke het aapje", answer: "Antwoord 27" },
-  { id: 28, question: "luke het aapje", answer: "easter egg luke het aapje" },
-  { id: 29, question: "luke het aapje", answer: "Antwoord 29" },
-  { id: 30, question: "luke het aapje", answer: "Antwoord 30" },
-  { id: 31, question: "luke het aapje", answer: "Antwoord 31" },
-  { id: 32, question: "luke het aapje", answer: "Antwoord 32" },
+  { id: 1, question: "Hoe maak ik een goede planning voor mijn studie?", answer: "Gebruik een agenda of digitale planner, stel prioriteiten en verdeel grote taken in kleinere stappen." },
+  { id: 2, question: "Wat kan ik doen tegen uitstelgedrag?", answer: "Stel duidelijke doelen, werk in blokken en beloon jezelf na het afronden van taken." },
+  { id: 3, question: "Hoe vind ik studiemaatjes?", answer: "Sluit je aan bij studiegroepen, bezoek introductieactiviteiten of gebruik de chatfunctie in de StudentHub app." },
+  { id: 4, question: "Waar kan ik samenvattingen vinden?", answer: "Vraag medestudenten, kijk op het intranet van je opleiding of deel zelf samenvattingen in de app." },
+  { id: 5, question: "Hoe bereid ik me voor op tentamens?", answer: "Begin op tijd, maak oefenopgaven en bespreek moeilijke onderwerpen met anderen." },
+  { id: 6, question: "Wat als ik mijn motivatie verlies?", answer: "Denk aan je doelen, praat met studiegenoten of een studiecoach en probeer afwisseling in je dag te brengen." },
+  { id: 7, question: "Hoe combineer ik werk en studie?", answer: "Maak een realistische planning, communiceer met je werkgever en neem voldoende rust." },
+  { id: 8, question: "Waar kan ik hulp krijgen bij stress?", answer: "Praat met een studieloopbaanbegeleider, gebruik mindfulness-oefeningen of zoek contact met een vertrouwenspersoon." },
+  { id: 9, question: "Hoe kan ik beter presenteren?", answer: "Oefen je presentatie hardop, vraag feedback en gebruik duidelijke slides." },
+  { id: 10, question: "Wat moet ik doen als ik een deadline niet haal?", answer: "Neem direct contact op met je docent en leg je situatie uit. Soms is uitstel mogelijk." },
+  { id: 11, question: "Hoe vind ik een stageplek?", answer: "Gebruik het netwerk van je opleiding, zoek op vacaturesites en vraag medestudenten naar tips." },
+  { id: 12, question: "Wat zijn handige apps voor studenten?", answer: "StudentHub, Google Calendar, Notion, Microsoft OneNote en Slack zijn populair onder studenten." },
+  { id: 13, question: "Hoe blijf ik gemotiveerd tijdens online lessen?", answer: "Zorg voor een vaste routine, maak aantekeningen en neem actief deel aan de les." },
+  { id: 14, question: "Hoe kan ik effectief samenwerken aan groepsopdrachten?", answer: "Maak duidelijke afspraken, verdeel taken en houd regelmatig contact via chat of video." },
+  { id: 15, question: "Wat als ik moeite heb met een bepaald vak?", answer: "Vraag om hulp bij je docent, zoek een tutor of vorm een studiegroepje." },
+  { id: 16, question: "Hoe houd ik balans tussen studie en privé?", answer: "Plan vrije tijd in, blijf sporten en zorg voor voldoende slaap." },
+  { id: 17, question: "Waar kan ik terecht met persoonlijke problemen?", answer: "Neem contact op met de studentenpsycholoog of vertrouwenspersoon van je opleiding." },
+  { id: 18, question: "Hoe kan ik mijn concentratie verbeteren?", answer: "Werk in korte blokken, leg je telefoon weg en zorg voor een opgeruimde studieplek." },
+  { id: 19, question: "Wat zijn goede manieren om te netwerken?", answer: "Bezoek evenementen, sluit je aan bij studieverenigingen en wees actief op LinkedIn." },
+  { id: 20, question: "Hoe kan ik omgaan met faalangst?", answer: "Praat erover met anderen, bereid je goed voor en probeer ontspanningsoefeningen." },
+  { id: 21, question: "Hoe vraag ik studiefinanciering aan?", answer: "Ga naar de website van DUO en volg de stappen voor het aanvragen van studiefinanciering." },
+  { id: 22, question: "Wat moet ik doen bij ziekte tijdens een tentamen?", answer: "Meld je direct ziek bij je opleiding en vraag naar de mogelijkheden voor een herkansing." },
+  { id: 23, question: "Hoe kan ik mijn studieresultaten inzien?", answer: "Log in op het studentenportaal van je opleiding om je cijfers te bekijken." },
+  { id: 24, question: "Wat zijn tips voor het schrijven van een scriptie?", answer: "Begin op tijd, maak een duidelijke structuur en vraag regelmatig feedback." },
+  { id: 25, question: "Hoe vind ik goedkope studieboeken?", answer: "Kijk op tweedehands websites, vraag ouderejaars of gebruik digitale versies." },
+  { id: 26, question: "Wat als ik mijn OV-kaart kwijt ben?", answer: "Meld dit direct bij de klantenservice van OV-chipkaart en vraag een vervangende kaart aan." },
+  { id: 27, question: "Hoe kan ik mijn Engels verbeteren?", answer: "Kijk Engelse films, lees boeken en oefen met medestudenten of via apps." },
+  { id: 28, question: "Hoe maak ik een goed CV?", answer: "Gebruik een duidelijk format, benoem relevante ervaring en houd het overzichtelijk." },
+  { id: 29, question: "Wat zijn handige studietips?", answer: "Maak samenvattingen, stel vragen en wissel studeren af met pauzes." },
+  { id: 30, question: "Hoe kan ik omgaan met studiestress?", answer: "Praat erover, neem voldoende rust en zoek ontspanning in hobby’s of sport." },
+  { id: 31, question: "Hoe kan ik mijn tijd beter indelen?", answer: "Gebruik een planner, stel prioriteiten en wees realistisch over wat je kunt doen." },
+  { id: 32, question: "Wat moet ik doen als ik wil stoppen met mijn studie?", answer: "Overleg met een studieadviseur en meld je tijdig af bij je opleiding en DUO." },
+  { id: 33, question: "Hoe kan ik een bijbaan vinden naast mijn studie?", answer: "Kijk op vacaturesites, vraag rond bij vrienden of kijk op het prikbord van je opleiding." },
+  { id: 34, question: "Wat zijn de voordelen van lid worden van een studievereniging?", answer: "Je leert nieuwe mensen kennen, doet ervaring op en krijgt toegang tot leuke activiteiten." },
+  { id: 35, question: "Hoe kan ik mijn presentatieskills verbeteren?", answer: "Oefen veel, vraag feedback en kijk naar goede voorbeelden op YouTube." },
+  { id: 36, question: "Wat moet ik doen als ik een onvoldoende heb gehaald?", answer: "Bekijk waar het misging, vraag om feedback en bereid je goed voor op de herkansing." },
+  { id: 37, question: "Hoe kan ik mijn studiepunten bijhouden?", answer: "Gebruik het studentenportaal of een eigen overzicht in Excel of een app." },
+  { id: 38, question: "Hoe maak ik makkelijk contact met docenten?", answer: "Stuur een duidelijke e-mail of spreek ze aan na de les." },
+  { id: 39, question: "Wat zijn goede manieren om te ontspannen na het studeren?", answer: "Ga sporten, kijk een film, spreek af met vrienden of maak een wandeling." },
+  { id: 40, question: "Hoe kan ik omgaan met groepsdruk?", answer: "Blijf bij jezelf, geef je grenzen aan en praat erover met iemand die je vertrouwt." },
 ];
 
-export default function FaqPage({ token, user, theme, setTheme }) {
+
+export default function FaqPage({ token, user, theme }) {
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState(null);
   const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
@@ -47,16 +55,18 @@ export default function FaqPage({ token, user, theme, setTheme }) {
 
   // Gebruik altijd een geldig theme object
   const safeTheme =
-    typeof theme === "object" && theme && theme.text
+    typeof theme === "object" && theme
       ? theme
       : typeof theme === "string" && themes[theme]
-      ? themes[theme]
-      : themes.light;
+        ? themes[theme]
+        : themes.light; //falback naar light theme
+
 
   // niet laden als theme niet geldig is
   if (!safeTheme) {
     return null;
   }
+
   
   const styles = createFaqStyles(safeTheme);
 
@@ -77,7 +87,7 @@ export default function FaqPage({ token, user, theme, setTheme }) {
   // StickyBar marginTop animatie zodat hij altijd direct onder de header blijft
   const stickyBarMarginTop = headerHeight.interpolate({
     inputRange: [0, 166],
-    outputRange: [120, 290], // 100(topBar) + headerHeight + 24 margin
+    outputRange: [120, 266], // 100(topBar) + headerHeight
     extrapolate: "clamp",
   });
 
@@ -164,12 +174,6 @@ export default function FaqPage({ token, user, theme, setTheme }) {
 
 // Dynamische styles generator
 function createFaqStyles(safeTheme) {
-  // extra check om zeker te zijn dat theme een geldig object is
-  if (!safeTheme || typeof safeTheme !== 'object' || !safeTheme.text) {
-    console.warn('Invalid theme passed to createFaqStyles, using fallback');
-    safeTheme = themes.light;
-  }
-  
   return StyleSheet.create({
     container: {
       flex: 1,

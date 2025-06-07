@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text } from "react-native";
-import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 
 
 export default function AddPost({ navigation, token }) {
-    
     const [title, onChangeTitle] = useState('');
     const [description, onChangeDescription] = useState('');
     const [open, setOpen] = useState(false);
@@ -19,17 +16,13 @@ export default function AddPost({ navigation, token }) {
     ]);
     const [loading, setLoading] = useState(true);
 
-
     const uploadPost = async () => {
-        if (!title || !description || !type)
-        {
+        if (!title || !description || !type) {
             Alert.alert('Error', 'Fill in all fields');
             return;
         }
-
         try {
             if (!token) throw new Error("No token received");
-
             const response = await fetch(API_URL + '/api/posts/new', {
                 method: 'POST',
                 headers: {
@@ -42,24 +35,24 @@ export default function AddPost({ navigation, token }) {
                     "type": type,
                 }),
             });
-            if (!response.ok) throw new Error("add post failed");
-            setLoading(false);
+            if (!response.ok)
+                setLoading(false);
             Alert.alert('Succesfully Created!', '', [{
                 text: 'OK',
-                onPress : () => navigation.goBack()
+                onPress: () => navigation.goBack()
             }]);
         } catch (error) {
             console.error(error);
             Alert.alert('Upload Failed', 'Try again');
         }
-    }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
                 <View>
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                        <Icon name="arrow-left" type="feather" size={24} color="#fff"/>
+                        <Icon name="arrow-left" type="feather" size={24} color="#fff" />
                         <Text style={styles.backButtonText}>Go back</Text>
                     </TouchableOpacity>
                 </View>
@@ -91,7 +84,7 @@ export default function AddPost({ navigation, token }) {
                     />
                 </View>
                 <View style={styles.uploadButtonWrapper}>
-                    <Button title="Upload" onPress={uploadPost} color={'white'}/>
+                    <Button title="Upload" onPress={uploadPost} color={'white'} />
                 </View>
             </View>
         </SafeAreaView>
