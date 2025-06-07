@@ -163,18 +163,6 @@ export default function App() {
     }
   }, [colorScheme, systemDefault]);
 
-  // Save token and user to Keychain/state on login
-
-  const handleLogin = async (newToken, userObj) => {
-    setToken(newToken);
-    setUser(userObj);
-    try {
-      await SecureStore.setItemAsync("auth", `${newToken}||${JSON.stringify(userObj)}`);
-    } catch (e) {
-      console.log("Error saving token to SecureStore:", e);
-    }
-  };
-
     // Save token and user to SecureStore/state on login
     const handleLogin = async (newToken, userObj) => {
         setToken(newToken);
@@ -234,6 +222,12 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
+            </Stack.Screen>
+            <Stack.Screen name="EditProducts">
+              {props => <EditProducts {...props} token={token} user={user} />}
+            </Stack.Screen>
+            <Stack.Screen name="EditPosts">
+              {props => <EditPosts {...props} token={token} user={user} />}
             </Stack.Screen>
           </>
 
