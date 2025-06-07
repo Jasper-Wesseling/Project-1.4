@@ -17,10 +17,10 @@ export default function Profile({ token }) {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState(null);
-  
+  const [profileMissing, setProfileMissing] = useState(false);
 
   const DEFAULT_AVATAR_URL =
-    "https://www.gravatar.com/avatar/?d=mp&s=120"; // Generic default image
+    "https://www.gravatar.com/avatar/?d=mp&s=120";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -32,10 +32,16 @@ export default function Profile({ token }) {
             "Content-Type": "application/json",
           },
         });
-        // if (!res.ok) {
-        //   const text = await res.text();  // get error message from server response
-        //   throw new Error(`Failed to fetch profile: ${res.status} ${res.statusText} - ${text}`);
-        // }
+
+        if (res.status === 404) {
+          setProfileMissing(true);
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch profile");
+        }
+
         const data = await res.json();
         setProfile(data);
       } catch (err) {
@@ -62,7 +68,7 @@ export default function Profile({ token }) {
 
   const saveChanges = async () => {
     try {
-      const allowedFields = ['full_name', 'age', 'study_program', 'location', 'bio'];
+      const allowedFields = ['first_name', 'last_name', 'age', 'study_program', 'location', 'bio'];
       const body = {};
 
       allowedFields.forEach((field) => {
@@ -70,7 +76,8 @@ export default function Profile({ token }) {
           body[field] = editedProfile[field];
         }
       });
-      const res = await fetch(API_URL + "/api/profile", {
+
+      const res = await fetch(API_URL + "/api/profile/update", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -87,6 +94,117 @@ export default function Profile({ token }) {
       console.error("Error updating profile:", err);
     }
   };
+
+  const createProfile = async () => {
+    try {
+      const res = await fetch(API_URL + "/api/profile", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedProfile),
+      });
+
+      if (!res.ok) throw new Error("Failed to create profile");
+
+      const newProfile = await res.json();
+      setProfile(newProfile);
+      setProfileMissing(false);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error creating profile:", err);
+    }
+  };
+
+  if (profileMissing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ marginBottom: 10 }}>Geen profiel gevonden.</Text>
+        {!isEditing ? (
+          <TouchableOpacity
+            onPress={() => {
+              setEditedProfile({
+                first_name: "",
+                last_name: "",
+                age: null,
+                study_program: "",
+                location: "",
+                bio: "",
+              });
+              setIsEditing(true);
+            }}
+            style={styles.dotButton}
+          >
+            <Text style={styles.dotButtonText}>Profiel aanmaken</Text>
+          </TouchableOpacity>
+        ) : (
+          <>
+            <Text style={{ marginBottom: 10 }}>Nieuw profiel</Text>
+            <TextInput
+              value={editedProfile.first_name}
+              onChangeText={(text) =>
+                setEditedProfile({ ...editedProfile, first_name: text })
+              }
+              style={styles.input}
+              placeholder="Voornaam"
+            />
+            <TextInput
+              value={editedProfile.last_name}
+              onChangeText={(text) =>
+                setEditedProfile({ ...editedProfile, last_name: text })
+              }
+              style={styles.input}
+              placeholder="Achternaam"
+            />
+            <TextInput
+              value={editedProfile.age ? String(editedProfile.age) : ""}
+              onChangeText={(text) =>
+                setEditedProfile({
+                  ...editedProfile,
+                  age: text ? Number(text) : null,
+                })
+              }
+              style={styles.input}
+              placeholder="Leeftijd"
+              keyboardType="numeric"
+            />
+            <TextInput
+              value={editedProfile.study_program}
+              onChangeText={(text) =>
+                setEditedProfile({ ...editedProfile, study_program: text })
+              }
+              style={styles.input}
+              placeholder="Studierichting"
+            />
+            <TextInput
+              value={editedProfile.location}
+              onChangeText={(text) =>
+                setEditedProfile({ ...editedProfile, location: text })
+              }
+              style={styles.input}
+              placeholder="Locatie"
+            />
+            <TextInput
+              value={editedProfile.bio}
+              onChangeText={(text) =>
+                setEditedProfile({ ...editedProfile, bio: text })
+              }
+              style={[styles.input, { height: 80 }]}
+              multiline
+              placeholder="Bio"
+            />
+            <TouchableOpacity
+              style={styles.contactButton}
+              onPress={createProfile}
+            >
+              <Text style={styles.contactButtonText}>Opslaan</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    );
+  }
 
   if (!profile) {
     return (
@@ -111,16 +229,28 @@ export default function Profile({ token }) {
 
           <View style={styles.imageContainer}>
             {isEditing ? (
-              <TextInput
-                value={editedProfile.full_name || ""}
-                onChangeText={(text) =>
-                  setEditedProfile({ ...editedProfile, full_name: text })
-                }
-                style={styles.input}
-                placeholder="Full Name"
-              />
+              <>
+                <TextInput
+                  value={editedProfile.first_name || ""}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, first_name: text })
+                  }
+                  style={styles.input}
+                  placeholder="Voornaam"
+                />
+                <TextInput
+                  value={editedProfile.last_name || ""}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, last_name: text })
+                  }
+                  style={styles.input}
+                  placeholder="Achternaam"
+                />
+              </>
             ) : (
-              <Text style={styles.nameText}>{profile.full_name}</Text>
+              <Text style={styles.nameText}>
+                {profile.first_name} {profile.last_name}
+              </Text>
             )}
             <Image
               source={{
@@ -234,11 +364,6 @@ export default function Profile({ token }) {
           )}
 
           <TouchableOpacity style={styles.accordion}>
-            <Text style={styles.accordionText}>Overige Details</Text>
-            <Text style={styles.chevron}>⌄</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.accordion}>
             <Text style={styles.accordionText}>Interesses</Text>
             <Text style={styles.chevron}>⌄</Text>
           </TouchableOpacity>
@@ -252,7 +377,7 @@ export default function Profile({ token }) {
                   accessible
                   accessibilityLabel="Opslaan"
                 >
-                  <Text style={styles.dotButtonText}>💾</Text>
+                  <Text style={styles.dotButtonText}>Opslaan</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -272,7 +397,7 @@ export default function Profile({ token }) {
                   accessible
                   accessibilityLabel="Profiel bewerken"
                 >
-                  <Text style={styles.dotButtonText}>✏️</Text>
+                  <Text style={styles.dotButtonText}>Bewerken</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -304,6 +429,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   card: {
     backgroundColor: "#fff",
