@@ -1,5 +1,5 @@
 import { use, useEffect, useRef, useState } from "react";
-import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, Keyboard } from "react-native";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
@@ -10,11 +10,19 @@ export default function ProductChat({ navigation, token, user, route}) {
     const [chats, setChats] = useState([]);
     const [message, setMessage] = useState('');
     const [pageHeight, setPageHeight] = useState(0);
-    const { product, userToChat, productTitle, receiverName } = route.params;
+    const { product, userToChat, productTitle, receiverName, bountyTitle, bounty } = route.params;
 
     const fetchChats = async () => {
+        let query = '';
+        if (bountyTitle) {
+            query+=`&bounty=${bounty['id']}`
+        }
+
+        if (productTitle) {
+            query+=`&product=${product}`
+        }
         try {
-            const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userToChat)}&product=${encodeURIComponent(product)}`, {
+            const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userToChat)}` + query, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -53,17 +61,20 @@ export default function ProductChat({ navigation, token, user, route}) {
         ]);
         setMessage('');
         try {
+            const body = {
+                content: message,
+                receiver: userToChat,
+            };
+            if (product) body.product = product;
+            if (bounty) body.bounty = bounty['id'];
+
             const response = await fetch(API_URL + `/api/messages/new`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    content: message,
-                    receiver: userToChat, 
-                    product: product,
-                }),
+                body: JSON.stringify(body),
             });
             if (!response.ok) {
                 setChats(prevChats => prevChats.map(msg => msg.id === tempId ? {...msg,  content: '[Failed to send] ' + msg.content } : msg));
@@ -90,7 +101,7 @@ export default function ProductChat({ navigation, token, user, route}) {
                 <View style={{ width: '80%', alignItems: 'flex-start', justifyContent: 'center'}}>
                     {/* profile picture */}
                     <Text style={{fontSize: 24, color: '#fff'}}>{receiverName}</Text>
-                    <Text style={{fontSize: 16, color: '#fff'}}>{productTitle}</Text>
+                    <Text style={{fontSize: 16, color: '#fff'}}>{productTitle ? productTitle : bountyTitle}</Text>
                 </View>
             </View>
             <View
@@ -101,23 +112,33 @@ export default function ProductChat({ navigation, token, user, route}) {
                     transform: [{ translateY: -pageHeight }]
                 }}
             >
-                <ScrollView
-                    ref={scrollViewRef}
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 40, paddingTop: 100 }}
+                <TouchableOpacity
+                    activeOpacity={1}
+                    style={{ flex: 1 }}
+                    onPress={() => {
+                        Keyboard.dismiss();
+                        setPageHeight(0);
+                    }}
                 >
-                    {chats.map((msg, idx) => 
-                        msg && msg.content ?(
-                            <Text
-                                key={idx}
-                                style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
-                            >
-                                {msg.content}
-                            </Text>
-                        ) : null
-                    )}
-                </ScrollView>
+                    <ScrollView
+                        ref={scrollViewRef}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 40, paddingTop: 100 }}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        {chats.map((msg, idx) => 
+                            msg && msg.content ?(
+                                <Text
+                                    key={idx}
+                                    style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
+                                >
+                                    {msg.content}
+                                </Text>
+                            ) : null
+                        )}
+                    </ScrollView>
+                </TouchableOpacity>
                 <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                     <TextInput 
                         style={[styles.input, {width: '80%'}]}
@@ -126,9 +147,12 @@ export default function ProductChat({ navigation, token, user, route}) {
                         placeholder="Type something..."
                         onFocus={() => setPageHeight(325)}
                         onBlur={() => setPageHeight(0)}
-                        multiline={true}
-                        blurOnSubmit={true}
-                        returnKeyType="done"
+                        returnKeyType="send"
+                        blurOnSubmit={false}
+                        onSubmitEditing={() => {
+                            sendMessage();
+                            scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
+                        }}
                     />
                     <TouchableOpacity
                         style={{backgroundColor:'#2A4BA0', justifyContent: "center", borderRadius: 100, width: 50}}

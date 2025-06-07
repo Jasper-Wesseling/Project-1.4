@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
@@ -8,9 +8,10 @@ import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from 'expo-secure-store';
 import ChatOverview from "./ChatOverview";
+import { hasRole } from "../utils/roleUtils.js";
 
 // Accept token, user, and onLogout as props
-export default function Products({ navigation, token, user, onLogout, setUserToChat }) {
+export default function Products({ navigation, token, user, onLogout }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,9 +24,9 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
 
     // Filters should match your backend's product categories
     const filters = ['Boeken', 'Electra', 'Huis en tuin'];
-    const [activeFilter, setActiveFilter] = useState(null);
+    const [activeFilters, setActiveFilters] = useState([]); // changed from activeFilter
 
-    const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
+    const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValues = activeFilters) => {
         try {
             if (!token) {
                 setLoading(false);
@@ -34,7 +35,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
             // Build query params for search and filter
             let query = `?page=${pageToLoad}`;
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
-            if (filterValue) query += `&category=${encodeURIComponent(filterValue)}`;
+            if (filterValues.length > 0) query += `&category=${encodeURIComponent(filterValues.join(','))}`;
 
             // Fetch product
             const productsRes = await fetch(API_URL + `/api/products/get${query}`, {
@@ -61,16 +62,16 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
     useFocusEffect(
         useCallback(() => {
             setPage(1);
-            fetchAll(1, false, search, activeFilter);
+            fetchAll(1, false, search, activeFilters);
             // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [search, activeFilter, token])
+        }, [search, activeFilters, token])
     );
 
     const loadMore = () => {
         if (hasMorePages && !loading) {
             const nextPage = page + 1;
             setPage(nextPage);
-            fetchAll(nextPage, true, search, activeFilter);
+            fetchAll(nextPage, true, search, activeFilters);
         }
     };
 
@@ -127,7 +128,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                     <View style={styles.topBarRow}>
                         <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
                         <View style={styles.topBarIcons}>
-                            <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
+                            <TouchableOpacity onPress={() => navigation.navigate('AddProduct')} disabled={hasRole(user, 'ROLE_TEMP')}>
                                 <Icon name="plus" type="feather" size={34} color="#fff"/>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
@@ -136,9 +137,10 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                             <TouchableOpacity onPress={tempLogout}>
                                 <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
-                                <Icon name="bag-outline" type="ionicon" size={32} color="#fff"/>
+                            <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')} disabled={hasRole(user, 'ROLE_TEMP')}>
+                                <Icon name="chatbubble-ellipses-outline" type="ionicon" size={32} color="#fff"/>
                             </TouchableOpacity>
+
                         </View>
                     </View>
                 </View>
@@ -150,20 +152,43 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 {/* Sticky Filter Row  */}
                 <Animated.View style={[
                     styles.filterRow,
-                    { top: filterTop, height: 50 }
+                    { top: filterTop, height: 75 }
                 ]}>
+                    <View style={styles.searchBarInner}>
+                    <Icon name="search" type="feather" size={22} color="#A0A0A0" style={styles.searchIcon} />
+                    <TextInput
+                        placeholder="Search Help"
+                        value={search}
+                        onChangeText={setSearch}
+                        style={styles.searchBarInput}
+                        placeholderTextColor="#A0A0A0"
+                    />
+                    </View>
+                    <Text style={styles.faqTitle}>FAQ</Text>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.filterScrollContent}
                     >
-                        {filters.map((filter, i) => (
-                            <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
-                                <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                    {filter}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
+                        {filters.map((filter, i) => {
+                            const isActive = activeFilters.includes(filter);
+                            return (
+                                <TouchableOpacity
+                                    key={i}
+                                    onPress={() => {
+                                        setActiveFilters(prev =>
+                                            isActive
+                                                ? prev.filter(f => f !== filter) // remove if active
+                                                : [...prev, filter]              // add if not active
+                                        );
+                                    }}
+                                >
+                                    <Text style={[styles.filter, isActive ? styles.activeFilter : null]}>
+                                        {filter}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </ScrollView>
                 </Animated.View>
                 {/* Scrollable Content */}
@@ -199,9 +224,9 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                     onClose={() => setModalVisible(false)}
                     formatPrice={formatPrice}
                     navigation={navigation}
-                    setUserToChat={setUserToChat}
                     productUser={selectedProduct?.user_id}
                     productUserName={selectedProduct?.product_username}
+                    user={user}
                 />
             </View>
         </View>
