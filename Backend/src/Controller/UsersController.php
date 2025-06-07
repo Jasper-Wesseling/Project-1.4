@@ -28,6 +28,70 @@ class UsersController extends AbstractController
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
     }
+
+    function generateSecurePassword(int $length = 12, array $options = []): string 
+    {
+        if ($length < 8) {
+            $length = 8;
+        }
+        
+        // Default options
+        $defaults = [
+            'min_lowercase' => 1,
+            'min_uppercase' => 1,
+            'min_digits' => 1,
+            'min_special' => 1,
+            'exclude_ambiguous' => false, // Exclude 0, O, l, I, etc.
+        ];
+        
+        $options = array_merge($defaults, $options);
+        
+        // Character sets
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $digits = '0123456789';
+        $special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        // Exclude ambiguous characters if requested
+        if ($options['exclude_ambiguous']) {
+            $lowercase = str_replace(['l', 'o'], '', $lowercase);
+            $uppercase = str_replace(['I', 'O'], '', $uppercase);
+            $digits = str_replace(['0', '1'], '', $digits);
+            $special = str_replace(['|', '`'], '', $special);
+        }
+        
+        $password = '';
+        $usedLength = 0;
+        
+        // Add minimum required characters
+        for ($i = 0; $i < $options['min_lowercase']; $i++) {
+            $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+            $usedLength++;
+        }
+        
+        for ($i = 0; $i < $options['min_uppercase']; $i++) {
+            $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+            $usedLength++;
+        }
+        
+        for ($i = 0; $i < $options['min_digits']; $i++) {
+            $password .= $digits[random_int(0, strlen($digits) - 1)];
+            $usedLength++;
+        }
+        
+        for ($i = 0; $i < $options['min_special']; $i++) {
+            $password .= $special[random_int(0, strlen($special) - 1)];
+            $usedLength++;
+        }
+        
+        // Fill remaining length with random characters
+        $allChars = $lowercase . $uppercase . $digits . $special;
+        for ($i = $usedLength; $i < $length; $i++) {
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+        
+        return str_shuffle($password);
+    }
     
     #[Route('/admin/getall', name: 'api_users_admin_getall', methods: ['GET'])]
     public function admin(UsersRepository $usersRepository): Response
@@ -319,5 +383,39 @@ class UsersController extends AbstractController
         ];
 
         return new JsonResponse($usersData, 200);
+    }
+
+    #[Route('/register/temp', name: 'api_users_register_temp', methods: ['POST'])]
+    public function registerTemp(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        ValidatorInterface $validator
+    ): Response {
+        $user = new Users();
+        $user->setEmail(uniqid('tmp_'));
+        $user->setRole('ROLE_TEMP'); // Or use $data['role'] if you want to allow custom roles
+        $user->setRoles(['ROLE_TEMP']); // Or use $data['role'] if you want to allow custom roles
+
+        $password = $this->generateSecurePassword(12);
+        $hashedPassword = $passwordHasher->hashPassword($user, $password);
+
+        $user->setPassword($hashedPassword);
+
+        $user->setFullName('Temporary User');
+
+        $profile = new Profile();
+        $profile->setUser($user);
+        $profile->setFullName('');
+        $profile->setAge(null);
+        $profile->setStudyProgram('');
+        $profile->setLocation('');
+        $profile->setBio('');
+
+        $entityManager->persist($user);
+        $entityManager->persist($profile);
+        $entityManager->flush();
+
+        return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
     }
 }

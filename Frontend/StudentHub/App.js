@@ -23,6 +23,8 @@ import BusinessPage from './components/businessPage';
 import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
+import TempAccount from "./components/TempAccount";
+import { hasRole } from "./utils/roleUtils";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -57,7 +59,6 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddProduct {...props} token={token} theme={theme} />}
       </Tab.Screen>
 
-      <Tab.Screen name="BountyBoard" component={BountyBoard} />
 
       <Tab.Screen name="BusinessPage" component={BusinessPage} />
 
@@ -68,9 +69,9 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-
         {props => <Profile {...props} token={token} user={user} />}   
-
+      </Tab.Screen>
+      <Tab.Screen name="LightDark">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Frontpage">
@@ -168,6 +169,10 @@ export default function App() {
   // Save token and user to Keychain/state on login
 
   const handleLogin = async (newToken, userObj) => {
+    if (hasRole(userObj, "ROLE_DISABLED")) {
+      console.log("User is disabled, cannot login.");
+      return;
+    }
     setToken(newToken);
     setUser(userObj);
     try {
@@ -212,19 +217,17 @@ export default function App() {
             <Stack.Screen name="Register">
               {props => <Register {...props} onLogin={handleLogin} />}
             </Stack.Screen>
+            <Stack.Screen name="Temp">
+              {props => <TempAccount {...props} onLogin={handleLogin} />}
+            </Stack.Screen>
           </>
         ) : (
-
-          <Stack.Screen name="Main">
-            {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} theme={theme} setTheme={setTheme} themes={themes}/>}
-          </Stack.Screen>
-
           <>
             <Stack.Screen name="Main">
               {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
             </Stack.Screen>
-            <Stack.Screen name="CreateEvent" component={CreateEvent} />
-              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
+            <Stack.Screen name="CreateEvent" >
+              {props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
               {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}
@@ -232,10 +235,9 @@ export default function App() {
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
+
           </>
-
         )}
-
       </Stack.Navigator>
     </NavigationContainer>
   );
