@@ -5,7 +5,7 @@ import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
 
 
-export default function ProductChat({ navigation, token, user, route}) {
+export default function ProductChat({ navigation, token, user, route }) {
     const userIDReciever = userToChat;
     const [chats, setChats] = useState([]);
     const [message, setMessage] = useState('');
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
         maxWidth: '75%',
     },
     scrollViewContent: {
-      paddingTop: 100,
-      paddingBottom: 40,
-   },
+        paddingTop: 100,
+        paddingBottom: 40,
+    },
 })

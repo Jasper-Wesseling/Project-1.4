@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { StyleSheet } from "react-native";
 import { API_URL } from '@env';
 
+
 export const themes = {
   light: {
     background: "#F8F9FB",
@@ -140,19 +141,55 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchUserTheme();
-    }, [token])
-  );
+    // Ophalen van huidige theme uit database
+    useEffect(() => {
+        if (!token) return;
+        async function fetchUserTheme() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/lightdark/gettheme`, {
+                    headers: { Authorization: "Bearer " + token }
+                });
+                if (!response.ok) throw new Error("Kan thema niet ophalen");
+                const data = await response.json();
+                if (data.theme === "dark" || data.theme === "light") {
+                    setMode(data.theme);
+                    if (onThemeChange) onThemeChange(themes[data.theme]); // <-- theme-object!
+                }
+            } catch (error) {
+                Alert.alert("Fout", "Kon thema niet ophalen.");
+            }
+        }
+        fetchUserTheme();
+    }, [token]);
 
-  // Theme eerst wisselen en daarna opslaan in database
-  const toggleTheme = async () => {
-    if (!token || !API_URL) {
-      Alert.alert("Fout", "Geen geldige token of API_URL");
-      return;
-    }
-    const newMode = mode === "light" ? "dark" : "light";
+    // Theme wisselen en opslaan in database
+    const toggleTheme = async () => {
+        if (!token) return;
+        const newMode = mode === "light" ? "dark" : "light";
+        Animated.sequence([
+            Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
+            Animated.timing(fadeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
+        ]).start();
+        setMode(newMode);
+        if (onThemeChange) onThemeChange(themes[newMode]); // <-- theme-object!
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/lightdark/settheme`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token
+                },
+                body: JSON.stringify({ theme: newMode }),
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || "Thema kon niet worden opgeslagen");
+            }
+        } catch (error) {
+            Alert.alert("Fout", error.message || "Kon thema niet opslaan.");
+        }
+    };
+
 
     // Eerst lokaal theme updaten
     setSystemDefault(false);
