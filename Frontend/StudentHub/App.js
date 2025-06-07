@@ -23,6 +23,8 @@ import BusinessPage from './components/businessPage';
 import CreateEvent from './components/CreateEvent';
 import ProductChat from "./components/ProductChat";
 import ChatOverview from "./components/ChatOverview";
+import TipsFeed from "./components/TipsFeed";
+import AddForum from './components/AddForum';
 import TempAccount from "./components/TempAccount";
 import { hasRole } from "./utils/roleUtils";
 const Stack = createStackNavigator();
@@ -63,10 +65,14 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
       <Tab.Screen name="BusinessPage" component={BusinessPage} />
 
       <Tab.Screen name="BountyBoard">
-        {props => <BountyBoard {...props} token={token} user={user} />}
+        {props => <FaqPage {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="AddPost">
+
+        {props => <TipsFeed {...props} token={token} user={user} />}
+
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
+
       </Tab.Screen>
       <Tab.Screen name="Profile">
         {props => <Profile {...props} token={token} user={user} />}   
@@ -235,7 +241,9 @@ export default function App() {
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
-
+            <Stack.Screen name="AddForum">
+              {props => <AddForum {...props} token={token} user={user} />}
+            </Stack.Screen>
           </>
         )}
       </Stack.Navigator>
