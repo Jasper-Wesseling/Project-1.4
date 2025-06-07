@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated } from "react-native";
 import { useFocusEffect } from '@react-navigation/native'; 
-import { StyleSheet } from "react-native";
-import { API_URL } from '@env';
+import { API_URL, BACKEND_URL } from '@env';
 
 
 export const themes = {
@@ -257,8 +256,8 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
       }
     }
   };
-  
- // Tekstuele toggle met system default knop
+
+  // Tekstuele toggle met system default knop
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -310,3 +309,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+

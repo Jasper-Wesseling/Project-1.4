@@ -84,8 +84,8 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: Posts::class)]
     private Collection $posts;
 
-    #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
-    private ?Users $user_id = null;
+    // #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
+    // private ?Users $user_id = null;
 
     /**
      * @var Collection<int, Reviews>

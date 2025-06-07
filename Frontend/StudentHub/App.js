@@ -63,6 +63,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddProduct {...props} token={token} theme={theme} />}
       </Tab.Screen>
 
+      {/* <Tab.Screen name="BountyBoard" component={BountyBoard} /> */}
 
       <Tab.Screen name="BusinessPage" component={BusinessPage} />
 
@@ -77,6 +78,19 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 
       </Tab.Screen>
       <Tab.Screen name="Profile">
+          {props => (
+            <>
+              <Profile {...props} token={token} user={user} />
+              {/* <LightDarkToggle
+                {...props}
+                onLogout={onLogout}
+                token={token}
+                onThemeChange={setTheme}
+                theme={theme}
+              /> */}
+            </>
+          )}
+        </Tab.Screen>
         {props => <Profile {...props} token={token} user={user} />}   
       </Tab.Screen>
       <Tab.Screen name="LightDark">
@@ -242,17 +256,33 @@ export default function App() {
         ) : (
           <>
             <Stack.Screen name="Main">
-              {props => <MainTabs {...props} token={token} user={user} onLogout={handleLogout} />}
+              {props => (
+                <MainTabs
+                  {...props}
+                  token={token}
+                  user={user}
+                  onLogout={handleLogout}
+                  theme={theme}
+                  setTheme={setTheme}
+                  themes={themes}
+                  userToChat={userToChat}
+                  setUserToChat={setUserToChat}
+                />
+              )}
             </Stack.Screen>
             <Stack.Screen name="CreateEvent" >
               {props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
-              {props => <ProductChat {...props} token={token} user={user} userToChat={userToChat} />}
+              {props => (
+                <ProductChat {...props} token={token} user={user} userToChat={userToChat} />
+              )}
             </Stack.Screen>
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
+
+
             <Stack.Screen name="EditProducts">
               {props => <EditProducts {...props} token={token} user={user} />}
             </Stack.Screen>
@@ -267,4 +297,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
