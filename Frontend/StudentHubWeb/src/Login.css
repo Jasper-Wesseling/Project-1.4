@@ -1,0 +1,129 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F4F8;
+}
+
+.login-top-section {
+  background: linear-gradient(135deg, #2A4BA0 0%, #23244A 100%);
+  color: white;
+  padding: 3rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  position: relative;
+}
+
+.login-logo-area {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-logo {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.login-subtitle {
+  margin: 0;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+}
+
+.login-form-section {
+  background: white;
+  padding: 2.5rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: -24px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 -4px 20px rgba(42, 75, 160, 0.1);
+}
+
+.login-title {
+  color: #23244A;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.login-form-section form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: none;
+  background: #F5F4F8;
+  color: #23244A;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(42, 75, 160, 0.1);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  outline: none;
+  box-shadow: 0 4px 12px rgba(42, 75, 160, 0.2);
+  background: white;
+}
+
+.login-input::placeholder {
+  color: #888;
+}
+
+.login-button {
+  width: 100%;
+  padding: 1.2rem;
+  background: #FDBB2C;
+  color: #23244A;
+  border: none;
+  border-radius: 18px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  text-transform: lowercase;
+}
+
+.login-button:hover {
+  background: #f5b520;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(253, 187, 44, 0.4);
+}
+
+.login-error {
+  background: #ff4757;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.login-note {
+  margin-top: 1.5rem;
+  color: #888;
+  text-align: center;
+  font-size: 0.9rem;
+}

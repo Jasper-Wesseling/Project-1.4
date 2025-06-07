@@ -46,6 +46,7 @@ const faqs = [
   { id: 40, question: "Hoe kan ik omgaan met groepsdruk?", answer: "Blijf bij jezelf, geef je grenzen aan en praat erover met iemand die je vertrouwt." },
 ];
 
+
 export default function FaqPage({ token, user, theme }) {
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState(null);
@@ -60,11 +61,13 @@ export default function FaqPage({ token, user, theme }) {
         ? themes[theme]
         : themes.light; //falback naar light theme
 
+
   // niet laden als theme niet geldig is
   if (!safeTheme) {
     return null;
   }
 
+  
   const styles = createFaqStyles(safeTheme);
 
   // Animated header height (from 249 to 0)

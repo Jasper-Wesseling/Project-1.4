@@ -132,4 +132,5 @@ class Tips
 
         return $this;
     }
+
 }

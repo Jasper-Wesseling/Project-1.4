@@ -38,13 +38,12 @@ class PostsController extends AbstractController
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
-
         $search = $request->query->get('search', '');
         $type = $request->query->get('type', null);
 
         $qb = $postsRepository->createQueryBuilder('p')
-            ->where('p.user_id = :user_id')
-            ->setParameter('user_id', $user->getId())
+            ->where('p.user_id != :user')
+            ->setParameter('user', $user->getId())
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
@@ -71,6 +70,7 @@ class PostsController extends AbstractController
                 'created_at' => $post->getCreatedAt() ? $post->getCreatedAt()->format('Y-m-d H:i:s') : null,
                 'updated_at' => $post->getUpdatedAt() ? $post->getUpdatedAt()->format('Y-m-d H:i:s') : null,
                 'user_id' => $post->getUserId() ? $post->getUserId()->getId() : null,
+                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), $post->getUpdatedAt())->days
             ];
         }
 
