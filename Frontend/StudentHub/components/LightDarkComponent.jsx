@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, TouchableOpacity, Alert } from "react-native";
-import { Icon } from "react-native-elements";
+import React, { useState, useRef, useEffect } from "react";
+import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated } from "react-native";
+import { useFocusEffect } from '@react-navigation/native'; 
+import { StyleSheet } from "react-native";
+import { API_URL } from '@env';
 
 const BACKEND_URL = "http://192.168.178.179:8000";
 

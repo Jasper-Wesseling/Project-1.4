@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Appearance, SafeAreaView, View, Text, StyleSheet, Button, Switch, Alert, Animated, Easing, Dimensions } from "react-native";
 
 // Zet hier handmatig je backend URL
-const BACKEND_URL = "http://192.168.178.225:8000";
 
 // Theme variables
 const lightTheme = {

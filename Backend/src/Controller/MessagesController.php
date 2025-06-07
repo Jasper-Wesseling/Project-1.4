@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Messages;
+use App\Entity\Posts;
 use App\Entity\Products;
 use App\Repository\MessagesRepository;
 use App\Repository\UsersRepository;
@@ -39,8 +40,10 @@ class MessagesController extends AbstractController
         $reciever= $request->query->get('reciever', 1);
         $recieveUser = $usersRepository->findOneBy(['id' => $reciever]);
 
-        $productId= $request->query->get('product', 1);
-        $product = $entityManager->getRepository(Products::class)->find($productId);
+        $productId = $request->query->has('product') ? $request->query->get('product') : null;
+        $bountyId = $request->query->has('bounty') ? $request->query->get('bounty') : null;
+        $product = $productId ? $entityManager->getRepository(Products::class)->find($productId) : null;
+        $bounty = $bountyId ? $entityManager->getRepository(Posts::class)->find($bountyId) : null;
 
 
         if (!$recieveUser || !$sendUser) 
@@ -49,24 +52,30 @@ class MessagesController extends AbstractController
         }
 
 
+        // Determine whether to use product or bounty for the query
         $qb = $messagesRepository->createQueryBuilder('m')
             ->orderBy('m.timestamp', 'ASC')
             ->andWhere('
-                (m.sender_id = :sendUser AND m.receiver_id = :recieveUser)
-                OR
-                (m.sender_id = :recieveUser AND m.receiver_id = :sendUser)
+            (m.sender_id = :sendUser AND m.receiver_id = :recieveUser)
+            OR
+            (m.sender_id = :recieveUser AND m.receiver_id = :sendUser)
             ')
-            ->andWhere('m.product_id = :product')
             ->setParameter('sendUser', $sendUser->getId())
-            ->setParameter('product', $product)
             ->setParameter('recieveUser', $recieveUser);
+
+        if ($bounty) {
+            $qb->andWhere('m.post_id = :bounty')
+               ->setParameter('bounty', $bounty);
+        } elseif ($product) {
+            $qb->andWhere('m.product_id = :product')
+               ->setParameter('product', $product);
+        }
 
         $message = $qb->getQuery()->getResult();
 
 
         return new JsonResponse([
             'messages' => isset($message[0]) ? $message[0]->getContent() : [''],
-            'product' => $product->getTitle(),
             'receiver' => $recieveUser->getFullName(),
         ], 200);
     }
@@ -74,15 +83,24 @@ class MessagesController extends AbstractController
     #[Route('/new', name: 'new_message', methods: ['POST'])]
     public function newMessage(Request $request, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
     {
+        $product = null;
+        $bounty = null;
         $data = json_decode($request->getContent(), true);
         $receiver = $data['receiver'] ?? null;
         $content = $data['content'] ?? null;
         $productId = $data['product'] ?? null;
-        $product = $entityManager->getRepository(Products::class)->find($productId);
+        $bountyId = $data['bounty'] ?? null;
+        if ($bountyId) {
+            $bounty = $entityManager->getRepository(Posts::class)->find($bountyId);
 
-        if (!$receiver || !$content || !$product)
+        }
+        if ($productId) {
+            $product = $entityManager->getRepository(Products::class)->find($productId);
+
+        }
+        if (!$receiver || !$content || (!$product && !$bounty))
         {
-            return new JsonResponse('Missing content,reciever or product', 402);
+            return new JsonResponse('Missing content,reciever or item', 402);
         }
 
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
@@ -92,7 +110,7 @@ class MessagesController extends AbstractController
         
         $receiverUser = $usersRepository->findOneBy(['id' => $receiver]);
 
-        if (!$receiverUser || !$sendUser) 
+        if (!$receiverUser || !$sendUser)
         {
             return new JsonResponse(['error' => 'User not found'], 401);
         }
@@ -102,25 +120,43 @@ class MessagesController extends AbstractController
         $message->setSenderId($sendUser);
         $message->setReceiverId($receiverUser);
         $message->setTimestamp(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
-        $message->setProductId($product);
+        if ($bounty) {
+            $message->setPostId($bounty);
+        }
+        if ($product) {
+            $message->setProductId($product);
+        }
         $currentContent = $message->getContent();
         if (empty($currentContent)) 
         {
             $currentContent = [];
         }
 
-        $message = $entityManager->getRepository(Messages::class)->findOneBy([
+        $criteria = [
             'sender_id' => $sendUser,
             'receiver_id' => $receiverUser,
-            'product_id' => $product
-        ]);
+        ];
+        if ($bounty) {
+            $criteria['post_id'] = $bounty;
+        }
+        if ($product) {
+            $criteria['product_id'] = $product;
+        }
+
+        $message = $entityManager->getRepository(Messages::class)->findOneBy($criteria);
 
         if (!$message) {
-            $message = $entityManager->getRepository(Messages::class)->findOneBy([
+            $criteriaSwapped = [
                 'sender_id' => $receiverUser,
                 'receiver_id' => $sendUser,
-                'product_id' => $product
-            ]);
+            ];
+            if ($bounty) {
+                $criteriaSwapped['post_id'] = $bounty;
+            }
+            if ($product) {
+                $criteriaSwapped['product_id'] = $product;
+            }
+            $message = $entityManager->getRepository(Messages::class)->findOneBy($criteriaSwapped);
         }
 
         if (!$message) {
@@ -128,7 +164,13 @@ class MessagesController extends AbstractController
             $message->setSenderId($sendUser);
             $message->setReceiverId($receiverUser);
             $message->setTimestamp(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
-            $message->setProductId($product);
+            if ($bounty) {
+                $message->setPostId($bounty);
+
+            }
+            if ($product) {
+                $message->setProductId($product);
+            }
             $currentContent = [];
         } else {
             $currentContent = $message->getContent();
@@ -143,6 +185,8 @@ class MessagesController extends AbstractController
             "timestamp" => (new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')))->format('Y-m-d H:i:s'),
             "sender" => $sendUser->getId(),
         ];
+
+
 
 
         $message->setContent($currentContent);
@@ -196,7 +240,8 @@ class MessagesController extends AbstractController
                 'receiver' => $otherUser->getFullName(),
                 'sender_id' => $senderUser->getId(),
                 'receiver_id' => $receiverUser->getId(),
-                'product' => $message->getProductId()->getId(),
+                'product' => $message->getProductId() ? $message->getProductId()->getId() : null,
+                'post' => $message->getPostId() ? $message->getPostId()->getId() : null,
                 'timestamp' => $latestMessage['timestamp'] ?? $message->getTimestamp()->format('Y-m-d H:i:s'),
                 'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), new \DateTime($latestMessage['timestamp']))->days
             ];

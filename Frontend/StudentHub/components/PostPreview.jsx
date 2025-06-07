@@ -1,8 +1,43 @@
+import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
+import { API_URL } from "@env";
+import { themes } from "./LightDarkComponent";
+
+export default function PostPreview({ post, onQuickHelp, token, theme }) {
+    const [user, setUser] = useState(null);
+
+    // Theme object ophalen
+    const safeTheme =
+        typeof theme === "object" && theme
+            ? theme
+            : typeof theme === "string" && themes[theme]
+                ? themes[theme]
+                : themes.light;
+
+    useEffect(() => {
+        let isMounted = true;
+        async function fetchUser() {
+            if (!post?.user_id || !token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/users/getbyid/${post.user_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (isMounted) setUser(data);
+            } catch (e) { }
+        }
+        fetchUser();
+        return () => { isMounted = false; };
+    }, [post?.user_id, token]);
 
 export default function PostPreview({ post, onQuickHelp, user }) {
     if (!post || typeof post !== 'object') return <View />;
+
+    const styles = createPreviewStyles(safeTheme);
 
     return (
         <View style={styles.card}>
@@ -47,7 +82,7 @@ export default function PostPreview({ post, onQuickHelp, user }) {
                     </View>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

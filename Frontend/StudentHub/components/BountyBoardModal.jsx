@@ -78,7 +78,8 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
             transparent={true}
             animationType="slide"
             onRequestClose={onClose}
-        >            <SafeAreaView style={styles.overlay}>
+        >            
+              <SafeAreaView style={styles.overlay}>
                 <KeyboardAvoidingView
                     style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
