@@ -4,9 +4,7 @@ import { Icon } from "react-native-elements";
 import { API_URL } from "@env";
 import { themes } from "./LightDarkComponent";
 
-export default function PostPreview({ post, onQuickHelp, token, theme }) {
-    const [user, setUser] = useState(null);
-
+export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
     // Theme object ophalen
     const safeTheme =
         typeof theme === "object" && theme

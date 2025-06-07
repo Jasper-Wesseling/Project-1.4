@@ -68,30 +68,13 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
       <Tab.Screen name="BusinessPage" component={BusinessPage} />
 
       <Tab.Screen name="BountyBoard">
-        {props => <FaqPage {...props} token={token} user={user} />}
+        {props => <BountyBoard {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="AddPost">
-
-        {props => <TipsFeed {...props} token={token} user={user} />}
-
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
-
       </Tab.Screen>
       <Tab.Screen name="Profile">
-          {props => (
-            <>
-              <Profile {...props} token={token} user={user} />
-              {/* <LightDarkToggle
-                {...props}
-                onLogout={onLogout}
-                token={token}
-                onThemeChange={setTheme}
-                theme={theme}
-              /> */}
-            </>
-          )}
-        </Tab.Screen>
-        {props => <Profile {...props} token={token} user={user} />}   
+        {props => <Profile {...props} token={token} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="LightDark">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
@@ -204,17 +187,6 @@ export default function App() {
     }
   };
 
-  // Remove token and user from SecureStore/state on logout
-  const handleLogout = async () => {
-    setToken(null);
-    setUser(null);
-    try {
-      await SecureStore.deleteItemAsync("auth");
-    } catch (e) {
-      console.log("Error deleting credentials from SecureStore:", e);
-    }
-  };
-
     // Remove token and user from SecureStore/state on logout
     const handleLogout = async () => {
         setToken(null);
@@ -281,13 +253,12 @@ export default function App() {
             <Stack.Screen name="ChatOverview">
               {props => <ChatOverview {...props} token={token} user={user} />}
             </Stack.Screen>
-
-
             <Stack.Screen name="EditProducts">
               {props => <EditProducts {...props} token={token} user={user} />}
             </Stack.Screen>
             <Stack.Screen name="EditPosts">
               {props => <EditPosts {...props} token={token} user={user} />}
+            </Stack.Screen>
             <Stack.Screen name="AddForum">
               {props => <AddForum {...props} token={token} user={user} />}
             </Stack.Screen>

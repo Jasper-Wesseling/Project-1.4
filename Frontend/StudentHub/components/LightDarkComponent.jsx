@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated } from "react-native";
+import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated, StyleSheet } from "react-native";
 import { useFocusEffect } from '@react-navigation/native'; 
 import { API_URL, BACKEND_URL } from '@env';
-
 
 export const themes = {
   light: {
@@ -24,8 +23,6 @@ export const themes = {
     langButtonActiveBg: "#2A4BA0",
     langButtonText: "#2A4BA0",
     languageSwitcherBg: "rgba(255,255,255,0.9)",
-
-    // Modal specifieke kleuren
     modalOverlay: 'rgba(0,0,0,0.25)',
     backCircle: '#f4f5f7',
     avatarBg: '#eee',
@@ -53,7 +50,7 @@ export const themes = {
     filterRowBg: "#181A20",
     filterRowBorder: "#23263A",
     filterText: "#fff",
-    activeFilter: "#FFC83A",            // altijd geel
+    activeFilter: "#FFC83A",
     activeFilterBorder: "#FFC83A",
     activeFilterText: "#23263A",   
     stickyBarBorder: "#23263A",
@@ -61,8 +58,6 @@ export const themes = {
     langButtonActiveBg: "#FFC83A",
     langButtonText: "#fff",
     languageSwitcherBg: "rgba(30,30,30,0.9)",
-
-    // Modal specifieke kleuren
     modalOverlay: 'rgba(0,0,0,0.7)',
     backCircle: '#23263A',
     avatarBg: '#23263A',
@@ -112,84 +107,44 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
     fetchJwtToken();
   }, [token]);
 
-  // Theme ophalen bij mount of token change
-  const fetchUserTheme = async () => {
-    if (!token || !API_URL) {
-      Alert.alert("Fout", "Geen geldige token of API_URL");
-      return;
-    }
-    try {
-      const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error("Kan thema niet ophalen");
-      const data = await response.json();
-      if (data.theme === null) {
-        setSystemDefault(true);
-        setMode(colorScheme === "dark" ? "dark" : "light");
-        setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
-        if (onThemeChange) onThemeChange(themes[colorScheme === "dark" ? "dark" : "light"]);
-      } else if (data.theme === "dark" || data.theme === "light") {
-        setSystemDefault(false);
-        setMode(data.theme);
-        setTheme(themes[data.theme]);
-        if (onThemeChange) onThemeChange(themes[data.theme]);
+  // Ophalen van huidige theme uit database
+  useEffect(() => {
+    if (!token) return;
+    async function fetchUserTheme() {
+      try {
+        const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (!response.ok) throw new Error("Kan thema niet ophalen");
+        const data = await response.json();
+        if (data.theme === null) {
+          setSystemDefault(true);
+          setMode(colorScheme === "dark" ? "dark" : "light");
+          setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
+          if (onThemeChange) onThemeChange(themes[colorScheme === "dark" ? "dark" : "light"]);
+        } else if (data.theme === "dark" || data.theme === "light") {
+          setSystemDefault(false);
+          setMode(data.theme);
+          setTheme(themes[data.theme]);
+          if (onThemeChange) onThemeChange(themes[data.theme]);
+        }
+      } catch (error) {
+        Alert.alert("Fout", "Kon thema niet ophalen.");
       }
-    } catch (error) {
-      Alert.alert("Fout", "Kon thema niet ophalen: " + error.message);
     }
-  };
+    fetchUserTheme();
+  }, [token]);
 
-    // Ophalen van huidige theme uit database
-    useEffect(() => {
-        if (!token) return;
-        async function fetchUserTheme() {
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/lightdark/gettheme`, {
-                    headers: { Authorization: "Bearer " + token }
-                });
-                if (!response.ok) throw new Error("Kan thema niet ophalen");
-                const data = await response.json();
-                if (data.theme === "dark" || data.theme === "light") {
-                    setMode(data.theme);
-                    if (onThemeChange) onThemeChange(themes[data.theme]); // <-- theme-object!
-                }
-            } catch (error) {
-                Alert.alert("Fout", "Kon thema niet ophalen.");
-            }
-        }
-        fetchUserTheme();
-    }, [token]);
-
-    // Theme wisselen en opslaan in database
-    const toggleTheme = async () => {
-        if (!token) return;
-        const newMode = mode === "light" ? "dark" : "light";
-        Animated.sequence([
-            Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
-            Animated.timing(fadeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
-        ]).start();
-        setMode(newMode);
-        if (onThemeChange) onThemeChange(themes[newMode]); // <-- theme-object!
-        try {
-            const response = await fetch(`${BACKEND_URL}/api/lightdark/settheme`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + token
-                },
-                body: JSON.stringify({ theme: newMode }),
-            });
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Thema kon niet worden opgeslagen");
-            }
-        } catch (error) {
-            Alert.alert("Fout", error.message || "Kon thema niet opslaan.");
-        }
-    };
-
-
+  // Theme wisselen en opslaan in database
+  const toggleTheme = async () => {
+    if (!token) return;
+    const newMode = mode === "light" ? "dark" : "light";
+    
+    Animated.sequence([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
+    ]).start();
+    
     // Eerst lokaal theme updaten
     setSystemDefault(false);
     setMode(newMode);
@@ -220,7 +175,6 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
     if (!token || !API_URL) return;
     setSystemDefault(value);
     if (value) {
-      // Zet theme op null in backend
       try {
         await fetch(`${API_URL}/api/lightdark/settheme`, {
           method: "PUT",
@@ -237,7 +191,6 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
         Alert.alert("Fout", "Kon system default niet opslaan.");
       }
     } else {
-      // Zet terug naar huidige mode en sla op in backend
       try {
         await fetch(`${API_URL}/api/lightdark/settheme`, {
           method: "PUT",
@@ -251,13 +204,11 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
         if (onThemeChange) onThemeChange(themes[mode]);
       } catch (error) {
         Alert.alert("Fout", "Kon thema niet opslaan.");
-        // Reset system default bij fout
         setSystemDefault(true);
       }
     }
   };
 
-  // Tekstuele toggle met system default knop
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -275,9 +226,7 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
         ]}
         disabled={systemDefault}
       >
-        <Text style={{ color: mode === "light" ? "#fff" : "#222" }}>
-          Wissel naar {mode === "light" ? "dark" : "light"}
-        </Text>
+        <Text style={{ color: mode === "light" ? "#fff" : "#222" }}>Wissel naar {mode === "light" ? "dark" : "light"}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -309,4 +258,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-

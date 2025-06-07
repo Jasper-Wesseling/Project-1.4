@@ -134,7 +134,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                 <View style={styles.topBarRow}>
                     <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'Hey'}</Text>
                     <View style={styles.topBarIcons}>
-                        <TouchableOpacity onPress={() => navigation.navigate('AddPost')} disabled={hasRole(user, 'ROLE_TEMP')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddPost')} >
                             <Icon name="plus" type="feather" size={34} color="#fff" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('EditPosts')}>
