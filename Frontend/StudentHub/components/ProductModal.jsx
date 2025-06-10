@@ -101,7 +101,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
 
     if (!product) return null;
     const isCreator = user && user.id === product.product_user_id;
-
     return (
         <Modal
             visible={visible}
@@ -171,19 +170,21 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             </View>
                             {/* Seller Info - improved */}
                             <Text style={styles.sectionTitle}>Seller info</Text>
-                            <View style={styles.sellerContainer}>
-                                <View style={styles.sellerRow}>
-                                    <Image
-                                        source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
-                                        style={styles.sellerImg}
-                                    />
-                                    <Text style={styles.sellerName}>{product.product_username}</Text>
+                            <TouchableOpacity onPress={() => {navigation.navigate('Profile', { product: product}); onClose(); }} activeOpacity={0.8} style={styles.sellerContainer}>
+                                <View style={styles.sellerContainer}>
+                                    <View style={styles.sellerRow}>
+                                        <Image
+                                            source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
+                                            style={styles.sellerImg}
+                                        />
+                                        <Text style={styles.sellerName}>{product.product_username}</Text>
+                                    </View>
+                                    <View style={styles.sellerRatingRow}>
+                                        <Text style={styles.stars}>★★★★★</Text>
+                                        <Text style={styles.sellerRatingText}>Seller rating (coming soon)</Text>
+                                    </View>
                                 </View>
-                                <View style={styles.sellerRatingRow}>
-                                    <Text style={styles.stars}>★★★★★</Text>
-                                    <Text style={styles.sellerRatingText}>Seller rating (coming soon)</Text>
-                                </View>
-                            </View>
+                            </TouchableOpacity>
                             {/* Details */}
                             <Text style={styles.sectionTitle}>Details</Text>
                             {editMode ? (

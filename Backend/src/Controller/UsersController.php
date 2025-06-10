@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Users;
 use App\Entity\Profile;
+use App\Repository\LocationsRepository;
 use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -424,5 +425,60 @@ class UsersController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
+    }
+
+    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
+    public function updateProfile(
+        Request $request,
+        TokenStorageInterface $tokenStorage,
+        EntityManagerInterface $em,
+        UsersRepository $repo,
+        LocationsRepository $locationsRepository
+    ): JsonResponse {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+        
+        $user = $repo->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['message' => 'User not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return new JsonResponse(['message' => 'Invalid JSON payload'], 400);
+        }
+
+        if (!isset($data['full_name']) || !isset($data['study_program']) || !isset($data['location']) || !isset($data['date_of_birth'])) {
+            return new JsonResponse(['message' => 'Missing required fields'], 400);
+        }
+
+        $newDateOfBirth = \DateTime::createFromFormat('Y-m-d', $data['date_of_birth']);
+        if ($user->getDateOfBirth() === null || $user->getDateOfBirth()->format('Y-m-d') !== $data['date_of_birth']) {
+            $user->setDateOfBirth($newDateOfBirth);
+        }
+
+        if ($user->getFullName() !== $data['full_name']) {
+            $user->setFullName($data['full_name'] ?? '');
+        }
+
+        if ($user->getStudyProgram() !== $data['study_program']) {
+            $user->setStudyProgram($data['study_program'] ?? '');
+        }
+
+        $location = $locationsRepository->createQueryBuilder('l')
+            ->where('LOWER(l.name) = LOWER(:name)')
+            ->setParameter('name', $data['location'])
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($user->getLocationId() !== $location) {
+            $user->setLocationId($location ? $location : null);
+        }
+
+        $em->flush();
+
+        return $this->json('Profile updated successfully', 200);
     }
 }

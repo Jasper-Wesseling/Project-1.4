@@ -113,7 +113,9 @@ export default function BountyBoard({ navigation, token, theme }) {
     });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
+
     const styles = createBountyStyles(safeTheme);
+
     const filteredPosts = posts
         .filter(post => post && typeof post === 'object' && post.title)
         .filter(post =>
@@ -134,7 +136,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                 <View style={styles.topBarRow}>
                     <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'Hey'}</Text>
                     <View style={styles.topBarIcons}>
-                        <TouchableOpacity onPress={() => navigation.navigate('AddPost')} >
+                        <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('EditPosts')}>

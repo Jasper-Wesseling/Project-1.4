@@ -28,6 +28,7 @@ import EditPosts from './components/EditPosts';
 import TipsFeed from "./components/TipsFeed";
 import AddForum from './components/AddForum';
 import TempAccount from "./components/TempAccount";
+import StarRating from "./components/StarRating";
 import { hasRole } from "./utils/roleUtils";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -261,6 +262,9 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="AddForum">
               {props => <AddForum {...props} token={token} user={user} />}
+            </Stack.Screen>
+            <Stack.Screen name="StarRating">
+              {props => <StarRating {...props} token={token} user={user} />}
             </Stack.Screen>
           </>
         )}
