@@ -186,4 +186,34 @@ class ProductsController extends AbstractController
 
         return new JsonResponse("Product updated", 200);
     }
+
+    #[Route('/delete', name: 'api_products_delete', methods: ['DELETE'])]
+    public function deleteProduct(Request $request, ProductsRepository $productsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
+        // get product
+        $id = $request->query->get('id');
+        if (!$id) {
+            return new JsonResponse(['error' => 'Product ID missing'], 400);
+        }
+        $product = $productsRepository->find($id);
+        if (!$product) {
+            return new JsonResponse(['error' => 'Product not found'], 404);
+        }
+
+        // check if product owner is the same as the user making the request
+        if ($product->getUserId()->getId() !== $user->getId()) {
+            return new JsonResponse(['error' => 'Unauthorized'], 403);
+        }
+
+        $entityManager->remove($product);
+        $entityManager->flush();
+
+        return new JsonResponse("Product deleted", 200);
+    }
 }

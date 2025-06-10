@@ -68,6 +68,37 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
         setSaving(false);
     };
 
+    // Add delete handler
+    const handleDelete = async () => {
+        Alert.alert(
+            "Delete Product",
+            "Are you sure you want to delete this product?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const res = await fetch(`${API_URL}/api/products/delete?id=${product.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            if (!res.ok) throw new Error("Delete failed");
+                            Alert.alert("Deleted", "Product has been deleted.");
+                            setEditMode(false);
+                            onClose();
+                        } catch (err) {
+                            Alert.alert("Error", "Could not delete product.");
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     if (!product) return null;
     const isCreator = user && user.id === product.product_user_id;
 
@@ -187,21 +218,30 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                 </TouchableOpacity>
                             )}
                             {isCreator && editMode && (
-                                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
                                     <TouchableOpacity
-                                        style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
-                                        onPress={handleSave}
+                                        style={{ backgroundColor: '#ff4d4f', padding: 8, borderRadius: 8 }}
+                                        onPress={handleDelete}
                                         disabled={saving}
                                     >
-                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
+                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
-                                        onPress={() => setEditMode(false)}
-                                        disabled={saving}
-                                    >
-                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
-                                    </TouchableOpacity>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <TouchableOpacity
+                                            style={{ backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8, marginRight: 8 }}
+                                            onPress={handleSave}
+                                            disabled={saving}
+                                        >
+                                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
+                                            onPress={() => setEditMode(false)}
+                                            disabled={saving}
+                                        >
+                                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             )}
 
