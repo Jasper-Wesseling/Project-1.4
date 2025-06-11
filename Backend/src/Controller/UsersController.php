@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Users;
 use App\Entity\Profile;
 use App\Repository\LocationsRepository;
+use App\Repository\ReviewsRepository;
 use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -293,16 +294,8 @@ class UsersController extends AbstractController
 
             return new JsonResponse(['violations' => $violations], JsonResponse::HTTP_BAD_REQUEST);
         }
-        $profile = new Profile();
-        $profile->setUser($user);
-        $profile->setFullName('');
-        $profile->setAge(null);
-        $profile->setStudyProgram('');
-        $profile->setLocation('');
-        $profile->setBio('');
 
         $entityManager->persist($user);
-        $entityManager->persist($profile);
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'User created'], 201);
@@ -347,7 +340,7 @@ class UsersController extends AbstractController
     }
 
     #[Route('/getbyid', name: 'api_users_get_by_id', methods: ['GET'])]
-    public function getById(Request $request, UsersRepository $usersRepository): Response
+    public function getById(Request $request, UsersRepository $usersRepository, ReviewsRepository $reviewsRepository): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
@@ -375,6 +368,25 @@ class UsersController extends AbstractController
             ];
         }
 
+        $reviews = $reviewsRepository->findBy(['user_id' => $user]);
+        if (!$reviews) 
+        {
+            $reviewCount = 0;
+            $reviewAverage = 0;
+        } 
+        else 
+        {
+            $reviewCount = count($reviews);
+            $totalRating = 0;
+    
+            foreach ($reviews as $review) {
+                $totalRating += $review->getRating();
+            }
+    
+            $reviewAverage = $reviewCount > 0 ? round($totalRating / $reviewCount, 2) : 0;
+        }
+
+
         $usersData = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
@@ -388,6 +400,8 @@ class UsersController extends AbstractController
             'language' => $user->getLanguage(),
             'theme' => $user->getTheme(),
             'location' => $locationData,
+            'review_count' => $reviewCount,
+            'review_average' => $reviewAverage
         ];
 
         return new JsonResponse($usersData, 200);
@@ -412,16 +426,7 @@ class UsersController extends AbstractController
 
         $user->setFullName('Temporary User');
 
-        $profile = new Profile();
-        $profile->setUser($user);
-        $profile->setFullName('');
-        $profile->setAge(null);
-        $profile->setStudyProgram('');
-        $profile->setLocation('');
-        $profile->setBio('');
-
         $entityManager->persist($user);
-        $entityManager->persist($profile);
         $entityManager->flush();
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
