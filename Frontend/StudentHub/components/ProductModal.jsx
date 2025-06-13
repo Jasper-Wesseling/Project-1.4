@@ -171,7 +171,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             {/* Seller Info - improved */}
                             <Text style={styles.sectionTitle}>Seller info</Text>
                             <TouchableOpacity onPress={() => {navigation.navigate('Profile', { product: product}); onClose(); }} activeOpacity={0.8} style={styles.sellerContainer}>
-                                <View style={styles.sellerContainer}>
                                     <View style={styles.sellerRow}>
                                         <Image
                                             source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
@@ -180,11 +179,32 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                         <Text style={styles.sellerName}>{product.product_username}</Text>
                                     </View>
                                     <View style={styles.sellerRatingRow}>
-                                        <Text style={styles.stars}>★★★★★</Text>
-                                        <Text style={styles.sellerRatingText}>Seller rating (coming soon)</Text>
+                                        {sellerData && (
+                                            <View style={styles.reviewContainer}>
+                                                <View style={styles.reviewRow}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                                        {Array.from({ length: 5 }).map((_, i) => (
+                                                            <Text
+                                                                key={i}
+                                                                style={[
+                                                                    i < Math.round(sellerData.review_average || 0)
+                                                                        ? styles.starFilled
+                                                                        : styles.starEmpty
+                                                                ]}
+                                                            >★</Text>
+                                                        ))}
+                                                        <Text style={styles.reviews}> {sellerData.review_count || 'No'} Reviews</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        )}
                                     </View>
-                                </View>
+                               
                             </TouchableOpacity>
+                            
+
+                            
+
                             {/* Details */}
                             <Text style={styles.sectionTitle}>Details</Text>
                             {editMode ? (
@@ -511,5 +531,37 @@ const styles = StyleSheet.create({
         color: '#888',
         fontSize: 14,
         marginLeft: 4,
+    }, 
+    // --- Added styles below ---
+    reviewContainer: {
+        marginBottom: 12,
+    },
+    reviewRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 10,
+    },
+    starsSection: {
+        flex: 1,
+    },
+    stars: {
+        // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
+        color: "#ffcc00",
+        fontSize: 18,
+    },
+    starFilled: {
+        color: "#ffcc00",
+        fontSize: 20,
+        marginRight: 2,
+    },
+    starEmpty: {
+        color: "#ddd",
+        fontSize: 20,
+        marginRight: 2,
+    },
+    reviews: {
+        fontSize: 13,
+        color: "#888",
     },
 });
