@@ -29,6 +29,7 @@ import AddForum from './components/AddForum';
 import TempAccount from "./components/TempAccount";
 import StarRating from "./components/StarRating";
 import { hasRole } from "./utils/roleUtils";
+import BussinessPage from "./components/businessPage";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -65,7 +66,10 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 
       {/* <Tab.Screen name="BountyBoard" component={BountyBoard} /> */}
 
-      <Tab.Screen name="BusinessPage" component={BusinessPage} token={token} theme={theme} />
+      <Tab.Screen name="BusinessPage">
+        {props => <BussinessPage {...props} token={token} user={user} theme={theme} />}
+      </Tab.Screen>
+
 
       <Tab.Screen name="BountyBoard">
         {props => <BountyBoard {...props} token={token} user={user} theme={theme} />}
