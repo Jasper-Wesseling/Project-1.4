@@ -309,16 +309,8 @@ class UsersController extends AbstractController
             return new JsonResponse(['error' => 'Invalid token'], 401);
         }
 
-        $user_id = $request->query->get('user');
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
 
-        if ($user_id) {
-            $user = $usersRepository->find($user_id);
-            if (!$user) {
-                return new JsonResponse(['error' => 'User not found'], 404);
-            }
-        } else {
-            return new JsonResponse(['error' => 'No user ID provided'], 400);
-        }
 
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 400);
