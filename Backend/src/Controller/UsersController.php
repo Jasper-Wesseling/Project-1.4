@@ -122,7 +122,7 @@ class UsersController extends AbstractController
                 'language' => $user->getLanguage(),
                 'theme' => $user->getTheme(),
                 'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
-                'disabled' => $user->isDisabled(),
+                'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
             ];
         }
 
@@ -315,7 +315,17 @@ class UsersController extends AbstractController
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
             return new JsonResponse(['error' => 'Invalid token'], 401);
         }
-        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+
+        $user_id = $request->query->get('user');
+
+        if ($user_id) {
+            $user = $usersRepository->find($user_id);
+            if (!$user) {
+                return new JsonResponse(['error' => 'User not found'], 404);
+            }
+        } else {
+            return new JsonResponse(['error' => 'No user ID provided'], 400);
+        }
 
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 400);
@@ -341,6 +351,8 @@ class UsersController extends AbstractController
             'language' => $user->getLanguage(),
             'theme' => $user->getTheme(),
             'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
+            'location' => $user->getLocationId() ? $user->getLocationId()->getName() : null,
+            'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
         ];
 
         return new JsonResponse($usersData, 200);
@@ -425,9 +437,7 @@ class UsersController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
-    }
-
-    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
+    }    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
     public function updateProfile(
         Request $request,
         TokenStorageInterface $tokenStorage,

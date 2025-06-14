@@ -75,7 +75,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {props => <Profile {...props} token={token} user={user} />}
+        {props => <Profile {...props} token={token} user={user} profileUser={user}/>}
       </Tab.Screen>
       <Tab.Screen name="LightDark">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
