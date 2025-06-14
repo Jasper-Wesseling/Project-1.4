@@ -7,7 +7,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Products from './components/Products';
 import AddProduct from './components/AddProduct';
 import FaqPage from './components/FaqPage';
-import LightDarkSwitch from './components/LightDarkMode';
 import Login from './components/Login';
 import { Icon } from "react-native-elements";
 import * as SecureStore from 'expo-secure-store';
@@ -66,10 +65,10 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 
       {/* <Tab.Screen name="BountyBoard" component={BountyBoard} /> */}
 
-      <Tab.Screen name="BusinessPage" component={BusinessPage} />
+      <Tab.Screen name="BusinessPage" component={BusinessPage} token={token} theme={theme} />
 
       <Tab.Screen name="BountyBoard">
-        {props => <BountyBoard {...props} token={token} user={user} />}
+        {props => <BountyBoard {...props} token={token} user={user} theme={theme} />}
       </Tab.Screen>
       <Tab.Screen name="AddPost">
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
