@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated, StyleSheet } from "react-native";
-import { useFocusEffect } from '@react-navigation/native'; 
-import { API_URL, BACKEND_URL } from '@env';
+import { API_URL } from '@env';
+import LanguageSwitcher from './languageSwitcher.jsx';
+import { useTranslation } from 'react-i18next'; 
 
 export const themes = {
   light: {
@@ -37,7 +38,11 @@ export const themes = {
     sectionArrow: '#8a94a6',
     avatarFallback: '#ccc',
     avatarFallbackText: '#fff',
-    primary: "#2A4BA0",     
+    primary: "#2A4BA0",
+    tabBarBg: "#fff",
+    tabBarActive: "#2A4BA0",
+    tabBarInactive: "#888",
+    formBg: "#fff",
   },
   dark: {
     background: "#181A20",
@@ -52,7 +57,7 @@ export const themes = {
     filterText: "#fff",
     activeFilter: "#FFC83A",
     activeFilterBorder: "#FFC83A",
-    activeFilterText: "#23263A",   
+    activeFilterText: "#23263A",
     stickyBarBorder: "#23263A",
     langButtonBg: "#23263A",
     langButtonActiveBg: "#FFC83A",
@@ -72,7 +77,11 @@ export const themes = {
     sectionArrow: '#FFC83A',
     avatarFallback: '#444',
     avatarFallbackText: '#FFC83A',
-    primary: "#2A4BA0", 
+    primary: "#2A4BA0",
+    tabBarBg: "#23263A",
+    tabBarActive: "#2979FF",
+    tabBarInactive: "#888",
+    formBg: "#23263A",
   }
 };
 
@@ -139,12 +148,12 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
   const toggleTheme = async () => {
     if (!token) return;
     const newMode = mode === "light" ? "dark" : "light";
-    
+
     Animated.sequence([
       Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
       Animated.timing(fadeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
     ]).start();
-    
+
     // Eerst lokaal theme updaten
     setSystemDefault(false);
     setMode(newMode);
@@ -228,9 +237,12 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
       >
         <Text style={{ color: mode === "light" ? "#fff" : "#222" }}>Wissel naar {mode === "light" ? "dark" : "light"}</Text>
       </TouchableOpacity>
+      <LanguageSwitcher/>
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

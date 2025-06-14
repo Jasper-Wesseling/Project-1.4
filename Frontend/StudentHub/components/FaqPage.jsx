@@ -53,22 +53,7 @@ export default function FaqPage({ token, user, theme }) {
   const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Gebruik altijd een geldig theme object
-  const safeTheme =
-    typeof theme === "object" && theme
-      ? theme
-      : typeof theme === "string" && themes[theme]
-        ? themes[theme]
-        : themes.light; //falback naar light theme
-
-
-  // niet laden als theme niet geldig is
-  if (!safeTheme) {
-    return null;
-  }
-
-  
-  const styles = createFaqStyles(safeTheme);
+  const styles = createFaqStyles(theme);
 
   // Animated header height (from 249 to 0)
   const headerHeight = scrollY.interpolate({
