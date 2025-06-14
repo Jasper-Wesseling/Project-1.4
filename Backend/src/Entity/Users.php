@@ -123,8 +123,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $widgets_user;
     
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
-    private ?Profile $profile = null;
 
 
 
@@ -134,17 +132,8 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Forums::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $forums_user;
 
-
-    public function getProfile(): ?Profile
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(?Profile $profile): static
-    {
-        $this->profile = $profile;
-        return $this;
-    }
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $date_of_birth = null;
 
     public function __construct()
     {
@@ -614,6 +603,18 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
                 $forumsUser->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDateOfBirth(): ?\DateTime
+    {
+        return $this->date_of_birth;
+    }
+
+    public function setDateOfBirth(?\DateTime $date_of_birth): static
+    {
+        $this->date_of_birth = $date_of_birth;
 
         return $this;
     }

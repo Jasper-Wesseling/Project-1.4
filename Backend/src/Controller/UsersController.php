@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Users;
 use App\Entity\Profile;
+use App\Repository\LocationsRepository;
+use App\Repository\ReviewsRepository;
 use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -292,16 +294,8 @@ class UsersController extends AbstractController
 
             return new JsonResponse(['violations' => $violations], JsonResponse::HTTP_BAD_REQUEST);
         }
-        $profile = new Profile();
-        $profile->setUser($user);
-        $profile->setFullName('');
-        $profile->setAge(null);
-        $profile->setStudyProgram('');
-        $profile->setLocation('');
-        $profile->setBio('');
 
         $entityManager->persist($user);
-        $entityManager->persist($profile);
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'User created'], 201);
@@ -346,7 +340,7 @@ class UsersController extends AbstractController
     }
 
     #[Route('/getbyid', name: 'api_users_get_by_id', methods: ['GET'])]
-    public function getById(Request $request, UsersRepository $usersRepository): Response
+    public function getById(Request $request, UsersRepository $usersRepository, ReviewsRepository $reviewsRepository): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
@@ -374,6 +368,25 @@ class UsersController extends AbstractController
             ];
         }
 
+        $reviews = $reviewsRepository->findBy(['user_id' => $user]);
+        if (!$reviews) 
+        {
+            $reviewCount = 0;
+            $reviewAverage = 0;
+        } 
+        else 
+        {
+            $reviewCount = count($reviews);
+            $totalRating = 0;
+    
+            foreach ($reviews as $review) {
+                $totalRating += $review->getRating();
+            }
+    
+            $reviewAverage = $reviewCount > 0 ? round($totalRating / $reviewCount, 2) : 0;
+        }
+
+
         $usersData = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
@@ -387,6 +400,8 @@ class UsersController extends AbstractController
             'language' => $user->getLanguage(),
             'theme' => $user->getTheme(),
             'location' => $locationData,
+            'review_count' => $reviewCount,
+            'review_average' => $reviewAverage
         ];
 
         return new JsonResponse($usersData, 200);
@@ -411,18 +426,64 @@ class UsersController extends AbstractController
 
         $user->setFullName('Temporary User');
 
-        $profile = new Profile();
-        $profile->setUser($user);
-        $profile->setFullName('');
-        $profile->setAge(null);
-        $profile->setStudyProgram('');
-        $profile->setLocation('');
-        $profile->setBio('');
-
         $entityManager->persist($user);
-        $entityManager->persist($profile);
         $entityManager->flush();
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
+    }
+
+    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
+    public function updateProfile(
+        Request $request,
+        TokenStorageInterface $tokenStorage,
+        EntityManagerInterface $em,
+        UsersRepository $repo,
+        LocationsRepository $locationsRepository
+    ): JsonResponse {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
+            return new JsonResponse(['error' => 'Invalid token'], 401);
+        }
+        
+        $user = $repo->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['message' => 'User not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return new JsonResponse(['message' => 'Invalid JSON payload'], 400);
+        }
+
+        if (!isset($data['full_name']) || !isset($data['study_program']) || !isset($data['location']) || !isset($data['date_of_birth'])) {
+            return new JsonResponse(['message' => 'Missing required fields'], 400);
+        }
+
+        $newDateOfBirth = \DateTime::createFromFormat('Y-m-d', $data['date_of_birth']);
+        if ($user->getDateOfBirth() === null || $user->getDateOfBirth()->format('Y-m-d') !== $data['date_of_birth']) {
+            $user->setDateOfBirth($newDateOfBirth);
+        }
+
+        if ($user->getFullName() !== $data['full_name']) {
+            $user->setFullName($data['full_name'] ?? '');
+        }
+
+        if ($user->getStudyProgram() !== $data['study_program']) {
+            $user->setStudyProgram($data['study_program'] ?? '');
+        }
+
+        $location = $locationsRepository->createQueryBuilder('l')
+            ->where('LOWER(l.name) = LOWER(:name)')
+            ->setParameter('name', $data['location'])
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($user->getLocationId() !== $location) {
+            $user->setLocationId($location ? $location : null);
+        }
+
+        $em->flush();
+
+        return $this->json('Profile updated successfully', 200);
     }
 }
