@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Reviews;
 use App\Repository\ReviewsRepository;
 use App\Repository\UserRepository;
+use App\Repository\UsersRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,14 +18,6 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 #[Route('/api/reviews', name: 'api_reviews')]
 class ReviewsController extends AbstractController
 {
-    private $jwtManager;
-    private $tokenStorageInterface;
-
-    public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
-    {
-        $this->jwtManager = $jwtManager;
-        $this->tokenStorageInterface = $tokenStorageInterface;
-    }
 
     #[Route('/get', name: 'get_reviews', methods: ['GET'])]
     public function getReviews(Request $request, UserRepository $userRepository, ReviewsRepository $reviewsRepository): Response
@@ -59,11 +53,13 @@ class ReviewsController extends AbstractController
     }
 
     #[Route('/new', name: 'new_review', methods: ['POST'])]
-    public function newReview(Request $request, ReviewsRepository $reviewsRepository): Response
+    public function newReview(Request $request, ReviewsRepository $reviewsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
     {
         $user_id = $request->query->get('user');
+        $data = json_decode($request->getContent(), true);
 
-        $user = $userRepository->find($user_id);
+
+        $user = $usersRepository->findOneBy(['id' => $user_id]);
         if (!$user) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
@@ -74,7 +70,8 @@ class ReviewsController extends AbstractController
         $review->setContent(null);
         $review->setDate(new \DateTime());
 
-        $reviewsRepository->save($review, true);
+        $entityManager->persist($review);
+        $entityManager->flush();
 
         return new JsonResponse(['message' => 'Review created successfully'], Response::HTTP_CREATED);
     }

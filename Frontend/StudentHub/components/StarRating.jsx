@@ -10,8 +10,9 @@ import {
 import { API_URL } from "@env";
 
 
-export default function StarRating({ navigation,token }) {
+export default function StarRating({ navigation,token,route }) {
     const [rating, setRating] = useState(0);
+    const { userProfile, onGoBack } = route.params;
     const [hoveredRating, setHoveredRating] = useState(0);
 
     const handleStarPress = (starValue) => {
@@ -26,7 +27,7 @@ export default function StarRating({ navigation,token }) {
     
 
     try {
-      const response = await fetch(`${API_URL}/api/reviews/new`, {
+      const response = await fetch(`${API_URL}/api/reviews/new?user=${userProfile}`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -46,8 +47,8 @@ export default function StarRating({ navigation,token }) {
             {
             text: "OK",
             onPress: () => {
-                setRating(0);
-                navigation.goBack();
+              if (onGoBack) onGoBack();
+              navigation.goBack();
             }
             }
         ]

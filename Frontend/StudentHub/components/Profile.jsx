@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import { useState, useRef } from "react";
 import {
   Text,
   View,
@@ -52,36 +52,41 @@ export default function Profile({ token, navigation, route, user }) {
     }
   };  
   
-  useFocusEffect(
-    useCallback(() => {
-      setProfile(null);
-      let targetUserId;
-      console.log("Route params:", route.params);
-      if (product && product.product_user_id) {
-        // Coming from a product - load the product owner's profile
-        targetUserId = product.product_user_id;
-      } else if (route.params && route.params.userToChat) {
-        targetUserId = route.params.userToChat;
-      } else {
-        targetUserId = user.id; // Default to current user's profile
-      }
+const firstLoad = useRef(true);
 
-      // Set the userProfile state to track which profile we're viewing
+useFocusEffect(
+  useCallback(() => {
+    setProfile(null);
+    let targetUserId;
+
+    // Alleen bij de eerste keer laden of als params veranderen
+    if (product && product.product_user_id) {
+      targetUserId = product.product_user_id;
+    } else if (route.params && route.params.userToChat) {
+      targetUserId = route.params.userToChat;
+    } else if (route.params && route.params.userProfile) {
+      targetUserId = route.params.userProfile;
+    } else {
+      targetUserId = user.id;
+    }
+
+    // Voorkom dubbele fetch bij eerste render
+    if (firstLoad.current || userProfile !== targetUserId) {
       setUserProfile(targetUserId);
-
       if (token && targetUserId) {
         fetchProfile(targetUserId);
       }
+      firstLoad.current = false;
+    }
 
-      // Clear route params to prevent issues when navigating between different profiles
-      // Do this after fetching to avoid clearing params before they're used
-      return () => {
-        if (route.params) {
-          navigation.setParams({ product: null, userToChat: null });
-        }
-      };
-    }, [token, product, route.params?.userToChat, user.id, navigation])
-  );
+    return () => {
+      // Reset params alleen als je echt wilt dat ze weg zijn
+      // if (route.params) {
+      //   navigation.setParams({ product: null, userToChat: null });
+      // }
+    };
+  }, [token, product, route.params?.userToChat, route.params?.userProfile, user.id])
+);
 
   const startEditing = () => {
     if (profile) {
@@ -262,191 +267,206 @@ export default function Profile({ token, navigation, route, user }) {
             accessible
             accessibilityLabel="Ga terug"
             style={{ marginBottom: 10 }}
-            onPress={() => { navigation.goBack(); }}
+            onPress={() => navigation.goBack()}
           >
             <Text style={styles.backArrow}>←</Text>
           </TouchableOpacity>
 
-          <View style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: API_URL+profile.avatar_url || DEFAULT_AVATAR_URL,
-              }}
-              style={styles.profileImage}
-            />
-          </View>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{
+                    uri: profile.avatar_url
+                        ? API_URL + profile.avatar_url
+                        : DEFAULT_AVATAR_URL,
+                    }}
+                    style={styles.profileImage}
+                  />
+                  </View>
 
-          <View style={styles.infoSection}>
-            <View style={styles.nameBox}>
-            {isEditing ? (
-                <>
-                  <TextInput
-                    value={editedProfile.first_name || ""}
+                  <View style={styles.infoSection}>
+                  <View style={styles.nameBox}>
+                  {isEditing ? (
+                    <>
+                      <TextInput
+                      value={editedProfile.first_name || ""}
+                      onChangeText={(text) =>
+                        setEditedProfile({ ...editedProfile, first_name: text })
+                      }
+                      style={styles.input}
+                      placeholder="Voornaam"
+                      placeholderTextColor="#888"
+                      />
+                      <TextInput
+                      value={editedProfile.last_name || ""}
+                      onChangeText={(text) =>
+                        setEditedProfile({ ...editedProfile, last_name: text })
+                      }
+                      style={styles.input}
+                      placeholder="Achternaam"
+                      placeholderTextColor="#888"
+                      />
+                    </>
+                    ) : (
+                    <Text style={styles.userName}>{profile.full_name || null}</Text>
+                    )}
+                  </View>
+
+                  <View style={styles.row}>
+                    {isEditing ? (
+                    <>
+                      <TextInput
+                      value={editedProfile.date_of_birth || ""}
+                      onChangeText={(text) =>
+                        setEditedProfile({ ...editedProfile, date_of_birth: text })
+                      }
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="YYYY-MM-DD"
+                      placeholderTextColor="#888"
+                      />
+                      <TextInput
+                      value={editedProfile.study_program || ""}
+                      onChangeText={(text) =>
+                        setEditedProfile({ ...editedProfile, study_program: text })
+                      }
+                      style={[styles.input, { flex: 2, marginLeft: 10 }]}
+                      placeholder="Studierichting"
+                      placeholderTextColor="#888"
+                      />
+                    </>
+                    ) : (
+                      <>
+                      <Text style={styles.age}>{age} jaar</Text>
+                      <View style={styles.tag}>
+                        <Text style={styles.tagText}>{profile.study_program}</Text>
+                      </View>
+                      </>
+                    )}
+                  </View>
+
+                  {isEditing ? (
+                    <TextInput
+                    value={editedProfile.location?.name || ""}
                     onChangeText={(text) =>
-                      setEditedProfile({ ...editedProfile, first_name: text })
+                      setEditedProfile({ ...editedProfile, location: text })
                     }
                     style={styles.input}
-                    placeholder="Voornaam"
+                    placeholder="Locatie"
                     placeholderTextColor="#888"
-                  />
-                  <TextInput
-                    value={editedProfile.last_name || ""}
-                    onChangeText={(text) =>
-                      setEditedProfile({ ...editedProfile, last_name: text })
-                    }
-                    style={styles.input}
-                    placeholder="Achternaam"
-                    placeholderTextColor="#888"
-                  />
-                </>
-                ) : (
-                <Text style={styles.userName}>{profile.full_name || null}</Text>
-              )}
-            </View>
-
-            <View style={styles.row}>
-              {isEditing ? (
-                <>
-                  <TextInput
-                    value={editedProfile.date_of_birth || ""}
-                    onChangeText={(text) =>
-                      setEditedProfile({ ...editedProfile, date_of_birth: text })
-                    }
-                    style={[styles.input, { flex: 1 }]}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor="#888"
-                  />
-                  <TextInput
-                    value={editedProfile.study_program || ""}
-                    onChangeText={(text) =>
-                      setEditedProfile({ ...editedProfile, study_program: text })
-                    }
-                    style={[styles.input, { flex: 2, marginLeft: 10 }]}
-                    placeholder="Studierichting"
-                    placeholderTextColor="#888"
-                  />
-                </>
-                ) : (
-                  <>
-                    <Text style={styles.age}>{age} jaar</Text>
-                    <View style={styles.tag}>
-                      <Text style={styles.tagText}>{profile.study_program}</Text>
+                    />
+                  ) : (
+                    <View style={styles.locationContainer}>
+                    <Text style={styles.locationIcon}>📍</Text>
+                    <Text style={styles.location}>
+                      {profile.location?.name || "Locatie niet ingevuld"}
+                    </Text>
                     </View>
-                  </>
-              )}
-            </View>
+                  )}
+                  <View style={styles.reviewContainer}>
+                    <View style={styles.reviewRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Text
+                            key={i}
+                            style={[
+                              i < Math.round(profile.review_average || 0)
+                                ? styles.starFilled
+                                : styles.starEmpty
+                            ]}
+                          >
+                            ★
+                          </Text>
+                        ))}
+                        <Text style={styles.reviews}> {profile.review_count || 'No'} Reviews</Text>
+                      </View>
+                      {user.id !== userProfile ? (
+                        <TouchableOpacity
+                          style={styles.rateButton}
+                          onPress={() => navigation.navigate('StarRating', { userProfile, onGoBack: () => fetchProfile(userProfile) })}
+                          accessible
+                          accessibilityLabel="Geef een beoordeling"
+                        >
+                          <Text style={styles.rateButtonText}>Beoordeel</Text>
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+                  </View>
+                  </View>
 
-            {isEditing ? (
-              <TextInput
-                value={editedProfile.location?.name || ""}
-                onChangeText={(text) =>
-                  setEditedProfile({ ...editedProfile, location: text })
-                }
-                style={styles.input}
-                placeholder="Locatie"
-                placeholderTextColor="#888"
-              />
-            ) : (
-              <View style={styles.locationContainer}>
-                <Text style={styles.locationIcon}>📍</Text>
-                <Text style={styles.location}>
-                  {profile.location?.name || "Locatie niet ingevuld"}
-                </Text>
-              </View>
-            )}
-            <View style={styles.reviewContainer}>
-              <View style={styles.reviewRow}>
-                <View style={styles.starsSection}>
-                  <Text style={styles.stars}>★ ★ ★ ★ ☆</Text>
-                  <Text style={styles.reviews}>{profile.review_count || 110} Reviews</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.rateButton}
-                  onPress={() => navigation.navigate('StarRating')}
-                  accessible
-                  accessibilityLabel="Geef een beoordeling"
-                >
-                  <Text style={styles.rateButtonText}>Beoordeel</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+                  <Text style={styles.sectionTitle}>Details</Text>
+                  {isEditing ? (
+                  <TextInput
+                    value={editedProfile.bio || ""}
+                    onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, bio: text })
+                    }
+                    style={[styles.input, { height: 100 }]}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                    placeholder="Bio"
+                    placeholderTextColor="#888"
+                  />
+                  ) : (
+                    <Text style={styles.description}>
+                    {profile.bio || "Geen bio beschikbaar."}
+                    </Text>
+                  )}
 
-          <Text style={styles.sectionTitle}>Details</Text>
-          {isEditing ? (
-            <TextInput
-              value={editedProfile.bio || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, bio: text })
-              }
-              style={[styles.input, { height: 100 }]}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              placeholder="Bio"
-              placeholderTextColor="#888"
-            />
-            ) : (
-              <Text style={styles.description}>
-                {profile.bio || "Geen bio beschikbaar."}
-              </Text>
-          )}
-
-          <TouchableOpacity style={styles.accordion} onPress={() => setInteresses(!Interesses)}>
-            <View style={{ flex: 1 }}>
-              <View style={[styles.row, {justifyContent: "space-between"}]}>
-                <Text style={styles.accordionText}>Interesses</Text>
-                <Text style={styles.chevron}>{Interesses ? '▲' : '▼'}</Text>
-              </View>
-              {Interesses && (
-                <Text style={styles.description}>
-                  {profile.interests || "Geen interesses beschikbaar."}
-                </Text>
-              )}
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.buttonGroup}>
-            {isEditing ? (
-              <>
-                <TouchableOpacity
-                  style={styles.contactButton}
-                  onPress={saveChanges}
-                  accessible
-                  accessibilityLabel="Opslaan"
-                >
-                  <Text style={styles.contactButtonText}>Opslaan</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.dotButton}
-                  onPress={cancelEditing}
-                  accessible
-                  accessibilityLabel="Annuleren"
-                >
-                  <Text style={styles.dotButtonText}>Annuleren</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                {
-                  user.id === userProfile ? (
-                  <TouchableOpacity
-                    style={styles.dotButton}
-                    onPress={startEditing}
-                    accessible
-                    accessibilityLabel="Profiel bewerken"
-                  >
-                    <Text style={styles.dotButtonText}>Bewerken</Text>
+                  <TouchableOpacity style={styles.accordion} onPress={() => setInteresses(!Interesses)}>
+                  <View style={{ flex: 1 }}>
+                    <View style={[styles.row, {justifyContent: "space-between"}]}>
+                    <Text style={styles.accordionText}>Interesses</Text>
+                    <Text style={styles.chevron}>{Interesses ? '▲' : '▼'}</Text>
+                    </View>
+                    {Interesses && (
+                    <Text style={styles.description}>
+                      {profile.interests || "Geen interesses beschikbaar."}
+                    </Text>
+                    )}
+                  </View>
                   </TouchableOpacity>
-                  ) : null
-                }
 
-                <TouchableOpacity
-                  style={styles.contactButton}
-                  accessible
-                  accessibilityLabel="Contacteer gebruiker"
-                  onPress={() => {
+                  <View style={styles.buttonGroup}>
+                  {isEditing ? (
+                    <>
+                    <TouchableOpacity
+                      style={styles.contactButton}
+                      onPress={saveChanges}
+                      accessible
+                      accessibilityLabel="Opslaan"
+                    >
+                      <Text style={styles.contactButtonText}>Opslaan</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.dotButton}
+                      onPress={cancelEditing}
+                      accessible
+                      accessibilityLabel="Annuleren"
+                    >
+                      <Text style={styles.dotButtonText}>Annuleren</Text>
+                    </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                    {
+                      user.id === userProfile ? (
+                      <TouchableOpacity
+                      style={styles.dotButton}
+                      onPress={startEditing}
+                      accessible
+                      accessibilityLabel="Profiel bewerken"
+                      >
+                      <Text style={styles.dotButtonText}>Bewerken</Text>
+                      </TouchableOpacity>
+                      ) : null
+                    }
+
+                    <TouchableOpacity
+                      style={styles.contactButton}
+                      accessible
+                      accessibilityLabel="Contacteer gebruiker"
+                      onPress={() => {
                     const email = profile.email;
                     if (email) {
                       const mailtoUrl = `mailto:${email}`;
@@ -559,15 +579,27 @@ const styles = StyleSheet.create({
   },
   reviewRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   starsSection: {
     flex: 1,
   },
   stars: {
+    // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
     color: "#ffcc00",
     fontSize: 18,
+  },
+  starFilled: {
+    color: "#ffcc00",
+    fontSize: 20,
+    marginRight: 2,
+  },
+  starEmpty: {
+    color: "#ddd",
+    fontSize: 20,
+    marginRight: 2,
   },
   reviews: {
     fontSize: 13,

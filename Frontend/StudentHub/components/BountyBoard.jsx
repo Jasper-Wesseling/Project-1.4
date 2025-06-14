@@ -8,9 +8,11 @@ import { TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
 import BountyBoardModal from "./BountyBoardModal";
-import { themes } from "./LightDarkComponent";
+import { useTranslation } from "react-i18next";
 
 export default function BountyBoard({ navigation, token, theme }) {
+    const { t } = useTranslation();
+
     const scrollY = useRef(new Animated.Value(0)).current;
     const [posts, setPosts] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
@@ -23,28 +25,16 @@ export default function BountyBoard({ navigation, token, theme }) {
     const [activeFilter, setActiveFilter] = useState(null);
     const [selectedPost, setSelectedPost] = useState(null);
     const [bountyModalVisible, setBountyModalVisible] = useState(false);
-    // Gebruik altijd een geldig theme object
-    const safeTheme =
-        typeof theme === "object" && theme
-            ? theme
-            : typeof theme === "string" && themes[theme]
-                ? themes[theme]
-                : themes.light;
-    // niet laden als theme niet geldig is
-    if (!safeTheme) {
-        return null;
-    }
+    const styles = createBountyStyles(theme);
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
             if (!token) throw new Error("No token received");
 
-            // Build query params for search and filter
             let query = `?page=${pageToLoad}`;
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&type=${encodeURIComponent(filterValue)}`;
 
-            // Fetch posts and current user in parallel
             const [postsRes, userRes] = await Promise.all([
                 fetch(API_URL + `/api/posts/get${query}`, {
                     method: 'GET',
@@ -113,9 +103,6 @@ export default function BountyBoard({ navigation, token, theme }) {
     });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
-
-    const styles = createBountyStyles(safeTheme);
-
     const filteredPosts = posts
         .filter(post => post && typeof post === 'object' && post.title)
         .filter(post =>
@@ -134,7 +121,7 @@ export default function BountyBoard({ navigation, token, theme }) {
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
-                    <Text style={styles.topBarText}>{!loading ? `Hey, ${name}` : 'Hey'}</Text>
+                    <Text style={styles.topBarText}>{!loading ? `${t('hey')}, ${name}` : t('hey')}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
@@ -143,22 +130,26 @@ export default function BountyBoard({ navigation, token, theme }) {
                             <Icon name="cog" type="material-community" size={34} color="#fff" />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
-                            <Icon name="chat" type="material-community" size={32} color="#fff"/>
+                            <Icon name="chat" type="material-community" size={32} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </View>
             </View>
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, { opacity: headerOpacity, marginTop: -20, fontWeight: '300' }]}>Step up,</Animated.Text>
-                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>Take a bounty</Animated.Text>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity, marginTop: -20, fontWeight: '300' }]}>
+                    {t('step_up')}
+                </Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>
+                    {t('take_a_bounty')}
+                </Animated.Text>
             </Animated.View>
             <Animated.View style={[styles.stickyBar, { marginTop: stickyBarMarginTop }]}>
                 {/* Searchbar */}
                 <View style={styles.searchBarInner}>
                     <Icon type="Feather" name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
                     <TextInput
-                        placeholder="Find your bounty"
+                        placeholder={t('find_your_bounty')}
                         value={search}
                         onChangeText={setSearch}
                         style={styles.searchBarInput}
@@ -175,7 +166,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                     {filters.map((filter, i) => (
                         <TouchableOpacity key={i} onPress={() => setActiveFilter(activeFilter === filter ? null : filter)}>
                             <Text style={[styles.filter, activeFilter === filter ? styles.activeFilter : null]}>
-                                {filter ? filter : null}
+                                {filter ? t(filter.toLowerCase()) : null}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -192,13 +183,13 @@ export default function BountyBoard({ navigation, token, theme }) {
                     onScrollEndDrag={loadMore}
                 >
                     {filteredPosts.length === 0 ? (
-                        <Text style={styles.loadingText}>No bounties found.</Text>
+                        <Text style={styles.loadingText}>{t('no_bounties_found')}</Text>
                     ) : (
                         filteredPosts.map(post => (
                             <View key={post.id}>
                                 <PostPreview
                                     post={post}
-                                    user={{ full_name: post.post_user_name || "Unknown User" }}
+                                    user={{ full_name: post.post_user_name || t('unknown_user') }}
                                     token={token}
                                     onQuickHelp={() => openBountyModal(post)}
                                 />
@@ -207,9 +198,9 @@ export default function BountyBoard({ navigation, token, theme }) {
                     )}
                 </Animated.ScrollView>
                 :
-                <Text style={styles.loadingText}>Loading...</Text>
+                <Text style={styles.loadingText}>{t('loading')}</Text>
             }
-            
+
             {/* BountyModal */}
             <BountyBoardModal
                 visible={bountyModalVisible}
@@ -218,9 +209,9 @@ export default function BountyBoard({ navigation, token, theme }) {
                 navigation={navigation}
                 user={currentUser}
                 token={token}
+                theme={theme}
                 onPostDeleted={() => {
                     setBountyModalVisible(false);
-                    // Refresh the posts list
                     setPage(1);
                     fetchAll(1, false, search, activeFilter);
                 }}
@@ -234,34 +225,6 @@ function createBountyStyles(theme) {
         container: {
             flex: 1,
             backgroundColor: theme.background,
-        },
-        languageSwitcher: {
-            position: 'absolute',
-            paddingTop: 100,
-            top: 10,
-            right: 10,
-            flexDirection: 'row',
-            zIndex: 100,
-            backgroundColor: theme.languageSwitcherBg,
-            borderRadius: 10,
-            padding: 2,
-        },
-        langButton: {
-            paddingVertical: 6,
-            paddingHorizontal: 12,
-            borderRadius: 8,
-            backgroundColor: theme.langButtonBg,
-            marginHorizontal: 2,
-        },
-        langButtonActive: {
-            backgroundColor: theme.langButtonActiveBg,
-        },
-        langButtonText: {
-            color: theme.langButtonText,
-            fontWeight: 'bold'
-        },
-        langButtonTextActive: {
-            color: theme.text,
         },
         topBar: {
             position: "absolute",
@@ -369,9 +332,9 @@ function createBountyStyles(theme) {
             backgroundColor: "transparent",
             borderWidth: 0,
             paddingVertical: 0,
-            color: theme.text,        
-        },       
-         scrollViewContent: {
+            color: theme.text,
+        },
+        scrollViewContent: {
             paddingTop: 16,
             paddingBottom: 80,
         },
