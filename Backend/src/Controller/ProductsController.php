@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Products;
+use App\Repository\MessagesRepository;
 use App\Repository\ProductsRepository;
 use App\Repository\UsersRepository;
 use DatePeriod;
@@ -188,7 +189,13 @@ class ProductsController extends AbstractController
     }
 
     #[Route('/delete', name: 'api_products_delete', methods: ['DELETE'])]
-    public function deleteProduct(Request $request, ProductsRepository $productsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
+    public function deleteProduct(
+        Request $request,
+        ProductsRepository $productsRepository,
+        UsersRepository $usersRepository,
+        EntityManagerInterface $entityManager,
+        MessagesRepository $messagesRepository
+    ): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
@@ -209,6 +216,12 @@ class ProductsController extends AbstractController
         // check if product owner is the same as the user making the request
         if ($product->getUserId()->getId() !== $user->getId()) {
             return new JsonResponse(['error' => 'Unauthorized'], 403);
+        }
+
+        // Delete related messages first
+        $messages = $messagesRepository->findBy(['product_id' => $product]);
+        foreach ($messages as $message) {
+            $entityManager->remove($message);
         }
 
         $entityManager->remove($product);

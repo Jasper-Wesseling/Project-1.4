@@ -92,7 +92,10 @@ export default function EditProducts({ navigation, token, user }) {
          <ProductModal
             visible={modalVisible}
             product={selectedProduct}
-            onClose={() => setModalVisible(false)}
+            onClose={() => {
+               setModalVisible(false);
+               fetchProducts();
+            }}
             formatPrice={formatPrice}
             navigation={navigation}
             user={user}
