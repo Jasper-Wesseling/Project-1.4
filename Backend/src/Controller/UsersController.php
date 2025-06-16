@@ -405,7 +405,8 @@ class UsersController extends AbstractController
             'theme' => $user->getTheme(),
             'location' => $locationData,
             'review_count' => $reviewCount,
-            'review_average' => $reviewAverage
+            'review_average' => $reviewAverage,
+            'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
         ];
 
         return new JsonResponse($usersData, 200);
@@ -455,10 +456,6 @@ class UsersController extends AbstractController
         $data = json_decode($request->getContent(), true);
         if (!is_array($data)) {
             return new JsonResponse(['message' => 'Invalid JSON payload'], 400);
-        }
-
-        if (!isset($data['full_name']) || !isset($data['study_program']) || !isset($data['location']) || !isset($data['date_of_birth'])) {
-            return new JsonResponse(['message' => 'Missing required fields'], 400);
         }
 
         $newDateOfBirth = \DateTime::createFromFormat('Y-m-d', $data['date_of_birth']);
