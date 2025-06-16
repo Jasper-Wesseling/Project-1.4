@@ -166,7 +166,21 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             {/* Buttons */}
                             <View style={styles.buttonRow}>
                                 <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
-                                <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.filledButton,
+                                        isCreator && { backgroundColor: '#ccc' }
+                                    ]}
+                                    onPress={() => {
+                                        navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName });
+                                        onClose();
+                                    }}
+                                    disabled={isCreator}
+                                >
+                                    <Text style={styles.filledButtonText}>
+                                        Buy Now
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
                             {/* Seller Info - improved */}
                             <Text style={styles.sectionTitle}>Seller info</Text>
