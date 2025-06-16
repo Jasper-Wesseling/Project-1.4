@@ -117,7 +117,7 @@ export default function BussinessPage({ navigation,token }) {
     const closeEventModal = () => {
         setEventModalVisible(false);
         setSelectedEvent(null);
-        setAgendaVisible(true); // Reopen agenda modal when closing event modal
+        // setAgendaVisible(true); // Remove this line so agenda does not reopen
     };
 
     // Place this useEffect INSIDE the component, not after the styles!
@@ -149,8 +149,8 @@ export default function BussinessPage({ navigation,token }) {
 
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Step up,</Animated.Text>
-                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>Take a bounty</Animated.Text>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Discover</Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>By Company</Animated.Text>
             </Animated.View>
 
             {/* Filter Row (copied from Products.jsx) */}
@@ -187,11 +187,18 @@ export default function BussinessPage({ navigation,token }) {
                 >
                     {events && events.length > 0 ? (
                         events.map((event, idx) => (
-                            <View style={styles.eventContainer} key={event.id || idx}>
+                            <TouchableOpacity
+                                key={event.id || idx}
+                                style={styles.eventContainer}
+                                onPress={() => {
+                                    setSelectedEvent(event);
+                                    setEventModalVisible(true);
+                                }}
+                            >
                                 <Text style={styles.eventTitle}>{event.title}</Text>
                                 <Text style={styles.eventDate}>{event.date}</Text>
                                 <Text style={styles.eventDescription}>{event.description}</Text>
-                            </View>
+                            </TouchableOpacity>
                         ))
                     ) : (
                         <View style={styles.eventContainer}>
