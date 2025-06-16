@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, S
 import { API_URL } from '@env';
 import { hasRole } from "../utils/roleUtils";
 
-export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token }) {
+export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token, theme }) {
     const [fullscreenImg, setFullscreenImg] = useState(false);
     const [sellerData, setSellerData] = useState(null);
 
@@ -13,6 +13,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     const [editDescription, setEditDescription] = useState('');
     const [editPrice, setEditPrice] = useState('');
     const [saving, setSaving] = useState(false);
+    const styles = createProductModalStyles(theme);
 
     useEffect(() => {
         setEditMode(false); // Reset edit mode when product changes
@@ -317,251 +318,253 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     );
 }
 
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: '#f4f5f7',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    card: {
-        width: '92%',
-        height: '100%',
-        backgroundColor: '#fff',
-        borderRadius: 28,
-        padding: 24,
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    backButton: {
-        position: 'absolute',
-        top: 18,
-        left: 18,
-        zIndex: 10,
-    },
-    backCircle: {
-        backgroundColor: '#f4f5f7',
-        borderRadius: 20,
-        width: 36,
-        height: 36,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    backArrow: {
-        fontSize: 22,
-        color: '#222',
-    },
-    imageContainer: {
-        marginTop: 24,
-        marginBottom: 16,
-        width: 200,
-        height: 200,
-        borderRadius: 100,
-        backgroundColor: '#f4f5f7',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-    },
-    image: {
-        width: 170,
-        height: 170,
-        borderRadius: 85,
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#222',
-        alignSelf: 'flex-start',
-        marginTop: 12,
-    },
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        marginTop: 4,
-        marginBottom: 8,
-    },
-    price: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#2A4BA0',
-        marginRight: 10,
-    },
-    badge: {
-        backgroundColor: '#2A4BA0',
-        borderRadius: 12,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-    },
-    badgeText: {
-        color: '#fff',
-        fontSize: 13,
-    },
-    starsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        marginBottom: 8,
-    },
-    stars: {
-        color: '#FFC83A',
-        fontSize: 18,
-        marginRight: 6,
-    },
-    reviewCount: {
-        color: '#888',
-        fontSize: 14,
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        width: '100%',
-        justifyContent: 'space-between',
-        marginVertical: 16,
-    },
-    outlineButton: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#2A4BA0',
-        borderRadius: 16,
-        paddingVertical: 12,
-        marginRight: 8,
-        alignItems: 'center',
-    },
-    outlineButtonText: {
-        color: '#2A4BA0',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    filledButton: {
-        flex: 1,
-        backgroundColor: '#2A4BA0',
-        borderRadius: 16,
-        paddingVertical: 12,
-        marginLeft: 8,
-        alignItems: 'center',
-    },
-    filledButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    sectionTitle: {
-        fontWeight: 'bold',
-        color: '#222',
-        fontSize: 16,
-        marginTop: 10,
-        marginBottom: 2,
-        alignSelf: 'flex-start',
-    },
-    details: {
-        color: '#8a94a6',
-        fontSize: 15,
-        marginBottom: 8,
-        alignSelf: 'flex-start',
-    },
-    sectionRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        borderTopWidth: 1,
-        borderTopColor: '#eee',
-        paddingVertical: 10,
-        marginTop: 2,
-    },
-    sectionArrow: {
-        fontSize: 18,
-        color: '#8a94a6',
-    },
-    fullscreenOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.95)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    fullscreenImage: {
-        width: '95%',
-        height: '80%',
-        borderRadius: 16,
-    },
-    sellerContainer: {
-        width: '100%',
-        backgroundColor: '#f9f9f9',
-        borderRadius: 12,
-        padding: 16,
-        marginTop: 16,
-        marginBottom: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 4,
-    },
-    sellerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    sellerImg: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        marginRight: 8,
-        backgroundColor: '#eee',
-    },
-    sellerLabel: {
-        fontWeight: 'bold',
-        color: '#222',
-        fontSize: 14,
-        marginRight: 4,
-    },
-    sellerName: {
-        color: '#2A4BA0',
-        fontSize: 14,
-    },
-    sellerRatingRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    sellerRatingText: {
-        color: '#888',
-        fontSize: 14,
-        marginLeft: 4,
-    }, 
-    // --- Added styles below ---
-    reviewContainer: {
-        marginBottom: 12,
-    },
-    reviewRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 10,
-    },
-    starsSection: {
-        flex: 1,
-    },
-    stars: {
-        // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
-        color: "#ffcc00",
-        fontSize: 18,
-    },
-    starFilled: {
-        color: "#ffcc00",
-        fontSize: 20,
-        marginRight: 2,
-    },
-    starEmpty: {
-        color: "#ddd",
-        fontSize: 20,
-        marginRight: 2,
-    },
-    reviews: {
-        fontSize: 13,
-        color: "#888",
-    },
-});
+function createProductModalStyles(theme) {
+    return StyleSheet.create({
+        overlay: {
+            flex: 1,
+            backgroundColor: theme.modalOverlay,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        card: {
+            width: '92%',
+            height: '100%',
+            backgroundColor: theme.background,
+            borderRadius: 28,
+            padding: 24,
+            alignItems: 'center',
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 8,
+        },
+        backButton: {
+            position: 'absolute',
+            top: 18,
+            left: 18,
+            zIndex: 10,
+        },
+        backCircle: {
+            backgroundColor: theme.backCircle,
+            borderRadius: 20,
+            width: 36,
+            height: 36,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        backArrow: {
+            fontSize: 22,
+            color: theme.text,
+        },
+        imageContainer: {
+            marginTop: 24,
+            marginBottom: 16,
+            width: 200,
+            height: 200,
+            borderRadius: 100,
+            backgroundColor: '#f4f5f7',
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+        },
+        image: {
+            width: 170,
+            height: 170,
+            borderRadius: 85,
+        },
+        title: {
+            fontSize: 22,
+            fontWeight: 'bold',
+            color: theme.text,
+            alignSelf: 'flex-start',
+            marginTop: 12,
+        },
+        priceRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            alignSelf: 'flex-start',
+            marginTop: 4,
+            marginBottom: 8,
+        },
+        price: {
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: theme.text,
+            marginRight: 10,
+        },
+        badge: {
+            backgroundColor: '#2A4BA0',
+            borderRadius: 12,
+            paddingHorizontal: 10,
+            paddingVertical: 3,
+        },
+        badgeText: {
+            color: '#fff',
+            fontSize: 13,
+        },
+        starsRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            alignSelf: 'flex-start',
+            marginBottom: 8,
+        },
+        stars: {
+            color: theme.star,
+            fontSize: 18,
+            marginRight: 6,
+        },
+        reviewCount: {
+            color: theme.reviewCount,
+            fontSize: 14,
+        },
+        buttonRow: {
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-between',
+            marginVertical: 16,
+        },
+        outlineButton: {
+            flex: 1,
+            borderWidth: 1,
+            borderColor: '#2A4BA0',
+            borderRadius: 16,
+            paddingVertical: 12,
+            marginRight: 8,
+            alignItems: 'center',
+        },
+        outlineButtonText: {
+            color: '#2A4BA0',
+            fontWeight: 'bold',
+            fontSize: 16,
+        },
+        filledButton: {
+            flex: 1,
+            backgroundColor: '#2A4BA0',
+            borderRadius: 16,
+            paddingVertical: 12,
+            marginLeft: 8,
+            alignItems: 'center',
+        },
+        filledButtonText: {
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: 16,
+        },
+        sectionTitle: {
+            fontWeight: 'bold',
+            color: theme.primary,
+            fontSize: 16,
+            marginTop: 10,
+            marginBottom: 2,
+            alignSelf: 'flex-start',
+        },
+        details: {
+            color: theme.detailsText,
+            fontSize: 15,
+            marginBottom: 8,
+            alignSelf: 'flex-start',
+        },
+        sectionRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            borderTopWidth: 1,
+            borderTopColor: '#eee',
+            paddingVertical: 10,
+            marginTop: 2,
+        },
+        sectionArrow: {
+            fontSize: 18,
+            color: theme.sectionArrow,
+        },
+        fullscreenOverlay: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.95)',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        fullscreenImage: {
+            width: '95%',
+            height: '80%',
+            borderRadius: 16,
+        },
+        sellerContainer: {
+            width: '100%',
+            backgroundColor: theme.formBg,
+            borderRadius: 12,
+            padding: 16,
+            marginTop: 16,
+            marginBottom: 8,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 4,
+        },
+        sellerRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 8,
+        },
+        sellerImg: {
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            marginRight: 8,
+            backgroundColor: '#eee',
+        },
+        sellerLabel: {
+            fontWeight: 'bold',
+            color: '#222',
+            fontSize: 14,
+            marginRight: 4,
+        },
+        sellerName: {
+            color: '#2A4BA0',
+            fontSize: 14,
+        },
+        sellerRatingRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        sellerRatingText: {
+            color: '#888',
+            fontSize: 14,
+            marginLeft: 4,
+        },
+        // --- Added styles below ---
+        reviewContainer: {
+            marginBottom: 12,
+        },
+        reviewRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
+        },
+        starsSection: {
+            flex: 1,
+        },
+        stars: {
+            // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
+            color: "#ffcc00",
+            fontSize: 18,
+        },
+        starFilled: {
+            color: "#ffcc00",
+            fontSize: 20,
+            marginRight: 2,
+        },
+        starEmpty: {
+            color: "#ddd",
+            fontSize: 20,
+            marginRight: 2,
+        },
+        reviews: {
+            fontSize: 13,
+            color: "#888",
+        },
+    });
+}

@@ -5,12 +5,13 @@ import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
 
 
-export default function ProductChat({ navigation, token, user, route }) {
+export default function ProductChat({ navigation, token, user, route, theme }) {
     const userIDReciever = userToChat;
     const [chats, setChats] = useState([]);
     const [message, setMessage] = useState('');
     const [pageHeight, setPageHeight] = useState(0);
     const { product, userToChat, productTitle, receiverName, bountyTitle, bounty } = route.params;
+    const styles = createProductChatStyles(theme);
 
     const fetchChats = async () => {
         let query = '';
@@ -96,7 +97,7 @@ export default function ProductChat({ navigation, token, user, route }) {
 
     return(
         <View style={styles.container}>
-            <View style={[styles.topBar, {height: 125, backgroundColor: "#2A4BA0", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingTop:32 }]}>
+            <View style={[styles.topBar, {height: 125, backgroundColor: theme.headerBg, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingTop:32 }]}>
                 <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
                 <View style={{ width: '80%', alignItems: 'flex-start', justifyContent: 'center'}}>
                     {/* profile picture */}
@@ -108,7 +109,7 @@ export default function ProductChat({ navigation, token, user, route }) {
                 style={{
                     flex:1,
                     padding: 32,
-                    backgroundColor: '#fff',
+                    backgroundColor: theme.background,
                     transform: [{ translateY: -pageHeight }]
                 }}
             >
@@ -155,7 +156,7 @@ export default function ProductChat({ navigation, token, user, route }) {
                         }}
                     />
                     <TouchableOpacity
-                        style={{backgroundColor:'#2A4BA0', justifyContent: "center", borderRadius: 100, width: 50}}
+                        style={{ backgroundColor: theme.backCircle, justifyContent: "center", borderRadius: 100, width: 50}}
                         onPress={()=> {
                             sendMessage();
                             scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
@@ -169,72 +170,74 @@ export default function ProductChat({ navigation, token, user, route }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#F6F8FC",
-    },
-    topBar: {
-        flex: 1,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 100,
-        backgroundColor: "#2A4BA0",
-        justifyContent: "center",
-        paddingTop: 25,
-        paddingHorizontal: 16,
-        zIndex: 20,
-    },
-    backButton: {
-        flexDirection: "row",
-        justifyContent: "flex-start",
-        alignItems: 'center',
-        backgroundColor: '#4164C9',
-        borderRadius: 16,
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.10,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    backButtonText: {
-        color: "#fff",
-        fontSize: 20,
-        paddingLeft: 8,
-        fontWeight: '600',
-    },
-    input: {
-        borderColor: '#E3E6ED',
-        borderWidth: 1.5,
-        borderRadius: 16,
-        fontSize: 18,
-        padding: 14,
-        backgroundColor: '#F6F8FC',
-        color: '#222B45',
-        marginBottom: 0,
-    },
-    sentMessage: {
-        backgroundColor: '#E3E6ED',
-        alignSelf: "flex-end",
-        borderRadius: 12,
-        marginVertical: 4,
-        padding: 10,
-        maxWidth: '75%',
-    },
-    recievedMessage: {
-        backgroundColor: '#DCF8C6',
-        alignSelf: "flex-start",
-        borderRadius: 12,
-        marginVertical: 4,
-        padding: 10,
-        maxWidth: '75%',
-    },
-    scrollViewContent: {
-        paddingTop: 100,
-        paddingBottom: 40,
-    },
-})
+function createProductChatStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+        },
+        topBar: {
+            flex: 1,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 100,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            paddingTop: 25,
+            paddingHorizontal: 16,
+            zIndex: 20,
+        },
+        backButton: {
+            flexDirection: "row",
+            justifyContent: "flex-start",
+            alignItems: 'center',
+            backgroundColor: '#4164C9',
+            borderRadius: 16,
+            paddingVertical: 8,
+            paddingHorizontal: 14,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.10,
+            shadowRadius: 4,
+            elevation: 2,
+        },
+        backButtonText: {
+            color: "#fff",
+            fontSize: 20,
+            paddingLeft: 8,
+            fontWeight: '600',
+        },
+        input: {
+            borderColor: '#E3E6ED',
+            borderWidth: 1.5,
+            borderRadius: 16,
+            fontSize: 18,
+            padding: 14,
+            backgroundColor: '#F6F8FC',
+            color: '#222B45',
+            marginBottom: 0,
+        },
+        sentMessage: {
+            backgroundColor: '#E3E6ED',
+            alignSelf: "flex-end",
+            borderRadius: 12,
+            marginVertical: 4,
+            padding: 10,
+            maxWidth: '75%',
+        },
+        recievedMessage: {
+            backgroundColor: '#DCF8C6',
+            alignSelf: "flex-start",
+            borderRadius: 12,
+            marginVertical: 4,
+            padding: 10,
+            maxWidth: '75%',
+        },
+        scrollViewContent: {
+            paddingTop: 100,
+            paddingBottom: 40,
+        },
+    });
+}

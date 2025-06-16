@@ -117,6 +117,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                 value={search}
                 onChange={setSearch}
                 onClose={() => setSearchModalVisible(false)}
+                theme={theme}
             />
             {/* Static Top Bar */}
             <View style={styles.topBar}>
@@ -191,6 +192,7 @@ export default function BountyBoard({ navigation, token, theme }) {
                                     post={post}
                                     user={{ full_name: post.post_user_name || t('unknown_user') }}
                                     token={token}
+                                    theme={theme}
                                     onQuickHelp={() => openBountyModal(post)}
                                 />
                             </View>

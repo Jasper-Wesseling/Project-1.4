@@ -1,6 +1,7 @@
 import { Modal, TextInput, View, StyleSheet } from "react-native";
 
-export default function SearchBar({ visible, value, onChange, onClose }) {
+export default function SearchBar({ visible, value, onChange, onClose, theme }) {
+    const styles = createSearchBarStyles(theme);
     return (
         <Modal
             visible={visible}
@@ -25,24 +26,26 @@ export default function SearchBar({ visible, value, onChange, onClose }) {
     );
 }
 
-const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    modalContent: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 100,
-    },
-    input: {
-        margin: 16,
-        borderRadius: 16,
-        backgroundColor: '#f0f0f0',
-        paddingHorizontal: 12,
-        height: 40,
-        width: '90%',
-        fontSize: 18,
-    },
-});
+function createSearchBarStyles(theme) {
+    return StyleSheet.create({
+        modalOverlay: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+        },
+        modalContent: {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 100,
+        },
+        input: {
+            margin: 16,
+            borderRadius: 16,
+            backgroundColor: theme.searchBg,
+            paddingHorizontal: 12,
+            height: 40,
+            width: '90%',
+            fontSize: 18,
+        },
+    });
+}

@@ -13,14 +13,16 @@ import {
 import { Icon } from "react-native-elements";
 import ProductModal from "./ProductModal";
 import { API_URL } from "@env";
+import { t } from "i18next";
 
-export default function Frontpage({ token, user, navigation }) {
+export default function Frontpage({ token, user, navigation, theme }) {
   const [widgets, setWidgets] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [recommended, setRecommended] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const styles = createFrontpageStyles(theme);
 
   const scrollY = React.useRef(new Animated.Value(0)).current;
 
@@ -315,220 +317,229 @@ export default function Frontpage({ token, user, navigation }) {
         product={selectedProduct}
         onClose={() => setModalVisible(false)}
         formatPrice={formatPrice}
+        theme={theme}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  topBar: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    backgroundColor: "#2A4BA0",
-    justifyContent: "center",
-    paddingTop: 25,
-    paddingHorizontal: 16,
-    zIndex: 20,
-  },
-  topBarRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  topBarText: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  topBarIcons: {
-    flexDirection: "row",
-    width: 125,
-    justifyContent: "space-around",
-    alignContent: "center",
-  },
-  header: {
-    backgroundColor: "#2A4BA0",
-    justifyContent: "center",
-    alignItems: "stretch",
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 16,
-    zIndex: 10,
-  },
-  headerText: {
-    alignSelf: "flex-start",
-    color: "white",
-    fontSize: 64,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#153075",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 48,
-    marginBottom: 18,
-    marginTop: 8,
-    width: "100%", // <-- voeg toe
-  },
-  searchPlaceholder: {
-    color: "#A3A3A3",
-    fontSize: 16,
-  },
-  headerOptions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 0,
-    width: "100%", // <-- voeg toe
-  },
-  optionBlock: {
-    flex: 1,
-  },
-  optionLabel: {
-    color: "#A3A3A3",
-    fontSize: 12,
-    fontWeight: "bold",
-    marginBottom: 2,
-  },
-  optionValue: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  scrollViewContent: {
-    paddingBottom: 40,
-  },
-  loadingText: {
-    paddingTop: 300,
-    fontSize: 64,
-    color: "black",
-    alignSelf: "center",
-  },
-  error: { color: "red", fontSize: 16, textAlign: "center", margin: 20 },
-  retryText: {
-    color: "#2A4BA0",
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 10,
-    textDecorationLine: "underline",
-  },
-  promoCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFC120",
-    borderRadius: 16,
-    marginBottom: 24,
-    marginTop: 8,
-    padding: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  promoImage: {
-    width: 60,
-    height: 60,
-    backgroundColor: "#fff3",
-    borderRadius: 12,
-    marginRight: 18,
-  },
-  promoText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  promoDiscount: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginVertical: 2,
-  },
-  promoSub: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "400",
-  },
-  recommendedBox: {
-    marginBottom: 24,
-  },
-  recommendedTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1E222B",
-    marginBottom: 12,
-  },
-  productCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    width: 140,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  productImage: {
-    width: "100%",
-    height: 70,
-    borderRadius: 12,
-    marginBottom: 10,
-    backgroundColor: "#F8F9FB",
-  },
-  productImagePlaceholder: {
-    backgroundColor: "#F8F9FB",
-    borderRadius: 12,
-    height: 70,
-    marginBottom: 10,
-  },
-  productTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#1E222B",
-  },
-  productSubtitle: {
-    fontSize: 13,
-    color: "#A3A3A3",
-    marginBottom: 8,
-  },
-  productRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  productPrice: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#2A4BA0",
-  },
-  addBtn: {
-    backgroundColor: "#2A4BA0",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  switches: { marginTop: 30 },
-  switchTitle: { fontSize: 18, marginBottom: 10, fontWeight: "bold" },
-  switchRow: {
-    flexDirection: "row",
-  },
-  switches: { marginTop: 30 },
-  switchTitle: { fontSize: 18, marginBottom: 10, fontWeight: "bold" },
-  switchRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  switchLabel: { fontSize: 16, color: "#333", textTransform: "capitalize" },
-});
+function createFrontpageStyles(theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    topBar: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 100,
+      backgroundColor: theme.headerBg,
+      justifyContent: "center",
+      paddingTop: 25,
+      paddingHorizontal: 16,
+      zIndex: 20,
+    },
+    topBarRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    topBarText: {
+      color: "#fff",
+      fontSize: 24,
+      fontWeight: "bold",
+    },
+    topBarIcons: {
+      flexDirection: "row",
+      width: 125,
+      justifyContent: "space-around",
+      alignContent: "center",
+    },
+    header: {
+      backgroundColor: theme.headerBg,
+      justifyContent: "center",
+      alignItems: "stretch",
+      paddingHorizontal: 16,
+      paddingTop: 24,
+      paddingBottom: 16,
+      zIndex: 10,
+    },
+    headerText: {
+      alignSelf: "flex-start",
+      color: theme.headerText,
+      fontSize: 64,
+    },
+    searchBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "white",
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      height: 48,
+      marginBottom: 18,
+      marginTop: 8,
+      width: "100%", // <-- voeg toe
+    },
+    searchPlaceholder: {
+      color: "#A3A3A3",
+      fontSize: 16,
+    },
+    headerOptions: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 0,
+      width: "100%", // <-- voeg toe
+    },
+    optionBlock: {
+      flex: 1,
+    },
+    optionLabel: {
+      color: "#A3A3A3",
+      fontSize: 12,
+      fontWeight: "bold",
+      marginBottom: 2,
+    },
+    optionValue: {
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    scrollViewContent: {
+      paddingBottom: 40,
+    },
+    loadingText: {
+      paddingTop: 300,
+      fontSize: 64,
+      color: theme.text,
+      alignSelf: "center",
+    },
+    error: { color: "red", fontSize: 16, textAlign: "center", margin: 20 },
+    retryText: {
+      color: theme.text,
+      fontSize: 16,
+      textAlign: "center",
+      marginTop: 10,
+      textDecorationLine: "underline",
+    },
+    promoCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#FFC120",
+      borderRadius: 16,
+      marginBottom: 24,
+      marginTop: 8,
+      padding: 20,
+      elevation: 3,
+      shadowColor: "#000",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+    },
+    promoImage: {
+      width: 60,
+      height: 60,
+      backgroundColor: "#fff3",
+      borderRadius: 12,
+      marginRight: 18,
+    },
+    promoText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "500",
+    },
+    promoDiscount: {
+      color: "#fff",
+      fontSize: 24,
+      fontWeight: "bold",
+      marginVertical: 2,
+    },
+    promoSub: {
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: "400",
+    },
+    recommendedBox: {
+      marginBottom: 24,
+    },
+    recommendedTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: theme.text,
+      marginBottom: 12,
+    },
+    productCard: {
+      backgroundColor: theme.formBg,
+      borderRadius: 16,
+      padding: 16,
+      marginRight: 16,
+      width: 140,
+      elevation: 2,
+      shadowColor: "#000",
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+    },
+    productImage: {
+      width: "100%",
+      height: 70,
+      borderRadius: 12,
+      marginBottom: 10,
+      backgroundColor: "#F8F9FB",
+    },
+    productImagePlaceholder: {
+      backgroundColor: "#F8F9FB",
+      borderRadius: 12,
+      height: 70,
+      marginBottom: 10,
+    },
+    productTitle: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: theme.text,
+    },
+    productSubtitle: {
+      fontSize: 13,
+      color: theme.text,
+      marginBottom: 8,
+    },
+    productRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    productPrice: {
+      fontSize: 15,
+      fontWeight: "bold",
+      color: theme.filterText,
+    },
+    switches: {
+      marginTop: 30
+    },
+    switchRow: {
+      flexDirection: "row",
+    },
+    switches: {
+      marginTop: 30
+    },
+    switchTitle: {
+      fontSize: 18,
+      marginBottom: 10,
+      fontWeight: "bold",
+      color: theme.text,
+    },
+    switchRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: "grey",
+    },
+    switchLabel: {
+      fontSize: 16,
+      color: theme.text,
+      textTransform: "capitalize"
+    },
+  });
+}

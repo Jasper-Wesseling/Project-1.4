@@ -7,10 +7,11 @@ import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
 
-export default function ChatOverview({ navigation, token, user }) {
+export default function ChatOverview({ navigation, token, user, theme }) {
    const [search, setSearch] = useState('');
    const [searchModalVisible, setSearchModalVisible] = useState(false);
    const [chats, setChats] = useState([]);
+   const styles = createChatOverviewStyles(theme);
 
    const fetchChats = async () => {
       try {
@@ -110,106 +111,108 @@ export default function ChatOverview({ navigation, token, user }) {
    );
 }
 
-const styles = StyleSheet.create({
-   container: {
-      flex: 1,
-      backgroundColor: "#F4F6FA"
-   },
-   topBar: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 100,
-      backgroundColor: "#2A4BA0",
-      justifyContent: "center",
-      paddingTop: 25,
-      paddingHorizontal: 16,
-      zIndex: 20,
-      elevation: 4,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-   },
-   topBarRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center"
-   },
-   topBarText: {
-      color: "#fff",
-      fontSize: 26,
-      fontWeight: "bold",
-      letterSpacing: 0.5
-   },
-   topBarIcons: {
-      flexDirection: 'row',
-      width: 50,
-      justifyContent: 'flex-end',
-      alignContent: 'center'
-   },
-   scrollViewContent: {
-      paddingTop: 110,
-      paddingBottom: 40,
-   },
-   chatCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#fff",
-      marginHorizontal: 16,
-      marginVertical: 8,
-      borderRadius: 16,
-      padding: 16,
-      elevation: 2,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.07,
-      shadowRadius: 2,
-   },
-   avatarCircle: {
-      width: 54,
-      height: 54,
-      borderRadius: 27,
-      backgroundColor: "#E7ECF0",
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: 16,
-   },
-   avatarText: {
-      fontSize: 24,
-      fontWeight: "bold",
-      color: "#2A4BA0",
-   },
-   chatInfo: {
-      flex: 1,
-      justifyContent: "center",
-   },
-   chatHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 2,
-   },
-   chatName: {
-      fontSize: 18,
-      fontWeight: "bold",
-      color: "#222",
-      flex: 1,
-      marginRight: 8,
-   },
-   chatTime: {
-      fontSize: 13,
-      color: "#A0A4A8",
-      fontWeight: "500",
-   },
-   chatMessage: {
-      fontSize: 15,
-      color: "#444",
-      marginBottom: 2,
-   },
-   chatMeta: {
-      fontSize: 12,
-      color: "#A0A4A8",
-   },
-});
+function createChatOverviewStyles(theme) {
+   return StyleSheet.create({
+      container: {
+         flex: 1,
+         backgroundColor: theme.background,
+      },
+      topBar: {
+         position: "absolute",
+         top: 0,
+         left: 0,
+         right: 0,
+         height: 100,
+         backgroundColor: theme.headerBg,
+         justifyContent: "center",
+         paddingTop: 25,
+         paddingHorizontal: 16,
+         zIndex: 20,
+         elevation: 4,
+         shadowColor: "#000",
+         shadowOffset: { width: 0, height: 2 },
+         shadowOpacity: 0.1,
+         shadowRadius: 4,
+      },
+      topBarRow: {
+         flexDirection: "row",
+         justifyContent: "space-between",
+         alignItems: "center"
+      },
+      topBarText: {
+         color: "#fff",
+         fontSize: 26,
+         fontWeight: "bold",
+         letterSpacing: 0.5
+      },
+      topBarIcons: {
+         flexDirection: 'row',
+         width: 50,
+         justifyContent: 'flex-end',
+         alignContent: 'center'
+      },
+      scrollViewContent: {
+         paddingTop: 110,
+         paddingBottom: 40,
+      },
+      chatCard: {
+         flexDirection: "row",
+         alignItems: "center",
+         backgroundColor: theme.tabBarBg,
+         marginHorizontal: 16,
+         marginVertical: 8,
+         borderRadius: 16,
+         padding: 16,
+         elevation: 2,
+         shadowColor: "#000",
+         shadowOffset: { width: 0, height: 1 },
+         shadowOpacity: 0.07,
+         shadowRadius: 2,
+      },
+      avatarCircle: {
+         width: 54,
+         height: 54,
+         borderRadius: 27,
+         backgroundColor: "#E7ECF0",
+         justifyContent: "center",
+         alignItems: "center",
+         marginRight: 16,
+      },
+      avatarText: {
+         fontSize: 24,
+         fontWeight: "bold",
+         color: "#2A4BA0",
+      },
+      chatInfo: {
+         flex: 1,
+         justifyContent: "center",
+      },
+      chatHeader: {
+         flexDirection: "row",
+         justifyContent: "space-between",
+         alignItems: "center",
+         marginBottom: 2,
+      },
+      chatName: {
+         fontSize: 18,
+         fontWeight: "bold",
+         color: theme.text,
+         flex: 1,
+         marginRight: 8,
+      },
+      chatTime: {
+         fontSize: 13,
+         color: "#A0A4A8", 
+         fontWeight: "500",
+      },
+      chatMessage: {
+         fontSize: 15,
+         color: theme.text,
+         marginBottom: 2,
+      },
+      chatMeta: {
+         fontSize: 12,
+         color: "#A0A4A8",
+      },
+   });
+}

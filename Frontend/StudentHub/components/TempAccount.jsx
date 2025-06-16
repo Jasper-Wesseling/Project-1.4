@@ -4,11 +4,12 @@ import { API_URL } from '@env';
 
 
 
-export default function TempAccount({ navigation, onLogin })
+export default function TempAccount({ navigation, onLogin, theme })
 {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const styles = createTempAccountStyles(theme);
 
     const handleGetTempAccount = async () => {
         setLoading(true);
@@ -146,197 +147,199 @@ export default function TempAccount({ navigation, onLogin })
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#2A4BA0",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 24,
-    },
-    welcomeContainer: {
-        alignItems: "center",
-        width: "100%",
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: "bold",
-        color: "#fff",
-        marginBottom: 8,
-        textAlign: "center",
-    },
-    subtitle: {
-        fontSize: 16,
-        color: "#fff",
-        opacity: 0.8,
-        marginBottom: 32,
-        textAlign: "center",
-    },
-    button: {
-        width: "100%",
-        height: 48,
-        backgroundColor: "#FDBB2C",
-        borderRadius: 16,
-        justifyContent: "center",
-        alignItems: "center",
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        marginBottom: 16,
-    },
-    buttonDisabled: {
-        backgroundColor: "#ccc",
-        elevation: 0,
-        shadowOpacity: 0,
-    },
-    buttonText: {
-        color: "#23244A",
-        fontSize: 18,
-        fontWeight: "bold",
-        letterSpacing: 0.5,
-    },
-    linkButton: {
-        padding: 8,
-    },
-    linkText: {
-        color: "#fff",
-        fontSize: 16,
-        textDecorationLine: "underline",
-    },
+function createTempAccountStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 24,
+        },
+        welcomeContainer: {
+            alignItems: "center",
+            width: "100%",
+        },
+        title: {
+            fontSize: 32,
+            fontWeight: "bold",
+            color: "#fff",
+            marginBottom: 8,
+            textAlign: "center",
+        },
+        subtitle: {
+            fontSize: 16,
+            color: "#fff",
+            opacity: 0.8,
+            marginBottom: 32,
+            textAlign: "center",
+        },
+        button: {
+            width: "100%",
+            height: 48,
+            backgroundColor: "#FDBB2C",
+            borderRadius: 16,
+            justifyContent: "center",
+            alignItems: "center",
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            marginBottom: 16,
+        },
+        buttonDisabled: {
+            backgroundColor: "#ccc",
+            elevation: 0,
+            shadowOpacity: 0,
+        },
+        buttonText: {
+            color: "#23244A",
+            fontSize: 18,
+            fontWeight: "bold",
+            letterSpacing: 0.5,
+        },
+        linkButton: {
+            padding: 8,
+        },
+        linkText: {
+            color: "#fff",
+            fontSize: 16,
+            textDecorationLine: "underline",
+        },
     
-    // Success screen styles
-    successContainer: {
-        flex: 1,
-        backgroundColor: "#fff",
-        paddingHorizontal: 24,
-        paddingTop: 60,
-    },
-    successHeader: {
-        alignItems: "center",
-        marginBottom: 32,
-    },
-    iconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: "#E8F5E8",
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 16,
-    },
-    successIcon: {
-        fontSize: 40,
-        color: "#4CAF50",
-        fontWeight: "bold",
-    },
-    successTitle: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#23244A",
-        marginBottom: 8,
-        textAlign: "center",
-    },
-    successSubtitle: {
-        fontSize: 16,
-        color: "#666",
-        textAlign: "center",
-    },
-    credentialsCard: {
-        backgroundColor: "#F8F9FB",
-        borderRadius: 16,
-        padding: 20,
-        marginBottom: 32,
-        borderWidth: 1,
-        borderColor: "#E3E6ED",
-    },
-    credentialRow: {
-        marginBottom: 16,
-    },
-    credentialLabel: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#666",
-        marginBottom: 6,
-        textTransform: "uppercase",
-        letterSpacing: 0.5,
-    },
-    credentialValueContainer: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: "#E3E6ED",
-    },
-    credentialValue: {
-        fontSize: 16,
-        color: "#23244A",
-        fontFamily: "monospace",
-        fontWeight: "500",
-    },
-    warningContainer: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        backgroundColor: "#FFF3CD",
-        borderRadius: 12,
-        padding: 12,
-        marginTop: 8,
-        borderLeftWidth: 4,
-        borderLeftColor: "#FDBB2C",
-    },
-    warningIcon: {
-        fontSize: 16,
-        marginRight: 8,
-        marginTop: 1,
-    },
-    warningText: {
-        flex: 1,
-        fontSize: 14,
-        color: "#856404",
-        lineHeight: 20,
-    },
-    buttonContainer: {
-        gap: 12,
-    },
-    primaryButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#FDBB2C",
-        borderRadius: 16,
-        paddingVertical: 16,
-        paddingHorizontal: 24,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    primaryButtonText: {
-        color: "#23244A",
-        fontWeight: "bold",
-        fontSize: 18,
-        letterSpacing: 0.5,
-    },
-    buttonArrow: {
-        fontSize: 18,
-        color: "#23244A",
-        marginLeft: 8,
-        fontWeight: "bold",
-    },
-    secondaryButton: {
-        borderWidth: 2,
-        borderColor: "#E3E6ED",
-        borderRadius: 16,
-        paddingVertical: 14,
-        paddingHorizontal: 24,
-        alignItems: "center",
-        backgroundColor: "transparent",
-    },
-    secondaryButtonText: {
-        color: "#666",
-        fontWeight: "600",
-        fontSize: 16,
-    },
-});
+        // Success screen styles
+        successContainer: {
+            flex: 1,
+            backgroundColor: theme.background,
+            paddingHorizontal: 24,
+            paddingTop: 60,
+        },
+        successHeader: {
+            alignItems: "center",
+            marginBottom: 32,
+        },
+        iconContainer: {
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: "#E8F5E8",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 16,
+        },
+        successIcon: {
+            fontSize: 40,
+            color: "#4CAF50",
+            fontWeight: "bold",
+        },
+        successTitle: {
+            fontSize: 24,
+            fontWeight: "bold",
+            color: theme.text,
+            marginBottom: 8,
+            textAlign: "center",
+        },
+        successSubtitle: {
+            fontSize: 16,
+            color: theme.detailsText,
+            textAlign: "center",
+        },
+        credentialsCard: {
+            backgroundColor: theme.background,
+            borderRadius: 16,
+            padding: 20,
+            marginBottom: 32,
+            borderWidth: 1,
+            borderColor: "grey",
+        },
+        credentialRow: {
+            marginBottom: 16,
+        },
+        credentialLabel: {
+            fontSize: 14,
+            fontWeight: "600",
+            color: theme.text,
+            marginBottom: 6,
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+        },
+        credentialValueContainer: {
+            backgroundColor: theme.formBg,
+            borderRadius: 12,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: "#E3E6ED",
+        },
+        credentialValue: {
+            fontSize: 16,
+            color: theme.text,
+            fontFamily: "monospace",
+            fontWeight: "500",
+        },
+        warningContainer: {
+            flexDirection: "row",
+            alignItems: "flex-start",
+            backgroundColor: "#FFF3CD",
+            borderRadius: 12,
+            padding: 12,
+            marginTop: 8,
+            borderLeftWidth: 4,
+            borderLeftColor: "#FDBB2C",
+        },
+        warningIcon: {
+            fontSize: 16,
+            marginRight: 8,
+            marginTop: 1,
+        },
+        warningText: {
+            flex: 1,
+            fontSize: 14,
+            color: "#856404",
+            lineHeight: 20,
+        },
+        buttonContainer: {
+            gap: 12,
+        },
+        primaryButton: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#FDBB2C",
+            borderRadius: 16,
+            paddingVertical: 16,
+            paddingHorizontal: 24,
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+        },
+        primaryButtonText: {
+            color: "#23244A",
+            fontWeight: "bold",
+            fontSize: 18,
+            letterSpacing: 0.5,
+        },
+        buttonArrow: {
+            fontSize: 18,
+            color: "#23244A",
+            marginLeft: 8,
+            fontWeight: "bold",
+        },
+        secondaryButton: {
+            borderWidth: 2,
+            borderColor: theme.primary,
+            borderRadius: 16,
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            alignItems: "center",
+            backgroundColor: "transparent",
+        },
+        secondaryButtonText: {
+            color: theme.primary,
+            fontWeight: "600",
+            fontSize: 16,
+        },
+    });
+}

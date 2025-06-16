@@ -6,7 +6,6 @@ import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
-import { themes } from "./LightDarkComponent";
 
 export default function Products({ navigation, token, user, onLogout, setUserToChat, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -18,17 +17,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
     const [modalVisible, setModalVisible] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMorePages, setHasMorePages] = useState(true);
-
-    const safeTheme =
-        typeof theme === "object" && theme
-            ? theme
-            : typeof theme === "string" && themes[theme]
-                ? themes[theme]
-                : themes.light;
-
-    if (!safeTheme) return null;
-
-    const styles = createProductsStyles(safeTheme);
+    const styles = createProductsStyles(theme);
 
     // Filters should match your backend's product categories
     const filters = ['Boeken', 'Electra', 'Huis en tuin'];
@@ -126,6 +115,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 value={search}
                 onChange={setSearch}
                 onClose={() => setSearchModalVisible(false)}
+                theme={theme}
             />
             {/* Static Top Bar */}
             <View style={styles.topBar}>
@@ -213,7 +203,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                                 setModalVisible(true);
                             }}
                         >
-                            <ProductPreview product={product} formatPrice={formatPrice}/>
+                            <ProductPreview product={product} formatPrice={formatPrice} theme={theme} />
                         </TouchableOpacity>
                     ))}
                 </Animated.ScrollView>
@@ -230,6 +220,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 productUser={selectedProduct?.product_user_id}
                 productUserName={selectedProduct?.product_username}
                 token={token}
+                theme={theme}
             />
         </View>
     );

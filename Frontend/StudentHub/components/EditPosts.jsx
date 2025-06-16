@@ -7,11 +7,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import PostPreview from "./PostPreview";
 import BountyBoardModal from "./BountyBoardModal";
 
-export default function EditPosts({ navigation, token, user }) {
+export default function EditPosts({ navigation, token, user, theme }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedPost, setSelectedPost] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const styles = createEditPostsStyles(theme);
 
     const fetchPosts = async () => {
         try {
@@ -91,6 +92,7 @@ export default function EditPosts({ navigation, token, user }) {
                 navigation={navigation}
                 user={user}
                 token={token}
+                theme={theme}
                 onPostDeleted={() => {
                     setModalVisible(false);
                     fetchPosts(); // Refresh the posts list
@@ -100,58 +102,60 @@ export default function EditPosts({ navigation, token, user }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#F4F6FA"
-    },
-    topBar: {
-        height: 100,
-        backgroundColor: "#2A4BA0",
-        justifyContent: "center",
-        paddingTop: 25,
-        paddingHorizontal: 16,
-    },
-    topBarRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center"
-    },
-    topBarText: {
-        color: "#fff",
-        fontSize: 26,
-        fontWeight: "bold",
-    },
-    topBarIcons: {
-        flexDirection: 'row',
-        width: 50,
-        justifyContent: 'flex-end',
-        alignContent: 'center'
-    },
-    scrollViewContent: {
-        paddingTop: 16,
-        paddingBottom: 40,
-        paddingHorizontal: 0, // Remove horizontal padding
-    },
-    chatCard: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12, // Only bottom margin for spacing
-        // Remove marginHorizontal and marginVertical
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: 150,
-    },
-    loadingText: {
-        marginTop: 16,
-        fontSize: 18,
-        color: "#2A4BA0",
-        fontWeight: "600",
-    },
-});
+function createEditPostsStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+        },
+        topBar: {
+            height: 100,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            paddingTop: 25,
+            paddingHorizontal: 16,
+        },
+        topBarRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center"
+        },
+        topBarText: {
+            color: theme.headerText,
+            fontSize: 26,
+            fontWeight: "bold",
+        },
+        topBarIcons: {
+            flexDirection: 'row',
+            width: 50,
+            justifyContent: 'flex-end',
+            alignContent: 'center'
+        },
+        scrollViewContent: {
+            paddingTop: 16,
+            paddingBottom: 40,
+            paddingHorizontal: 0, // Remove horizontal padding
+        },
+        chatCard: {
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: theme.background,
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 12, // Only bottom margin for spacing
+            // Remove marginHorizontal and marginVertical
+        },
+        loadingContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingTop: 150,
+        },
+        loadingText: {
+            marginTop: 16,
+            fontSize: 18,
+            color: theme.text,
+            fontWeight: "600",
+        },
+    });
+}

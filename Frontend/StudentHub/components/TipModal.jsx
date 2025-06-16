@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView, TextInput } from "react-native";
 import { API_URL } from "@env"; // Zorg dat je de juiste API_URL importeert
+import ThemedAvatar from "react-native-elements/dist/avatar/Avatar";
 
-export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply, token }) {
+export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply, token, theme }) {
     const [loading, setLoading] = useState(false);
     const [localTip, setLocalTip] = useState(tip);
     const [replyText, setReplyText] = useState("");
     const [sendingReply, setSendingReply] = useState(false);
     const [imgSize, setImgSize] = useState({ width: 300, height: 300 });
+    const styles = createTipModalStyles(theme);
 
     // Synchroniseer lokale tip met prop-tip bij openen of tip-wijziging
     useEffect(() => {
@@ -216,7 +218,7 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                                                     </Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity onPress={handleReplyDislikePress} disabled={loading}>
-                                                    <Text style={[styles.replyAction, replyDisliked && { color: "#C00", fontWeight: "bold" }]}>
+                                                    <Text style={[styles.replyAction, replyDisliked && { color: "red", fontWeight: "bold" }]}>
                                                         ⬇ {reply.downvotes?.length || 0}
                                                     </Text>
                                                 </TouchableOpacity>
@@ -233,6 +235,7 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                             <TextInput
                                 style={styles.replyInput}
                                 placeholder="Typ je reactie..."
+                                placeholderTextColor={theme.detailsText}
                                 value={replyText}
                                 onChangeText={setReplyText}
                                 editable={!sendingReply}
@@ -252,215 +255,219 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
     );
 }
 
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: '#f4f5f7',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    card: {
-        width: '92%',
-        height: '96%',
-        backgroundColor: '#fff',
-        borderRadius: 28,
-        padding: 24,
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 8,
-        position: 'relative',
-    },
-    backButton: {
-        position: 'absolute',
-        top: 18,
-        left: 18,
-        zIndex: 10,
-    },
-    backCircle: {
-        backgroundColor: '#f4f5f7',
-        borderRadius: 20,
-        width: 36,
-        height: 36,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    backArrow: {
-        fontSize: 22,
-        color: '#222',
-    },
-    loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: "rgba(255,255,255,0.7)",
-        zIndex: 20,
-        justifyContent: "center",
-        alignItems: "center"
-    },
-    headerRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        width: "100%",
-        marginBottom: 12,
-    },
-    avatarContainer: {
-        marginRight: 12,
-    },
-    avatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: "#eee",
-    },
-    postedBy: {
-        color: "#2A4BA0",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-    timeAgo: {
-        color: "#888",
-        fontSize: 13,
-    },
-    imageContainer: {
-        marginTop: 8,
-        marginBottom: 16,
-        maxWidth: 300,
-        maxHeight: 300,
-        borderRadius: 16,
-        backgroundColor: '#f4f5f7',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-    },
-    image: {
-        maxWidth: 300,
-        maxHeight: 300,
-        borderRadius: 16,
-        resizeMode: "cover",
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#222',
-        alignSelf: 'flex-start',
-        marginTop: 12,
-        marginBottom: 4,
-    },
-    content: {
-        color: "#222",
-        fontSize: 16,
-        marginBottom: 16,
-        alignSelf: 'flex-start',
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        width: '100%',
-        justifyContent: 'space-between',
-        marginVertical: 16,
-    },
-    outlineButton: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#888',
-        borderRadius: 16,
-        paddingVertical: 12,
-        marginHorizontal: 8,
-        alignItems: 'center',
-        backgroundColor: "#fff",
-    },
-    outlineButtonText: {
-        color: '#888',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    sectionTitle: {
-        fontWeight: 'bold',
-        color: '#222',
-        fontSize: 16,
-        marginTop: 10,
-        marginBottom: 2,
-        alignSelf: 'flex-start',
-    },
-    replyBox: {
-        borderWidth: 1,
-        borderColor: "#D1C4E9",
-        borderRadius: 12,
-        padding: 12,
-        marginHorizontal: 2,
-        marginBottom: 16,
-        backgroundColor: "#fafaff",
-    },
-    replyUser: {
-        color: "#222",
-        marginBottom: 2,
-    },
-    replyTime: {
-        color: "#888",
-        fontSize: 13,
-    },
-    replyContent: {
-        color: "#222",
-        fontSize: 15,
-        marginBottom: 8,
-    },
-    replyActions: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 16,
-    },
-    replyAction: {
-        color: "#888",
-        fontSize: 14,
-        marginRight: 8,
-    },
-    noReplies: {
-        color: "#888",
-        fontSize: 16,
-        textAlign: "center",
-        marginTop: 24,
-    },
-    replyInputRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 8,
-        marginBottom: 8,
-        paddingHorizontal: 2,
-    },
-    replyInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: "#D1C4E9",
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        fontSize: 15,
-        backgroundColor: "#fafaff",
-        marginRight: 8,
-    },
-    replySendBtn: {
-        backgroundColor: "#2A4BA0",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-    },
-    replySendBtnText: {
-        color: "#fff",
-        fontWeight: "bold",
-        fontSize: 15,
-    },
-    tag: {
-        backgroundColor: "#FFC83A",
-        borderRadius: 12,
-        paddingHorizontal: 14,
-        paddingVertical: 5,
-        marginRight: 8,
-        marginBottom: 8,
-        alignSelf: "flex-start",
-    },
-    tagText: {
-        color: "#fff",
-        fontWeight: "bold",
-        fontSize: 16,
-    },
-});
+function createTipModalStyles(theme) {
+    return StyleSheet.create({
+        overlay: {
+            flex: 1,
+            backgroundColor: theme.modalOverlay,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        card: {
+            width: '92%',
+            height: '96%',
+            backgroundColor: theme.background,
+            borderRadius: 28,
+            padding: 24,
+            alignItems: 'center',
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 8,
+            position: 'relative',
+        },
+        backButton: {
+            position: 'absolute',
+            top: 18,
+            left: 18,
+            zIndex: 10,
+        },
+        backCircle: {
+            backgroundColor: theme.backCircle,
+            borderRadius: 20,
+            width: 36,
+            height: 36,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        backArrow: {
+            fontSize: 22,
+            color: theme.text,
+        },
+        loadingOverlay: {
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: "rgba(255,255,255,0.7)",
+            zIndex: 20,
+            justifyContent: "center",
+            alignItems: "center"
+        },
+        headerRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: 12,
+        },
+        avatarContainer: {
+            marginRight: 12,
+        },
+        avatar: {
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: "#eee",
+        },
+        postedBy: {
+            color: theme.text,
+            fontSize: 16,
+            fontWeight: "bold",
+        },
+        timeAgo: {
+            color: theme.detailsText,
+            fontSize: 13,
+        },
+        imageContainer: {
+            marginTop: 8,
+            marginBottom: 16,
+            maxWidth: 300,
+            maxHeight: 300,
+            borderRadius: 16,
+            backgroundColor: '#f4f5f7',
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+        },
+        image: {
+            maxWidth: 300,
+            maxHeight: 300,
+            borderRadius: 16,
+            resizeMode: "cover",
+        },
+        title: {
+            fontSize: 22,
+            fontWeight: 'bold',
+            color: theme.text,
+            alignSelf: 'flex-start',
+            marginTop: 12,
+            marginBottom: 4,
+        },
+        content: {
+            color: theme.text,
+            fontSize: 16,
+            marginBottom: 16,
+            alignSelf: 'flex-start',
+        },
+        buttonRow: {
+            flexDirection: 'row',
+            width: '100%',
+            justifyContent: 'space-between',
+            marginVertical: 16,
+        },
+        outlineButton: {
+            flex: 1,
+            borderWidth: 1,
+            borderColor: 'grey',
+            borderRadius: 16,
+            paddingVertical: 12,
+            marginHorizontal: 8,
+            alignItems: 'center',
+            backgroundColor: theme.formBg,
+        },
+        outlineButtonText: {
+            color: theme.detailsText,
+            fontWeight: 'bold',
+            fontSize: 16,
+        },
+        sectionTitle: {
+            fontWeight: 'bold',
+            color: theme.detailsText,
+            fontSize: 16,
+            marginTop: 10,
+            marginBottom: 2,
+            alignSelf: 'flex-start',
+        },
+        replyBox: {
+            borderWidth: 1,
+            borderColor: "grey",
+            borderRadius: 12,
+            padding: 12,
+            marginHorizontal: 2,
+            marginBottom: 16,
+            backgroundColor: theme.background,
+        },
+        replyUser: {
+            color: theme.text,
+            marginBottom: 2,
+        },
+        replyTime: {
+            color: theme.detailsText,
+            fontSize: 13,
+        },
+        replyContent: {
+            color: theme.text,
+            fontSize: 15,
+            marginBottom: 8,
+        },
+        replyActions: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 16,
+        },
+        replyAction: {
+            color: theme.detailsText,
+            fontSize: 14,
+            marginRight: 8,
+        },
+        noReplies: {
+            color: theme.detailsText,
+            fontSize: 16,
+            textAlign: "center",
+            marginTop: 24,
+        },
+        replyInputRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 8,
+            marginBottom: 8,
+            paddingHorizontal: 2,
+        },
+        replyInput: {
+            flex: 1,
+            borderWidth: 1,
+            borderColor: "grey",
+            borderRadius: 12,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            fontSize: 15,
+            backgroundColor: theme.formBg,
+            marginRight: 8,
+            placeholderTextColor: theme.detailsText,
+            color: theme.text,
+        },
+        replySendBtn: {
+            backgroundColor: "#2A4BA0",
+            borderRadius: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+        },
+        replySendBtnText: {
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: 15,
+        },
+        tag: {
+            backgroundColor: "#FFC83A",
+            borderRadius: 12,
+            paddingHorizontal: 14,
+            paddingVertical: 5,
+            marginRight: 8,
+            marginBottom: 8,
+            alignSelf: "flex-start",
+        },
+        tagText: {
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: 16,
+        },
+    });
+}

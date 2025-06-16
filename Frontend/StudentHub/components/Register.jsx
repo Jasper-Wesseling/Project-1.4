@@ -4,11 +4,12 @@ import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
 
-export default function Register({ navigation, onLogin }) {
+export default function Register({ navigation, onLogin, theme }) {
     const [full_name, setFullName] = useState("");
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
+    const styles = createRegisterStyles(theme);
 
     const animatedTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -153,77 +154,79 @@ export default function Register({ navigation, onLogin }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-    },
-    safeArea: {
-        backgroundColor: "#2A4BA0",
-    },
-    topHalf: {
-        height: 320,
-        backgroundColor: "#2A4BA0",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    imagePlaceholder: {
-        width: 240,
-        height: 240,
-        borderRadius: 40,
-        borderWidth: 2,
-        borderColor: "#bfc8e6",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#2A4BA0",
-    },
-    bottomHalf: {
-        backgroundColor: "#fff",
-        marginTop: -24,
-        paddingTop: 32,
-        alignItems: "center",
-        paddingHorizontal: 24,
-        flex: 1,
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: "bold",
-        color: "#23244A",
-        marginBottom: 24,
-        alignSelf: "flex-start",
-    },
-    input: {
-        width: "100%",
-        backgroundColor: "#F5F4F8",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        fontSize: 16,
-        color: "#23244A",
-    },
-    button: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#FDBB2C",
-        borderRadius: 18,
-        paddingVertical: 16,
-        width: "100%",
-        marginTop: 16,
-        marginBottom: 8,
-    },
-    buttonText: {
-        color: "#23244A",
-        fontWeight: "bold",
-        fontSize: 18,
-        letterSpacing: 1,
-    },
-    registerLink: {
-        marginTop: 8,
-    },
-    registerText: {
-        color: "#2A4BA0",
-        fontSize: 15,
-        textDecorationLine: "underline",
-    },
-});
+function createRegisterStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+        },
+        safeArea: {
+            backgroundColor: theme.background,
+        },
+        topHalf: {
+            height: 320,
+            backgroundColor: theme.headerBg,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        imagePlaceholder: {
+            width: 240,
+            height: 240,
+            borderRadius: 40,
+            borderWidth: 2,
+            borderColor: "#bfc8e6",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: theme.headerBg,
+        },
+        bottomHalf: {
+            backgroundColor: theme.background,
+            marginTop: -24,
+            paddingTop: 32,
+            alignItems: "center",
+            paddingHorizontal: 24,
+            flex: 1,
+        },
+        title: {
+            fontSize: 22,
+            fontWeight: "bold",
+            color: theme.text,
+            marginBottom: 24,
+            alignSelf: "flex-start",
+        },
+        input: {
+            width: "100%",
+            backgroundColor: theme.formBg,
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 16,
+            fontSize: 16,
+            color: "#23244A",
+        },
+        button: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#FDBB2C",
+            borderRadius: 18,
+            paddingVertical: 16,
+            width: "100%",
+            marginTop: 16,
+            marginBottom: 8,
+        },
+        buttonText: {
+            color: "#23244A",
+            fontWeight: "bold",
+            fontSize: 18,
+            letterSpacing: 1,
+        },
+        registerLink: {
+            marginTop: 8,
+        },
+        registerText: {
+            color: "#2A4BA0",
+            fontSize: 15,
+            textDecorationLine: "underline",
+        },
+    });
+}

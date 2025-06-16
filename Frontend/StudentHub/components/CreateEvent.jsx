@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { API_URL } from '@env';
+import { t } from "i18next";
 
-export default function CreateEvent({ navigation }) {
+export default function CreateEvent({ navigation, theme }) {
     const [title, setTitle] = useState("");
     const [date, setDate] = useState("");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
     const [companyId, setCompanyId] = useState("");
     const [loading, setLoading] = useState(false);
+    const styles = createCreateEventStyles(theme);
 
     const handleSubmit = async () => {
         if (!title || !date || !companyId) {
@@ -74,38 +76,48 @@ export default function CreateEvent({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <Text style={{fontSize:24, fontWeight:'bold', marginBottom:16}}>Create Event</Text>
+            <Text style={styles.formTitel}>Create Event</Text>
             <Button title={loading ? "Creating..." : "Create Event"} onPress={handleSubmit} disabled={loading} />
             <Button title="Back" onPress={() => navigation.goBack()} color="#2A4BA0" style={{marginTop: 12}} />
             <Text style={styles.label}>Title</Text>
-            <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="Event Title" />
+            <TextInput placeholderTextColor={theme.text} style={styles.input} value={title} onChangeText={setTitle} placeholder="Event Title" />
             <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-            <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="2025-06-01" />
+            <TextInput placeholderTextColor={theme.text} style={styles.input} value={date} onChangeText={setDate} placeholder="2025-06-01" />
             <Text style={styles.label}>Description</Text>
-            <TextInput style={styles.input} value={description} onChangeText={setDescription} placeholder="Description" multiline />
+            <TextInput placeholderTextColor={theme.text} style={styles.input} value={description} onChangeText={setDescription} placeholder="Description" multiline />
             <Text style={styles.label}>Location</Text>
-            <TextInput style={styles.input} value={location} onChangeText={setLocation} placeholder="Location" />
+            <TextInput placeholderTextColor={theme.text} style={styles.input} value={location} onChangeText={setLocation} placeholder="Location" />
             <Text style={styles.label}>Company ID</Text>
-            <TextInput style={styles.input} value={companyId} onChangeText={setCompanyId} placeholder="Company ID" />
+            <TextInput placeholderTextColor={theme.text} style={styles.input} value={companyId} onChangeText={setCompanyId} placeholder="Company ID" />
         </View>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        backgroundColor: '#fff',
-    },
-    label: {
-        fontWeight: 'bold',
-        marginTop: 16,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 8,
-        marginTop: 4,
-    },
-});
+function createCreateEventStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            padding: 24,
+            backgroundColor: theme.background,
+        },
+        label: {
+            fontWeight: 'bold',
+            marginTop: 16,
+            color: theme.text,
+        },
+        formTitel: {
+            color: theme.text,
+            fontSize: 24,
+            fontWeight: 'bold',
+            marginVertical: 16,
+        },
+        input: {
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 8,
+            padding: 8,
+            marginTop: 4,
+            color: theme.text,
+        },
+    });
+}

@@ -53,9 +53,18 @@ export default function LanguageSwitcher() {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', marginVertical: 16 },
-  title: { fontSize: 18, marginBottom: 12 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'center' },
+  container: {
+    alignItems: 'center',
+    marginVertical: 16
+  },
+  title: {
+    fontSize: 18,
+    marginBottom: 12
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'center'
+  },
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,

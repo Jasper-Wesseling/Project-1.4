@@ -19,7 +19,7 @@ const FILTERS = [
 ];
 const PAGE_SIZE = 10;
 
-export default function TipsFeed({ token, user, navigation }) {
+export default function TipsFeed({ token, user, navigation, theme }) {
     const [tips, setTips] = useState([]);
     const [search, setSearch] = useState("");
     const [activeFilters, setActiveFilters] = useState([]);
@@ -32,6 +32,7 @@ export default function TipsFeed({ token, user, navigation }) {
     const loadingMoreRef = useRef(false);
     const scrollViewRef = useRef(null);
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
+    const styles = createTipsFeedStyles(theme);
 
     const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -245,6 +246,7 @@ export default function TipsFeed({ token, user, navigation }) {
             <TipCard
                 tip={item}
                 onPress={() => handleTipPress(item)}
+                theme={theme}
             />
         );
     }
@@ -332,7 +334,7 @@ export default function TipsFeed({ token, user, navigation }) {
                     <View style={styles.sortBtns}>
                         <TouchableOpacity onPress={() => toggleSort("likes")}>
                             <Text style={{
-                                color: sort.field === "likes" ? "#2A4BA0" : "#888",
+                                color: sort.field === "likes" ? "#2A4BA0" : theme.detailsText,
                                 fontWeight: "bold",
                                 marginRight: 8,
                                 minWidth: 60,
@@ -346,7 +348,7 @@ export default function TipsFeed({ token, user, navigation }) {
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => toggleSort("created_at")}>
                             <Text style={{
-                                color: sort.field === "created_at" ? "#2A4BA0" : "#888",
+                                color: sort.field === "created_at" ? "#2A4BA0" : theme.detailsText,
                                 fontWeight: "bold",
                                 minWidth: 60,
                                 textAlign: "center",
@@ -365,7 +367,7 @@ export default function TipsFeed({ token, user, navigation }) {
                 <View style={{ marginTop: 360 }}>
                     {[...Array(3)].map((_, i) => (
                         <View key={i} style={{
-                            backgroundColor: "#f3f3f3",
+                            backgroundColor: theme.formBg,
                             borderRadius: 16,
                             marginHorizontal: 16,
                             marginVertical: 8,
@@ -430,6 +432,7 @@ export default function TipsFeed({ token, user, navigation }) {
                         onReplyDislike={(idx, action) => handleReplyDislike(selectedTip.id, idx, action)}
                         onAddReply={handleAddReply}
                         token={token}
+                        theme={theme}
                     />
                 </>
             )}
@@ -437,141 +440,143 @@ export default function TipsFeed({ token, user, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff"
-    },
-    topBar: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 100,
-        backgroundColor: "#2A4BA0",
-        justifyContent: "center",
-        paddingTop: 25,
-        paddingHorizontal: 16,
-        zIndex: 20,
-    },
-    topBarRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-    },
-    topBarText: {
-        color: "#fff",
-        fontSize: 24,
-        fontWeight: "bold",
-    },
-    topBarIcons: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-    },
-    header: {
-        position: "absolute",
-        top: 100,
-        left: 0,
-        right: 0,
-        backgroundColor: "#2A4BA0",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        paddingHorizontal: 16,
-        zIndex: 10,
-    },
-    headerText: {
-        color: "#fff",
-        fontSize: 64,
-        fontWeight: "bold",
-    },
-    headerTextBold: {
-        color: "#fff",
-        fontSize: 64,
-        fontWeight: "bold",
-    },
-    stickyBar: {
-        backgroundColor: "#fff",
-        zIndex: 5,
-        paddingBottom: 8,
-        paddingTop: 8,
-        paddingHorizontal: 0,
-    },
-    searchRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 8,
-        marginHorizontal: 16,
-    },
-    searchBar: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: "#E0E0E0",
-        paddingHorizontal: 16,
-        marginRight: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        elevation: 2,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-        color: "#222",
-    },
-    createBtn: {
-        backgroundColor: "#FFC83A",
-        borderRadius: 24,
-        paddingHorizontal: 18,
-        paddingVertical: 10,
-    },
-    createBtnText: {
-        color: "#fff",
-        fontWeight: "bold",
-        fontSize: 16,
-    },
-    filterRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 4,
-        marginHorizontal: 8,
-    },
-    filterBtn: {
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        paddingHorizontal: 14,
-        paddingVertical: 7,
-        marginHorizontal: 4,
-        borderWidth: 1,
-        borderColor: "#2A4BA0",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
-        shadowRadius: 3,
-        elevation: 1,
-    },
-    filterBtnActive: {
-        backgroundColor: "#FFC83A",
-        borderColor: "#FFC83A",
-    },
-    filterBtnText: {
-        color: "#2A4BA0",
-        fontWeight: "bold",
-    },
-    filterBtnTextActive: {
-        color: "#fff",
-    },
-    sortBtns: {
-        flexDirection: "row",
-        marginLeft: 8,
-        alignItems: "center",
-        minWidth: 130,
-        justifyContent: "flex-end"
-    },
-});
+function createTipsFeedStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background
+        },
+        topBar: {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 100,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            paddingTop: 25,
+            paddingHorizontal: 16,
+            zIndex: 20,
+        },
+        topBarRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+        },
+        topBarText: {
+            color: "#fff",
+            fontSize: 24,
+            fontWeight: "bold",
+        },
+        topBarIcons: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+        },
+        header: {
+            position: "absolute",
+            top: 100,
+            left: 0,
+            right: 0,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            alignItems: "flex-start",
+            paddingHorizontal: 16,
+            zIndex: 10,
+        },
+        headerText: {
+            color: "#fff",
+            fontSize: 64,
+            fontWeight: "bold",
+        },
+        headerTextBold: {
+            color: "#fff",
+            fontSize: 64,
+            fontWeight: "bold",
+        },
+        stickyBar: {
+            backgroundColor: theme.headerBg,
+            zIndex: 5,
+            paddingBottom: 8,
+            paddingTop: 8,
+            paddingHorizontal: 0,
+        },
+        searchRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 8,
+            marginHorizontal: 16,
+        },
+        searchBar: {
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: theme.searchBg,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: "grey",
+            paddingHorizontal: 16,
+            marginRight: 8,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 6,
+            elevation: 2,
+        },
+        searchInput: {
+            flex: 1,
+            fontSize: 16,
+            color: theme.text,
+        },
+        createBtn: {
+            backgroundColor: "#FFC83A",
+            borderRadius: 24,
+            paddingHorizontal: 18,
+            paddingVertical: 10,
+        },
+        createBtnText: {
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: 16,
+        },
+        filterRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            marginBottom: 4,
+            marginHorizontal: 8,
+        },
+        filterBtn: {
+            backgroundColor: theme.filterBg,
+            borderRadius: 16,
+            paddingHorizontal: 14,
+            paddingVertical: 7,
+            marginHorizontal: 4,
+            borderWidth: 1,
+            borderColor: theme.filterBorder,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.08,
+            shadowRadius: 3,
+            elevation: 1,
+        },
+        filterBtnActive: {
+            backgroundColor: theme.activeFilter,
+            borderColor: theme.activeFilterBorder,
+        },
+        filterBtnText: {
+            color: theme.filterText,
+            fontWeight: "bold",
+        },
+        filterBtnTextActive: {
+            color: theme.activeFilterText,
+        },
+        sortBtns: {
+            flexDirection: "row",
+            marginLeft: 8,
+            alignItems: "center",
+            minWidth: 130,
+            justifyContent: "flex-end"
+        },
+    });
+}

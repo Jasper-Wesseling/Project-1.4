@@ -10,10 +10,11 @@ import {
 import { API_URL } from "@env";
 
 
-export default function StarRating({ navigation,token,route }) {
+export default function StarRating({ navigation, token, route, theme }) {
     const [rating, setRating] = useState(0);
     const { userProfile, onGoBack } = route.params;
-    const [hoveredRating, setHoveredRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const styles = createStarRatingStyles(theme);
 
     const handleStarPress = (starValue) => {
         setRating(starValue);
@@ -160,146 +161,149 @@ export default function StarRating({ navigation,token,route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#efefef",
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 30,
-    width: "100%",
-    maxWidth: 400,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    alignItems: "center",
-  },
-  backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
-  },
-  backArrow: {
-    fontSize: 24,
-    color: "#555",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
-    textAlign: "center",
-    lineHeight: 22,
-  },  starsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
-    paddingHorizontal: 10,
-    height: 50,
-  },
-  starWrapper: {
-    marginHorizontal: 4,
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  displayStar: {
-    fontSize: 44,
-    textAlign: "center",
-    lineHeight: 44,
-    textShadowColor: "rgba(0, 0, 0, 0.1)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  activeStar: {
-    color: "#FFD700",
-  },
-  inactiveStar: {
-    color: "#E0E0E0",
-  },
-  ratingText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1d3b84",
-    marginBottom: 10,
-  },
-  ratingLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 30,
-    paddingHorizontal: 10,
-  },
-  labelText: {
-    fontSize: 14,
-    color: "#888",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 20,
-  },
-  resetButton: {
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    flex: 1,
-    marginRight: 10,
-  },
-  resetButtonText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  submitButton: {
-    backgroundColor: "#fdb924",
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    flex: 1,
-    marginLeft: 10,
-  },
-  submitButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  disabledButton: {
-    backgroundColor: "#ccc",
-  },
-  disabledButtonText: {
-    color: "#888",
-  },
-  instructionContainer: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 15,
-    marginTop: 10,
-  },
-  instructionText: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-});
+function createStarRatingStyles(theme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    card: {
+      backgroundColor: theme.background,
+      borderRadius: 24,
+      padding: 30,
+      width: "100%",
+      maxWidth: 400,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 5,
+      alignItems: "center",
+    },
+    backButton: {
+      alignSelf: "flex-start",
+      marginBottom: 20,
+    },
+    backArrow: {
+      fontSize: 24,
+      color: theme.detailsText,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: theme.detailsText,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    subtitle: {
+      fontSize: 16,
+      color: theme.detailsText,
+      marginBottom: 30,
+      textAlign: "center",
+      lineHeight: 22,
+    },
+    starsContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 24,
+      paddingHorizontal: 10,
+      height: 50,
+    },
+    starWrapper: {
+      marginHorizontal: 4,
+      width: 44,
+      height: 44,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    displayStar: {
+      fontSize: 44,
+      textAlign: "center",
+      lineHeight: 44,
+      textShadowColor: "rgba(0, 0, 0, 0.1)",
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+    activeStar: {
+      color: "#FFD700",
+    },
+    inactiveStar: {
+      color: "#E0E0E0",
+    },
+    ratingText: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: theme.primary,
+      marginBottom: 10,
+    },
+    ratingLabels: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      marginBottom: 30,
+      paddingHorizontal: 10,
+    },
+    labelText: {
+      fontSize: 14,
+      color: theme.detailsText,
+    },
+    buttonContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      marginBottom: 20,
+    },
+    resetButton: {
+      borderWidth: 2,
+      borderColor: "red",
+      borderRadius: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      flex: 1,
+      marginRight: 10,
+    },
+    resetButtonText: {
+      fontSize: 16,
+      color: theme.detailsText,
+      textAlign: "center",
+    },
+    submitButton: {
+      backgroundColor: "#fdb924",
+      borderRadius: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      flex: 1,
+      marginLeft: 10,
+    },
+    submitButtonText: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: 16,
+      textAlign: "center",
+    },
+    disabledButton: {
+      backgroundColor: "#ccc",
+    },
+    disabledButtonText: {
+      color: "#888",
+    },
+    instructionContainer: {
+      backgroundColor: theme.formBg,
+      borderRadius: 12,
+      padding: 15,
+      marginTop: 10,
+    },
+    instructionText: {
+      fontSize: 14,
+      color: theme.text,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+  });
+}

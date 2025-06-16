@@ -158,11 +158,11 @@ export default function FaqPage({ token, user, theme }) {
 }
 
 // Dynamische styles generator
-function createFaqStyles(safeTheme) {
+function createFaqStyles(theme) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: safeTheme.background,
+      backgroundColor: theme.background,
     },
     topBar: {
       position: "absolute",
@@ -170,7 +170,7 @@ function createFaqStyles(safeTheme) {
       left: 0,
       right: 0,
       height: 100,
-      backgroundColor: safeTheme.headerBg,
+      backgroundColor: theme.headerBg,
       justifyContent: "center",
       paddingTop: 25,
       paddingHorizontal: 16,
@@ -197,7 +197,7 @@ function createFaqStyles(safeTheme) {
       top: 100,
       left: 0,
       right: 0,
-      backgroundColor: safeTheme.headerBg,
+      backgroundColor: theme.headerBg,
       justifyContent: "center",
       alignItems: "flex-start",
       paddingHorizontal: 16,
@@ -215,7 +215,7 @@ function createFaqStyles(safeTheme) {
       fontWeight: "bold",
     },
     stickyBar: {
-      backgroundColor: safeTheme.background,
+      backgroundColor: theme.background,
       zIndex: 5,
       paddingBottom: 0,
       paddingHorizontal: 0,
@@ -223,7 +223,7 @@ function createFaqStyles(safeTheme) {
     searchBarInner: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: safeTheme.searchBg,
+      backgroundColor: theme.searchBg,
       borderRadius: 16,
       paddingHorizontal: 16,
       paddingVertical: 10,
@@ -241,7 +241,7 @@ function createFaqStyles(safeTheme) {
       backgroundColor: "transparent",
       borderWidth: 0,
       paddingVertical: 0,
-      color: safeTheme.text,
+      color: theme.text,
     },
     faqTitle: {
       fontWeight: "bold",
@@ -249,7 +249,7 @@ function createFaqStyles(safeTheme) {
       marginBottom: 16,
       marginLeft: 24,
       marginTop: 16,
-      color: safeTheme.text,
+      color: theme.text,
     },
     scrollView: {
       flex: 1,
@@ -262,16 +262,16 @@ function createFaqStyles(safeTheme) {
       flexDirection: "row",
       alignItems: "center",
       borderBottomWidth: 1,
-      borderColor: safeTheme.border,
+      borderColor: "grey",
       paddingVertical: 18,
       paddingHorizontal: 24,
-      backgroundColor: safeTheme.background,
+      backgroundColor: theme.background,
       justifyContent: "space-between",
     },
     faqQuestion: {
       fontSize: 16,
       fontWeight: "600", //semi-bold
-      color: safeTheme.text,
+      color: theme.text,
       flex: 1,
       flexWrap: "wrap",
     },
@@ -282,22 +282,22 @@ function createFaqStyles(safeTheme) {
       marginLeft: 12,
     },
     faqAnswerBox: {
-      backgroundColor: safeTheme.answerBg,
+      backgroundColor: theme.formBg,
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderColor: safeTheme.border,
+      borderColor: theme.border,
       marginBottom: 0,
     },
     faqAnswer: {
       fontSize: 15,
-      color: safeTheme.text,
+      color: theme.text,
     },
     searchIcon: {
       marginRight: 8,
     },
     noResults: {
-      color: "gray",
+      color: theme.text,
       textAlign: "center",
       marginTop: 24,
     },
