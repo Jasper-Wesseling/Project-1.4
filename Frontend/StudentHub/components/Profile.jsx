@@ -136,7 +136,7 @@ useFocusEffect(
       if (!res.ok) throw new Error("Failed to update profile");
       
       // Refetch the profile to get the latest data
-      await fetchProfile();
+      await fetchProfile(userProfile);
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating profile:", err);

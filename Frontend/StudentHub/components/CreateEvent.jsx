@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { API_URL } from '@env';
 import { useTranslation } from "react-i18next";
+import { Icon } from "react-native-elements";
 
 export default function CreateEvent({ navigation, theme }) {
     const [title, setTitle] = useState("");
@@ -12,6 +13,8 @@ export default function CreateEvent({ navigation, theme }) {
     const [loading, setLoading] = useState(false);
     const { t } = useTranslation();
     const styles = createCreateEventStyles(theme);
+
+    const styles = createEventStyles(theme);
 
     const handleSubmit = async () => {
         if (!title || !date || !companyId) {
@@ -35,7 +38,6 @@ export default function CreateEvent({ navigation, theme }) {
             const token = loginData.token || loginData.access_token;
             if (!token) throw new Error(t("createEvent.errorNoToken"));
 
-            // Build request body with only required and non-empty optional fields
             const body = {
                 title,
                 date,
@@ -43,7 +45,6 @@ export default function CreateEvent({ navigation, theme }) {
             };
             if (location) body.location = location;
             if (description) body.description = description;
-            console.log('Event POST body:', body); // Debug log
 
             const res = await fetch(API_URL + '/api/events/new', {
                 method: 'POST',
@@ -120,5 +121,129 @@ function createCreateEventStyles(theme) {
             marginTop: 4,
             color: theme.text,
         },
+// =======
+//         <SafeAreaView style={styles.container}>
+//             <View style={styles.topBar}>
+//                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+//                     <Icon name="arrow-left" type="feather" size={24} color="#fff" />
+//                     <Text style={styles.backButtonText}>Back</Text>
+//                 </TouchableOpacity>
+//             </View>
+//             <View style={styles.formWrapper}>
+//                 <View style={styles.formFields}>
+//                     <TextInput
+//                         style={styles.input}
+//                         value={title}
+//                         onChangeText={setTitle}
+//                         placeholder="Event Title"
+//                         placeholderTextColor={theme.text}
+//                     />
+//                     <TextInput
+//                         style={styles.input}
+//                         value={date}
+//                         onChangeText={setDate}
+//                         placeholder="YYYY-MM-DD"
+//                         placeholderTextColor={theme.text}
+//                     />
+//                     <TextInput
+//                         style={[styles.input, styles.inputDescription]}
+//                         value={description}
+//                         onChangeText={setDescription}
+//                         placeholder="Description"
+//                         placeholderTextColor={theme.text}
+//                         multiline
+//                     />
+//                     <TextInput
+//                         style={styles.input}
+//                         value={location}
+//                         onChangeText={setLocation}
+//                         placeholder="Location"
+//                         placeholderTextColor={theme.text}
+//                     />
+//                     <TextInput
+//                         style={styles.input}
+//                         value={companyId}
+//                         onChangeText={setCompanyId}
+//                         placeholder="Company ID"
+//                         placeholderTextColor={theme.text}
+//                         keyboardType="numeric"
+//                     />
+//                 </View>
+//                 <View style={styles.uploadButtonWrapper}>
+//                     <Button title={loading ? "Creating..." : "Create Event"} onPress={handleSubmit} color={'white'} disabled={loading} />
+//                 </View>
+//             </View>
+//         </SafeAreaView>
+//     );
+// }
+
+// const defaultTheme = {
+//     background: "#fff",
+//     headerBg: "#2A4BA0",
+//     text: "#222",
+//     formBg: "#f5f5f5"
+// };
+
+// function createEventStyles(theme) {
+//     return StyleSheet.create({
+//         container: {
+//             flex: 1,
+//             backgroundColor: theme.background,
+//         },
+//         topBar: {
+//             position: "absolute",
+//             top: 0,
+//             left: 0,
+//             right: 0,
+//             height: 100,
+//             backgroundColor: theme.headerBg,
+//             justifyContent: "center",
+//             paddingTop: 25,
+//             paddingHorizontal: 16,
+//             zIndex: 20,
+//         },
+//         backButton: {
+//             flexDirection: "row",
+//             justifyContent: "flex-start",
+//             alignItems: 'center',
+//         },
+//         backButtonText: {
+//             color: "#fff",
+//             fontSize: 24,
+//             paddingLeft: 8,
+//         },
+//         formWrapper: {
+//             flex: 1,
+//             paddingTop: 100,
+//             paddingHorizontal: 16,
+//             justifyContent: "space-between",
+//         },
+//         formFields: {
+//             gap: 20,
+//         },
+//         input: {
+//             borderColor: 'grey',
+//             color: theme.text,
+//             backgroundColor: theme.formBg,
+//             borderWidth: 1,
+//             borderRadius: 16,
+//             fontSize: 24,
+//             padding: 12,
+//             textAlign: 'left',
+//             textAlignVertical: 'top',
+//         },
+//         inputDescription: {
+//             height: 100,
+//             color: theme.text,
+//         },
+//         uploadButtonWrapper: {
+//             marginBottom: 50,
+//             padding: 20,
+//             backgroundColor: "#2A4BA0",
+//             width: 200,
+//             alignSelf: "center",
+//             borderRadius: 100,
+//         },
+// >>>>>>> develop
     });
 }

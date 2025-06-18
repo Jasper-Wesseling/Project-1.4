@@ -123,7 +123,7 @@ class UsersController extends AbstractController
                 'language' => $user->getLanguage(),
                 'theme' => $user->getTheme(),
                 'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
-                'disabled' => $user->isDisabled(),
+                'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
             ];
         }
 
@@ -308,7 +308,9 @@ class UsersController extends AbstractController
         if (!$decodedJwtToken || !isset($decodedJwtToken["username"])) {
             return new JsonResponse(['error' => 'Invalid token'], 401);
         }
+
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+
 
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 400);
@@ -334,6 +336,8 @@ class UsersController extends AbstractController
             'language' => $user->getLanguage(),
             'theme' => $user->getTheme(),
             'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
+            'location' => $user->getLocationId() ? $user->getLocationId()->getName() : null,
+            'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
         ];
 
         return new JsonResponse($usersData, 200);
@@ -401,7 +405,8 @@ class UsersController extends AbstractController
             'theme' => $user->getTheme(),
             'location' => $locationData,
             'review_count' => $reviewCount,
-            'review_average' => $reviewAverage
+            'review_average' => $reviewAverage,
+            'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
         ];
 
         return new JsonResponse($usersData, 200);
@@ -430,9 +435,7 @@ class UsersController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
-    }
-
-    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
+    }    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
     public function updateProfile(
         Request $request,
         TokenStorageInterface $tokenStorage,
@@ -453,10 +456,6 @@ class UsersController extends AbstractController
         $data = json_decode($request->getContent(), true);
         if (!is_array($data)) {
             return new JsonResponse(['message' => 'Invalid JSON payload'], 400);
-        }
-
-        if (!isset($data['full_name']) || !isset($data['study_program']) || !isset($data['location']) || !isset($data['date_of_birth'])) {
-            return new JsonResponse(['message' => 'Missing required fields'], 400);
         }
 
         $newDateOfBirth = \DateTime::createFromFormat('Y-m-d', $data['date_of_birth']);

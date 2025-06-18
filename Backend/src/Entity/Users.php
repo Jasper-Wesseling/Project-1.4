@@ -124,8 +124,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $widgets_user;
     
 
-
-
     /**
      * @var Collection<int, Forums>
      */
@@ -134,6 +132,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $date_of_birth = null;
+
 
     public function __construct()
     {

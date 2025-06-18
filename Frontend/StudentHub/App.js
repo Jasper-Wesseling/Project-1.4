@@ -30,6 +30,7 @@ import TempAccount from "./components/TempAccount";
 import StarRating from "./components/StarRating";
 import Onboard from "./components/Onboard";
 import { hasRole } from "./utils/roleUtils";
+import BussinessPage from "./components/businessPage";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -65,6 +66,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
       </Tab.Screen>
 
       {/* <Tab.Screen name="BountyBoard" component={BountyBoard} /> */}
+
 
       <Tab.Screen name="BusinessPage" >
         {props => <BusinessPage {...props} token={token} user={user} theme={theme} />}

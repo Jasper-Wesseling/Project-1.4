@@ -6,7 +6,9 @@ import { API_URL } from '@env';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format, parseISO } from "date-fns"; // Add this import at the top
 
-export default function BountyBoard({ navigation, theme }) {
+//  export default function BountyBoard({ navigation,  }) {
+
+export default function BussinessPage({ navigation,token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,25 +20,10 @@ export default function BountyBoard({ navigation, theme }) {
     const [eventModalVisible, setEventModalVisible] = useState(false);
     const styles = createBusinessPageStyles(theme);
 
+
     // Fetch all companies for filters
     const fetchCompanies = async () => {
         try {
-            // Get token first (same as fetchEvents)
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
-            // Now fetch companies with Authorization header
             const res = await fetch(API_URL + '/api/companies/get', {
                 method: 'GET',
                 headers: {
@@ -62,21 +49,6 @@ export default function BountyBoard({ navigation, theme }) {
     // Fetch events (filtered by company id if selected)
     const fetchEvents = async () => {
         try {
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
-
-            // Add filter to events fetch if activeFilter is set
             let eventsUrl = API_URL + '/api/events/get';
             if (activeFilter) {
                 eventsUrl += `?company_id=${activeFilter}`;
@@ -181,8 +153,8 @@ export default function BountyBoard({ navigation, theme }) {
 
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Step up,</Animated.Text>
-                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>Take a bounty</Animated.Text>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Discover</Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>By Company</Animated.Text>
             </Animated.View>
 
             {/* Filter Row (copied from Products.jsx) */}
@@ -219,11 +191,18 @@ export default function BountyBoard({ navigation, theme }) {
                 >
                     {events && events.length > 0 ? (
                         events.map((event, idx) => (
-                            <View style={styles.eventContainer} key={event.id || idx}>
+                            <TouchableOpacity
+                                key={event.id || idx}
+                                style={styles.eventContainer}
+                                onPress={() => {
+                                    setSelectedEvent(event);
+                                    setEventModalVisible(true);
+                                }}
+                            >
                                 <Text style={styles.eventTitle}>{event.title}</Text>
                                 <Text style={styles.eventDate}>{event.date}</Text>
                                 <Text style={styles.eventDescription}>{event.description}</Text>
-                            </View>
+                            </TouchableOpacity>
                         ))
                     ) : (
                         <View style={styles.eventContainer}>
@@ -621,3 +600,4 @@ function createBusinessPageStyles(theme) {
         },
     });
 }
+
