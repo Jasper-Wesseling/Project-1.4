@@ -3,11 +3,14 @@ import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacit
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
+import { useTranslation } from "react-i18next";
 
-export default function Login({ navigation, onLogin }) {
+export default function Login({ navigation, onLogin, theme }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const styles = createLoginStyles(theme);
+    const { t } = useTranslation();
 
     // Replace pageHeight state with Animated.Value
     const animatedTranslateY = useRef(new Animated.Value(0)).current;
@@ -31,7 +34,7 @@ export default function Login({ navigation, onLogin }) {
                     password,
                 }),
             });
-            if (!res.ok) throw new Error("Login failed");
+            if (!res.ok) throw new Error(t("login.errorLogin"));
             const data = await res.json();
             const token = data.token || data.access_token;
             if (token) {
@@ -40,14 +43,14 @@ export default function Login({ navigation, onLogin }) {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!userRes.ok) throw new Error("User fetch failed");
+                if (!userRes.ok) throw new Error(t("login.errorUserFetch"));
                 const user = await userRes.json();
                 onLogin(token, user);
             } else {
-                Alert.alert("Login failed", "No token received");
+                Alert.alert(t("login.errorLogin"), t("login.errorNoToken"));
             }
         } catch (e) {
-            Alert.alert("Login failed", e.message);
+            Alert.alert(t("login.errorLogin"), e.message);
         }
         setLoading(false);
     };
@@ -67,10 +70,10 @@ export default function Login({ navigation, onLogin }) {
                     </View>
                 </SafeAreaView>
                 <View style={styles.bottomHalf}>
-                    <Text style={styles.title}>Login</Text>
+                    <Text style={styles.title}>{t("login.title")}</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Email"
+                        placeholder={t("login.email")}
                         value={username}
                         onChangeText={setUsername}
                         autoCapitalize="none"
@@ -81,7 +84,7 @@ export default function Login({ navigation, onLogin }) {
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Password"
+                        placeholder={t("login.password")}
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry
@@ -94,20 +97,20 @@ export default function Login({ navigation, onLogin }) {
                         onPress={handleLogin}
                         disabled={loading}
                     >
-                        <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
+                        <Text style={styles.buttonText}>{loading ? t("login.loggingIn") : t("login.continue")}</Text>
                         <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Register')}
                     >
-                        <Text style={styles.registerText}>Don't have an account? Register</Text>
+                        <Text style={styles.registerText}>{t("login.noAccount")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Temp')}
                     >
-                        <Text style={styles.registerText}>Want a look around? Get a temporary account</Text>
+                        <Text style={styles.registerText}>{t("login.tempAccount")}</Text>
                     </TouchableOpacity>
                 </View>
             </Animated.View>
@@ -115,77 +118,79 @@ export default function Login({ navigation, onLogin }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-    },
-    safeArea: {
-        backgroundColor: "#2A4BA0",
-    },
-    topHalf: {
-        height: 320, // increased for more space
-        backgroundColor: "#2A4BA0",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    imagePlaceholder: {
-        width: 240, // increased for more space
-        height: 240, // increased for more space
-        borderRadius: 40, // increased for more space
-        borderWidth: 2,
-        borderColor: "#bfc8e6",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#2A4BA0",
-    },
-    bottomHalf: {
-        backgroundColor: "#fff",
-        marginTop: -24, // less negative so it doesn't overlap the image
-        paddingTop: 32,
-        alignItems: "center",
-        paddingHorizontal: 24,
-        flex: 1,
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: "bold",
-        color: "#23244A",
-        marginBottom: 24,
-        alignSelf: "flex-start",
-    },
-    input: {
-        width: "100%",
-        backgroundColor: "#F5F4F8",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        fontSize: 16,
-        color: "#23244A",
-    },
-    button: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#FDBB2C",
-        borderRadius: 18,
-        paddingVertical: 16,
-        width: "100%",
-        marginTop: 16,
-        marginBottom: 8,
-    },
-    buttonText: {
-        color: "#23244A",
-        fontWeight: "bold",
-        fontSize: 18,
-        letterSpacing: 1,
-    },
-    registerLink: {
-        marginTop: 8,
-    },
-    registerText: {
-        color: "#2A4BA0",
-        fontSize: 15,
-        textDecorationLine: "underline",
-    },
-});
+function createLoginStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+        },
+        safeArea: {
+            backgroundColor: theme.headerBg,
+        },
+        topHalf: {
+            height: 320, // increased for more space
+            backgroundColor: theme.headerBg,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        imagePlaceholder: {
+            width: 240, // increased for more space
+            height: 240, // increased for more space
+            borderRadius: 40, // increased for more space
+            borderWidth: 2,
+            borderColor: "#bfc8e6",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: theme.headerBg,
+        },
+        bottomHalf: {
+            backgroundColor: theme.background,
+            marginTop: -24, // less negative so it doesn't overlap the image
+            paddingTop: 32,
+            alignItems: "center",
+            paddingHorizontal: 24,
+            flex: 1,
+        },
+        title: {
+            fontSize: 22,
+            fontWeight: "bold",
+            color: theme.text,
+            marginBottom: 24,
+            alignSelf: "flex-start",
+        },
+        input: {
+            width: "100%",
+            backgroundColor: theme.formBg,
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 16,
+            fontSize: 16,
+            color: theme.text,
+        },
+        button: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#FDBB2C",
+            borderRadius: 18,
+            paddingVertical: 16,
+            width: "100%",
+            marginTop: 16,
+            marginBottom: 8,
+        },
+        buttonText: {
+            color: "#23244A",
+            fontWeight: "bold",
+            fontSize: 18,
+            letterSpacing: 1,
+        },
+        registerLink: {
+            marginTop: 8,
+        },
+        registerText: {
+            color: "#2A4BA0",
+            fontSize: 15,
+            textDecorationLine: "underline",
+        },
+    });
+}

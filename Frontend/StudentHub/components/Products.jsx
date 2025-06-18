@@ -6,7 +6,7 @@ import { Icon } from "react-native-elements";
 import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
-import { themes } from "./LightDarkComponent";
+import { useTranslation } from "react-i18next";
 
 export default function Products({ navigation, token, user, onLogout, setUserToChat, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -18,20 +18,11 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
     const [modalVisible, setModalVisible] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMorePages, setHasMorePages] = useState(true);
-
-    const safeTheme =
-        typeof theme === "object" && theme
-            ? theme
-            : typeof theme === "string" && themes[theme]
-                ? themes[theme]
-                : themes.light;
-
-    if (!safeTheme) return null;
-
-    const styles = createProductsStyles(safeTheme);
+    const styles = createProductsStyles(theme);
+    const { t } = useTranslation();
 
     // Filters should match your backend's product categories
-    const filters = ['Boeken', 'Electra', 'Huis en tuin'];
+    const filters = [t('products.books'), t('products.electronics'), t('products.homeGarden')];
     const [activeFilters, setActiveFilters] = useState([]);
 
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValues = activeFilters) => {
@@ -49,7 +40,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!productsRes.ok) throw new Error("Products fetch failed");
+            if (!productsRes.ok) throw new Error(t("products.errorFetch"));
 
             const productsData = await productsRes.json();
 
@@ -126,11 +117,12 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 value={search}
                 onChange={setSearch}
                 onClose={() => setSearchModalVisible(false)}
+                theme={theme}
             />
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
-                    <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
+                    <Text style={styles.topBarText}>{t("products.hey", { name })}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={tempLogout}>
                             <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
@@ -149,8 +141,8 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
             </View>
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, {opacity: headerOpacity}]}>Shop</Animated.Text>
-                <Animated.Text style={[styles.headerText, {opacity: headerOpacity}]}>By Category</Animated.Text>
+                <Animated.Text style={[styles.headerText, {opacity: headerOpacity}]}>{t("products.shop")}</Animated.Text>
+                <Animated.Text style={[styles.headerText, {opacity: headerOpacity}]}>{t("products.byCategory")}</Animated.Text>
             </Animated.View>
             {/* StickyBar met zoekbalk en filters */}
             <Animated.View style={[styles.stickyBar, { marginTop: stickyBarMarginTop }]}>
@@ -158,7 +150,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 <View style={styles.searchBarInner}>
                     <Icon type="Feather" name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
                     <TextInput
-                        placeholder="Zoek producten"
+                        placeholder={t("products.searchPlaceholder")}
                         value={search}
                         onChangeText={setSearch}
                         style={styles.searchBarInput}
@@ -213,12 +205,12 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                                 setModalVisible(true);
                             }}
                         >
-                            <ProductPreview product={product} formatPrice={formatPrice}/>
+                            <ProductPreview product={product} formatPrice={formatPrice} theme={theme} />
                         </TouchableOpacity>
                     ))}
                 </Animated.ScrollView>
                 :
-                <Text style={styles.loadingText}>Loading...</Text>}
+                <Text style={styles.loadingText}>{t("products.loading")}</Text>}
             <ProductModal
                 visible={modalVisible}
                 product={selectedProduct}
@@ -230,6 +222,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 productUser={selectedProduct?.product_user_id}
                 productUserName={selectedProduct?.product_username}
                 token={token}
+                theme={theme}
             />
         </View>
     );

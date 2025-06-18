@@ -8,12 +8,14 @@ import {
     Alert,
 } from "react-native";
 import { API_URL } from "@env";
+import { useTranslation } from "react-i18next";
 
-
-export default function StarRating({ navigation,token,route }) {
+export default function StarRating({ navigation, token, route, theme }) {
     const [rating, setRating] = useState(0);
     const { userProfile, onGoBack } = route.params;
-    const [hoveredRating, setHoveredRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const styles = createStarRatingStyles(theme);
+  const { t } = useTranslation();
 
     const handleStarPress = (starValue) => {
         setRating(starValue);
@@ -21,45 +23,42 @@ export default function StarRating({ navigation,token,route }) {
 
     const submitRating = async() => {
         if (rating === 0) {
-            Alert.alert("Selecteer een beoordeling", "Kies een aantal sterren om je beoordeling te geven.");
-      return;
-    }
-    
+            Alert.alert(t("starRating.selectTitle"), t("starRating.selectMsg"));
+            return;
+        }
+        try {
+            const response = await fetch(`${API_URL}/api/reviews/new?user=${userProfile}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ rating }),
+            });
 
-    try {
-      const response = await fetch(`${API_URL}/api/reviews/new?user=${userProfile}`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rating }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-        Alert.alert(
-        "Beoordeling verzonden!",
-        `Je hebt ${rating} ${rating === 1 ? 'ster' : 'sterren'} gegeven.`,
-        [
-            {
-            text: "OK",
-            onPress: () => {
-              if (onGoBack) onGoBack();
-              navigation.goBack();
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-            }
-        ]
-        );
-    } catch (error) {
-      console.error("Error submitting rating:", error);
-        Alert.alert("Fout", "Er is een probleem opgetreden bij het verzenden van je beoordeling. Probeer het later opnieuw.");
-        return;
-    }
-    
-  };
+
+            Alert.alert(
+                t("starRating.sentTitle"),
+                t("starRating.sentMsg", { rating, star: t(rating === 1 ? "starRating.star" : "starRating.stars") }),
+                [
+                    {
+                        text: "OK",
+                        onPress: () => {
+                            if (onGoBack) onGoBack();
+                            navigation.goBack();
+                        }
+                    }
+                ]
+            );
+        } catch (error) {
+            console.error("Error submitting rating:", error);
+            Alert.alert(t("starRating.errorTitle"), t("starRating.errorMsg"));
+            return;
+        }
+    };
 
   const resetRating = () => {
     setRating(0);
@@ -76,7 +75,7 @@ export default function StarRating({ navigation,token,route }) {
           onPress={() => handleStarPress(i)}
           activeOpacity={0.7}
           accessible
-          accessibilityLabel={`${i} ${i === 1 ? 'ster' : 'sterren'}`}
+          accessibilityLabel={`${i} ${t(i === 1 ? "starRating.star" : "starRating.stars")}`}
         >
           <Text style={[
             styles.displayStar,
@@ -98,14 +97,14 @@ export default function StarRating({ navigation,token,route }) {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
             accessible
-            accessibilityLabel="Ga terug"
+            accessibilityLabel={t("starRating.goBack")}
           >
             <Text style={styles.backArrow}>←</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Geef je beoordeling</Text>
+          <Text style={styles.title}>{t("starRating.title")}</Text>
           <Text style={styles.subtitle}>
-            Hoe tevreden ben je? Selecteer het aantal sterren.
+            {t("starRating.subtitle")}
           </Text>
 
           <View style={styles.starsContainer}>
@@ -113,13 +112,14 @@ export default function StarRating({ navigation,token,route }) {
           </View>
 
           <Text style={styles.ratingText}>
-            {rating === 0 ? "Geen beoordeling" : 
-             `${rating} ${rating === 1 ? 'ster' : 'sterren'}`}
+            {rating === 0
+              ? t("starRating.noRating")
+              : `${rating} ${t(rating === 1 ? "starRating.star" : "starRating.stars")}`}
           </Text>
 
           <View style={styles.ratingLabels}>
-            <Text style={styles.labelText}>Slecht</Text>
-            <Text style={styles.labelText}>Uitstekend</Text>
+            <Text style={styles.labelText}>{t("starRating.bad")}</Text>
+            <Text style={styles.labelText}>{t("starRating.excellent")}</Text>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -127,9 +127,9 @@ export default function StarRating({ navigation,token,route }) {
               style={styles.resetButton}
               onPress={resetRating}
               accessible
-              accessibilityLabel="Reset beoordeling"
+              accessibilityLabel={t("starRating.reset")}
             >
-              <Text style={styles.resetButtonText}>Reset</Text>
+              <Text style={styles.resetButtonText}>{t("starRating.reset")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -140,18 +140,19 @@ export default function StarRating({ navigation,token,route }) {
               onPress={submitRating}
               disabled={rating === 0}
               accessible
-              accessibilityLabel="Verzend beoordeling"
+              accessibilityLabel={t("starRating.send")}
             >
               <Text style={[
                 styles.submitButtonText,
                 rating === 0 && styles.disabledButtonText
               ]}>
-                Verzenden
+                {t("starRating.send")}
               </Text>
             </TouchableOpacity>
-          </View>          <View style={styles.instructionContainer}>
+          </View>
+          <View style={styles.instructionContainer}>
             <Text style={styles.instructionText}>
-              💡 Tip: Tik op een ster om je beoordeling te geven van 1 tot 5 sterren.
+              {t("starRating.tip")}
             </Text>
           </View>
         </View>
@@ -160,146 +161,149 @@ export default function StarRating({ navigation,token,route }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#efefef",
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 30,
-    width: "100%",
-    maxWidth: 400,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    alignItems: "center",
-  },
-  backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
-  },
-  backArrow: {
-    fontSize: 24,
-    color: "#555",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
-    textAlign: "center",
-    lineHeight: 22,
-  },  starsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 24,
-    paddingHorizontal: 10,
-    height: 50,
-  },
-  starWrapper: {
-    marginHorizontal: 4,
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  displayStar: {
-    fontSize: 44,
-    textAlign: "center",
-    lineHeight: 44,
-    textShadowColor: "rgba(0, 0, 0, 0.1)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  activeStar: {
-    color: "#FFD700",
-  },
-  inactiveStar: {
-    color: "#E0E0E0",
-  },
-  ratingText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1d3b84",
-    marginBottom: 10,
-  },
-  ratingLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 30,
-    paddingHorizontal: 10,
-  },
-  labelText: {
-    fontSize: 14,
-    color: "#888",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 20,
-  },
-  resetButton: {
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    flex: 1,
-    marginRight: 10,
-  },
-  resetButtonText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  submitButton: {
-    backgroundColor: "#fdb924",
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    flex: 1,
-    marginLeft: 10,
-  },
-  submitButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  disabledButton: {
-    backgroundColor: "#ccc",
-  },
-  disabledButtonText: {
-    color: "#888",
-  },
-  instructionContainer: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 15,
-    marginTop: 10,
-  },
-  instructionText: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-});
+function createStarRatingStyles(theme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    card: {
+      backgroundColor: theme.background,
+      borderRadius: 24,
+      padding: 30,
+      width: "100%",
+      maxWidth: 400,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 5,
+      alignItems: "center",
+    },
+    backButton: {
+      alignSelf: "flex-start",
+      marginBottom: 20,
+    },
+    backArrow: {
+      fontSize: 24,
+      color: theme.detailsText,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: theme.detailsText,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    subtitle: {
+      fontSize: 16,
+      color: theme.detailsText,
+      marginBottom: 30,
+      textAlign: "center",
+      lineHeight: 22,
+    },
+    starsContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 24,
+      paddingHorizontal: 10,
+      height: 50,
+    },
+    starWrapper: {
+      marginHorizontal: 4,
+      width: 44,
+      height: 44,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    displayStar: {
+      fontSize: 44,
+      textAlign: "center",
+      lineHeight: 44,
+      textShadowColor: "rgba(0, 0, 0, 0.1)",
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+    activeStar: {
+      color: "#FFD700",
+    },
+    inactiveStar: {
+      color: "#E0E0E0",
+    },
+    ratingText: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: theme.primary,
+      marginBottom: 10,
+    },
+    ratingLabels: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      marginBottom: 30,
+      paddingHorizontal: 10,
+    },
+    labelText: {
+      fontSize: 14,
+      color: theme.detailsText,
+    },
+    buttonContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+      marginBottom: 20,
+    },
+    resetButton: {
+      borderWidth: 2,
+      borderColor: "red",
+      borderRadius: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      flex: 1,
+      marginRight: 10,
+    },
+    resetButtonText: {
+      fontSize: 16,
+      color: theme.detailsText,
+      textAlign: "center",
+    },
+    submitButton: {
+      backgroundColor: "#fdb924",
+      borderRadius: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      flex: 1,
+      marginLeft: 10,
+    },
+    submitButtonText: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: 16,
+      textAlign: "center",
+    },
+    disabledButton: {
+      backgroundColor: "#ccc",
+    },
+    disabledButtonText: {
+      color: "#888",
+    },
+    instructionContainer: {
+      backgroundColor: theme.formBg,
+      borderRadius: 12,
+      padding: 15,
+      marginTop: 10,
+    },
+    instructionText: {
+      fontSize: 14,
+      color: theme.text,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+  });
+}

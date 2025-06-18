@@ -6,12 +6,15 @@ import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
 import ProductPreview from "./ProductPreview";
 import ProductModal from "./ProductModal";
+import { useTranslation } from "react-i18next";
 
-export default function EditProducts({ navigation, token, user }) {
+export default function EditProducts({ navigation, token, user, theme }) {
    const [products, setProducts] = useState([]);
    const [loading, setLoading] = useState(true);
    const [selectedProduct, setSelectedProduct] = useState(null);
    const [modalVisible, setModalVisible] = useState(false);
+   const styles = createEditProductsStyles(theme);
+   const { t } = useTranslation();
 
    const fetchProducts = async () => {
       try {
@@ -23,7 +26,7 @@ export default function EditProducts({ navigation, token, user }) {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
          });
-         if (!res.ok) throw new Error("Products fetch failed");
+         if (!res.ok) throw new Error(t("editProducts.errorFetch"));
          const data = await res.json();
          setProducts(data);
          setLoading(false);
@@ -54,7 +57,7 @@ export default function EditProducts({ navigation, token, user }) {
          <View style={styles.topBar}>
             <View style={styles.topBarRow}>
                <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
-               <Text style={styles.topBarText}>Edit Products</Text>
+               <Text style={styles.topBarText}>{t("editProducts.title")}</Text>
                <View style={styles.topBarIcons}>
                   <TouchableOpacity>
                      <Icon name="search" size={34} color="#fff" />
@@ -70,7 +73,7 @@ export default function EditProducts({ navigation, token, user }) {
             {loading ? (
                <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#2A4BA0" />
-                  <Text style={styles.loadingText}>Producten laden...</Text>
+                  <Text style={styles.loadingText}>{t("editProducts.loading")}</Text>
                </View>
             ) : (
                products.map(product => (
@@ -83,7 +86,7 @@ export default function EditProducts({ navigation, token, user }) {
                      }}
                   >
                      <View style={styles.chatCard}>
-                        <ProductPreview product={product} formatPrice={formatPrice} />
+                        <ProductPreview product={product} formatPrice={formatPrice} theme={theme} />
                      </View>
                   </TouchableOpacity>
                ))
@@ -102,63 +105,66 @@ export default function EditProducts({ navigation, token, user }) {
             productUser={selectedProduct?.product_user_id}
             productUserName={selectedProduct?.product_username}
             token={token}
+            theme={theme}
          />
       </View>
    );
 }
 
-const styles = StyleSheet.create({
-   container: {
-      flex: 1,
-      backgroundColor: "#F4F6FA"
-   },
-   topBar: {
-      height: 100,
-      backgroundColor: "#2A4BA0",
-      justifyContent: "center",
-      paddingTop: 25,
-      paddingHorizontal: 16,
-   },
-   topBarRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center"
-   },
-   topBarText: {
-      color: "#fff",
-      fontSize: 26,
-      fontWeight: "bold",
-   },
-   topBarIcons: {
-      flexDirection: 'row',
-      width: 50,
-      justifyContent: 'flex-end',
-      alignContent: 'center'
-   },
-   scrollViewContent: {
-      paddingTop: 16,
-      paddingBottom: 40,
-      paddingHorizontal: 0, // Remove horizontal padding
-   },
-   chatCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#fff",
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 12, // Only bottom margin for spacing
-      // Remove marginHorizontal and marginVertical
-   },
-   loadingContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingTop: 150,
-   },
-   loadingText: {
-      marginTop: 16,
-      fontSize: 18,
-      color: "#2A4BA0",
-      fontWeight: "600",
-   },
-});
+function createEditProductsStyles(theme) {
+   return StyleSheet.create({
+      container: {
+         flex: 1,
+         backgroundColor: theme.background,
+      },
+      topBar: {
+         height: 100,
+         backgroundColor: theme.headerBg,
+         justifyContent: "center",
+         paddingTop: 25,
+         paddingHorizontal: 16,
+      },
+      topBarRow: {
+         flexDirection: "row",
+         justifyContent: "space-between",
+         alignItems: "center"
+      },
+      topBarText: {
+         color: theme.headerText,
+         fontSize: 26,
+         fontWeight: "bold",
+      },
+      topBarIcons: {
+         flexDirection: 'row',
+         width: 50,
+         justifyContent: 'flex-end',
+         alignContent: 'center'
+      },
+      scrollViewContent: {
+         paddingTop: 16,
+         paddingBottom: 40,
+         paddingHorizontal: 0, // Remove horizontal padding
+      },
+      chatCard: {
+         flexDirection: "row",
+         alignItems: "center",
+         backgroundColor: theme.background,
+         borderRadius: 16,
+         padding: 16,
+         marginBottom: 12, // Only bottom margin for spacing
+         // Remove marginHorizontal and marginVertical
+      },
+      loadingContainer: {
+         flex: 1,
+         justifyContent: "center",
+         alignItems: "center",
+         paddingTop: 150,
+      },
+      loadingText: {
+         marginTop: 16,
+         fontSize: 18,
+         color: theme.text,
+         fontWeight: "600",
+      },
+   });
+}

@@ -12,7 +12,7 @@ export default function LanguageSwitcher() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('select_language')}</Text>
+      <Text style={styles.title}>{t('languageSwitcher.selectLanguage')}</Text>
       <View style={styles.buttonRow}>
         <TouchableOpacity
           style={[
@@ -27,7 +27,7 @@ export default function LanguageSwitcher() {
               currentLanguage === 'nl' ? styles.activeButtonText : null,
             ]}
           >
-            {t('dutch')}
+            {t('languageSwitcher.dutch')}
           </Text>
         </TouchableOpacity>
 
@@ -44,7 +44,7 @@ export default function LanguageSwitcher() {
               currentLanguage === 'en' ? styles.activeButtonText : null,
             ]}
           >
-            {t('english')}
+            {t('languageSwitcher.english')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -53,9 +53,18 @@ export default function LanguageSwitcher() {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', marginVertical: 16 },
-  title: { fontSize: 18, marginBottom: 12 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'center' },
+  container: {
+    alignItems: 'center',
+    marginVertical: 16
+  },
+  title: {
+    fontSize: 18,
+    marginBottom: 12
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'center'
+  },
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,

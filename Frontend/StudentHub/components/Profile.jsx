@@ -14,8 +14,9 @@ import {
 import { API_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
-export default function Profile({ token, navigation, route, user }) {
+export default function Profile({ token, navigation, route, user, theme }) {
   const [userProfile, setUserProfile] = useState(null);
   const product = route.params?.product || null;
   const [profile, setProfile] = useState(null);
@@ -23,6 +24,8 @@ export default function Profile({ token, navigation, route, user }) {
   const [editedProfile, setEditedProfile] = useState(null);
   const [profileMissing, setProfileMissing] = useState(false);
   const [Interesses, setInteresses] = useState(false);
+  const styles = createProfileStyles(theme);
+  const { t } = useTranslation();
 
   const DEFAULT_AVATAR_URL = "https://www.gravatar.com/avatar/?d=mp&s=120";
 
@@ -99,10 +102,14 @@ useFocusEffect(
     }
   };
   const cancelEditing = () => {
-    Alert.alert("Wijzigingen annuleren?", "Je wijzigingen worden niet opgeslagen.", [
-      { text: "Nee", style: "cancel" },
-      { text: "Ja", onPress: () => setIsEditing(false) },
-    ]);
+    Alert.alert(
+      t("profile.cancelTitle"),
+      t("profile.cancelMsg"),
+      [
+        { text: t("profile.no"), style: "cancel" },
+        { text: t("profile.yes"), onPress: () => setIsEditing(false) },
+      ]
+    );
   };
   
   const saveChanges = async () => {
@@ -162,7 +169,7 @@ useFocusEffect(
   if (profileMissing) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{ marginBottom: 10 }}>Geen profiel gevonden.</Text>
+        <Text style={{ marginBottom: 10 }}>{t("profile.noProfileFound")}</Text>
         {!isEditing ? (
           <TouchableOpacity
             onPress={() => {
@@ -179,19 +186,18 @@ useFocusEffect(
             }}
             style={styles.dotButton}
           >
-            <Text style={styles.dotButtonText}>Profiel aanmaken</Text>
+            <Text style={styles.dotButtonText}>{t("profile.createProfile")}</Text>
           </TouchableOpacity>
         ) : (
           <>
-            <Text style={{ marginBottom: 10 }}>Nieuw profiel</Text>
+            <Text style={{ marginBottom: 10 }}>{t("profile.newProfile")}</Text>
             <TextInput
               value={editedProfile.first_name || ""}
               onChangeText={(text) =>
                 setEditedProfile({ ...editedProfile, first_name: text })
               }
               style={styles.input}
-              placeholder="Voornaam"
-              placeholderTextColor="#888"
+              placeholder={t("profile.firstName")}
             />
             <TextInput
               value={editedProfile.last_name || ""}
@@ -199,8 +205,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, last_name: text })
               }
               style={styles.input}
-              placeholder="Achternaam"
-              placeholderTextColor="#888"
+              placeholder={t("profile.lastName")}
             />
             <TextInput
               value={editedProfile.date_of_birth || ""}
@@ -208,8 +213,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, date_of_birth: text })
               }
               style={styles.input}
-              placeholder="Geboortedatum (YYYY-MM-DD)"
-              placeholderTextColor="#888"
+              placeholder={t("profile.dob")}
             />
             <TextInput
               value={editedProfile.study_program || ""}
@@ -217,8 +221,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, study_program: text })
               }
               style={styles.input}
-              placeholder="Studierichting"
-              placeholderTextColor="#888"
+              placeholder={t("profile.studyProgram")}
             />
             <TextInput
               value={editedProfile.location?.name || ""}
@@ -226,8 +229,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, location: text })
               }
               style={styles.input}
-              placeholder="Locatie"
-              placeholderTextColor="#888"
+              placeholder={t("profile.location")}
             />
             <TextInput
               value={editedProfile.bio || ""}
@@ -236,14 +238,13 @@ useFocusEffect(
               }
               style={[styles.input, { height: 80 }]}
               multiline
-              placeholder="Bio"
-              placeholderTextColor="#888"
+              placeholder={t("profile.bio")}
             />
             <TouchableOpacity
               style={styles.contactButton}
               onPress={createProfile}
             >
-              <Text style={styles.contactButtonText}>Opslaan</Text>
+              <Text style={styles.contactButtonText}>{t("profile.save")}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -255,7 +256,7 @@ useFocusEffect(
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1d3b84" />
-        <Text style={{ color: "#555", marginTop: 10 }}>Loading Profile...</Text>
+        <Text style={{ color: "#555", marginTop: 10 }}>{t("profile.loading")}</Text>
       </View>
     );
   }
@@ -265,7 +266,7 @@ useFocusEffect(
         <View style={styles.card}>
           <TouchableOpacity
             accessible
-            accessibilityLabel="Ga terug"
+            accessibilityLabel={t("profile.goBack")}
             style={{ marginBottom: 10 }}
             onPress={() => navigation.goBack()}
           >
@@ -293,8 +294,7 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, first_name: text })
                       }
                       style={styles.input}
-                      placeholder="Voornaam"
-                      placeholderTextColor="#888"
+                      placeholder={t("profile.firstName")}
                       />
                       <TextInput
                       value={editedProfile.last_name || ""}
@@ -302,8 +302,7 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, last_name: text })
                       }
                       style={styles.input}
-                      placeholder="Achternaam"
-                      placeholderTextColor="#888"
+                      placeholder={t("profile.lastName")}
                       />
                     </>
                     ) : (
@@ -320,8 +319,8 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, date_of_birth: text })
                       }
                       style={[styles.input, { flex: 1 }]}
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#888"
+                    placeholder={t("profile.dobShort")}
+                    placeholderTextColor={theme.text}
                       />
                       <TextInput
                       value={editedProfile.study_program || ""}
@@ -329,13 +328,12 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, study_program: text })
                       }
                       style={[styles.input, { flex: 2, marginLeft: 10 }]}
-                      placeholder="Studierichting"
-                      placeholderTextColor="#888"
+                      placeholder={t("profile.studyProgram")}
                       />
                     </>
                     ) : (
                       <>
-                      <Text style={styles.age}>{age} jaar</Text>
+                      <Text style={styles.age}>{age} {t("profile.years")}</Text>
                       <View style={styles.tag}>
                         <Text style={styles.tagText}>{profile.study_program}</Text>
                       </View>
@@ -350,14 +348,14 @@ useFocusEffect(
                       setEditedProfile({ ...editedProfile, location: text })
                     }
                     style={styles.input}
-                    placeholder="Locatie"
-                    placeholderTextColor="#888"
+                    placeholder={t("profile.location")}
+                    placeholderTextColor={theme.text}
                     />
                   ) : (
                     <View style={styles.locationContainer}>
                     <Text style={styles.locationIcon}>📍</Text>
                     <Text style={styles.location}>
-                      {profile.location?.name || "Locatie niet ingevuld"}
+                      {profile.location?.name || t("profile.noLocation")}
                     </Text>
                     </View>
                   )}
@@ -376,23 +374,23 @@ useFocusEffect(
                             ★
                           </Text>
                         ))}
-                        <Text style={styles.reviews}> {profile.review_count || 'No'} Reviews</Text>
+                        <Text style={styles.reviews}> {profile.review_count || t("profile.noReviews")} {t("profile.reviews")}</Text>
                       </View>
                       {user.id !== userProfile ? (
                         <TouchableOpacity
                           style={styles.rateButton}
                           onPress={() => navigation.navigate('StarRating', { userProfile, onGoBack: () => fetchProfile(userProfile) })}
                           accessible
-                          accessibilityLabel="Geef een beoordeling"
+                          accessibilityLabel={t("profile.rate")}
                         >
-                          <Text style={styles.rateButtonText}>Beoordeel</Text>
+                          <Text style={styles.rateButtonText}>{t("profile.rate")}</Text>
                         </TouchableOpacity>
                       ) : null}
                     </View>
                   </View>
                   </View>
 
-                  <Text style={styles.sectionTitle}>Details</Text>
+                  <Text style={styles.sectionTitle}>{t("profile.details")}</Text>
                   {isEditing ? (
                   <TextInput
                     value={editedProfile.bio || ""}
@@ -403,24 +401,23 @@ useFocusEffect(
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
-                    placeholder="Bio"
-                    placeholderTextColor="#888"
+                    placeholder={t("profile.bio")}
                   />
                   ) : (
                     <Text style={styles.description}>
-                    {profile.bio || "Geen bio beschikbaar."}
+                    {profile.bio || t("profile.noBio")}
                     </Text>
                   )}
 
                   <TouchableOpacity style={styles.accordion} onPress={() => setInteresses(!Interesses)}>
                   <View style={{ flex: 1 }}>
                     <View style={[styles.row, {justifyContent: "space-between"}]}>
-                    <Text style={styles.accordionText}>Interesses</Text>
+                    <Text style={styles.accordionText}>{t("profile.interests")}</Text>
                     <Text style={styles.chevron}>{Interesses ? '▲' : '▼'}</Text>
                     </View>
                     {Interesses && (
                     <Text style={styles.description}>
-                      {profile.interests || "Geen interesses beschikbaar."}
+                      {profile.interests || t("profile.noInterests")}
                     </Text>
                     )}
                   </View>
@@ -433,18 +430,18 @@ useFocusEffect(
                       style={styles.contactButton}
                       onPress={saveChanges}
                       accessible
-                      accessibilityLabel="Opslaan"
+                      accessibilityLabel={t("profile.save")}
                     >
-                      <Text style={styles.contactButtonText}>Opslaan</Text>
+                      <Text style={styles.contactButtonText}>{t("profile.save")}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={styles.dotButton}
                       onPress={cancelEditing}
                       accessible
-                      accessibilityLabel="Annuleren"
+                      accessibilityLabel={t("profile.cancel")}
                     >
-                      <Text style={styles.dotButtonText}>Annuleren</Text>
+                      <Text style={styles.dotButtonText}>{t("profile.cancel")}</Text>
                     </TouchableOpacity>
                     </>
                   ) : (
@@ -455,9 +452,9 @@ useFocusEffect(
                       style={styles.dotButton}
                       onPress={startEditing}
                       accessible
-                      accessibilityLabel="Profiel bewerken"
+                      accessibilityLabel={t("profile.edit")}
                       >
-                      <Text style={styles.dotButtonText}>Bewerken</Text>
+                      <Text style={styles.dotButtonText}>{t("profile.edit")}</Text>
                       </TouchableOpacity>
                       ) : null
                     }
@@ -465,7 +462,7 @@ useFocusEffect(
                     <TouchableOpacity
                       style={styles.contactButton}
                       accessible
-                      accessibilityLabel="Contacteer gebruiker"
+                      accessibilityLabel={t("profile.contact")}
                       onPress={() => {
                     const email = profile.email;
                     if (email) {
@@ -474,7 +471,7 @@ useFocusEffect(
                     }
                   }}
                 >
-                  <Text style={styles.contactButtonText}>Contact</Text>
+                  <Text style={styles.contactButtonText}>{t("profile.contact")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -485,200 +482,209 @@ useFocusEffect(
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#efefef",
-  },
-  container: {
-    alignItems: "center",
-    paddingVertical: 30,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 20,
-    width: 360,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  backArrow: {
-    fontSize: 24,
-    color: "#555",
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginTop: 8,
-  },
-  userName: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  infoSection: {
-    alignItems: "flex-start",
-  },
-  nameBox: {
-    marginVertical: 10,
-  },
-  nameText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-    marginBottom: 6,
-  },
-  age: {
-    color: "#1d3b84",
-    fontSize: 14,
-    marginRight: 10,
-  },
-  tag: {
-    backgroundColor: "#1d3b84",
-    borderRadius: 14,
-    paddingVertical: 4,
-    paddingHorizontal: 10,  
-  },
-  tagText: {
-    color: "#fff",
-    fontSize: 12,
-  },
-  location: {
-    color: "#555",
-    fontSize: 14,
-    marginBottom: 6,
-    flex: 1,
-  },
-  locationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-    paddingVertical: 2,
-  },
-  locationIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },  reviewContainer: {
-    marginBottom: 12,
-  },
-  reviewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  starsSection: {
-    flex: 1,
-  },
-  stars: {
-    // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
-    color: "#ffcc00",
-    fontSize: 18,
-  },
-  starFilled: {
-    color: "#ffcc00",
-    fontSize: 20,
-    marginRight: 2,
-  },
-  starEmpty: {
-    color: "#ddd",
-    fontSize: 20,
-    marginRight: 2,
-  },
-  reviews: {
-    fontSize: 13,
-    color: "#888",
-  },
-  rateButton: {
-    backgroundColor: "#fdb924",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginLeft: 10,
-  },
-  rateButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  sectionTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginTop: 10,
-    marginBottom: 6,
-  },
-  description: {
-    fontSize: 14,
-    color: "#444",
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  accordion: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-    paddingVertical: 12,
-  },
-  accordionText: {
-    fontSize: 15,
-    color: "#555",
-  },
-  chevron: {
-    fontSize: 16,
-    color: "#888",
-  },
-  buttonGroup: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 20,
-  },
-  dotButton: {
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  dotButtonText: {
-    fontSize: 16,
-  },
-  contactButton: {
-    backgroundColor: "#fdb924",
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 28,
-  },  
-  contactButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 10,
-    fontSize: 14,
-    width: "100%",
-    color: "#000",
-  },
-});
+function createProfileStyles(theme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    container: {
+      alignItems: "center",
+      paddingVertical: 30,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    card: {
+      backgroundColor: theme.background,
+      borderColor: "grey",
+      borderWidth: 1,
+      borderRadius: 24,
+      padding: 20,
+      width: 360,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 5,
+    },
+    backArrow: {
+      fontSize: 24,
+      color: theme.detailsText,
+    },
+    imageContainer: {
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    profileImage: {
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      marginTop: 8,
+    },
+    userName: {
+      fontWeight: "bold",
+      fontSize: 16,
+      color: theme.text,
+    },
+    infoSection: {
+      alignItems: "flex-start",
+    },
+    nameBox: {
+      marginVertical: 10,
+    },
+    nameText: {
+      fontSize: 14,
+      color: theme.text,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 4,
+      marginBottom: 6,
+    },
+    age: {
+      color: theme.text,
+      fontSize: 14,
+      marginRight: 10,
+    },
+    tag: {
+      backgroundColor: theme.primary,
+      borderRadius: 14,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+    },
+    tagText: {
+      color: theme.text,
+      fontSize: 12,
+    },
+    location: {
+      color: theme.detailsText,
+      fontSize: 14,
+      marginBottom: 6,
+      flex: 1,
+    },
+    locationContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 6,
+      paddingVertical: 2,
+    },
+    locationIcon: {
+      fontSize: 16,
+      marginRight: 6,
+    },
+    reviewContainer: {
+      marginBottom: 12,
+    },
+    reviewRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 10,
+    },
+    starsSection: {
+      flex: 1,
+    },
+    stars: {
+      // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
+      color: "#ffcc00",
+      fontSize: 18,
+    },
+    starFilled: {
+      color: "#ffcc00",
+      fontSize: 20,
+      marginRight: 2,
+    },
+    starEmpty: {
+      color: "#ddd",
+      fontSize: 20,
+      marginRight: 2,
+    },
+    reviews: {
+      fontSize: 13,
+      color: "#888",
+    },
+    rateButton: {
+      backgroundColor: "#fdb924",
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      marginLeft: 10,
+    },
+    rateButtonText: {
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: "bold",
+    },
+    sectionTitle: {
+      fontWeight: "bold",
+      fontSize: 16,
+      marginTop: 10,
+      marginBottom: 6,
+      color: theme.text,
+    },
+    description: {
+      fontSize: 14,
+      color: theme.detailsText,
+      lineHeight: 20,
+      marginBottom: 10,
+    },
+    accordion: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderTopWidth: 1,
+      borderTopColor: "grey",
+      paddingVertical: 12,
+    },
+    accordionText: {
+      fontSize: 15,
+      color: theme.detailsText,
+    },
+    chevron: {
+      fontSize: 16,
+      color: "#888",
+    },
+    buttonGroup: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 20,
+    },
+    dotButton: {
+      borderWidth: 2,
+      borderColor: theme.primary,
+      borderRadius: 20,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+    },
+    dotButtonText: {
+      fontSize: 16,
+      color: theme.text,
+    },
+    contactButton: {
+      backgroundColor: "#fdb924",
+      borderRadius: 20,
+      paddingVertical: 10,
+      paddingHorizontal: 28,
+    },
+    contactButtonText: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: 16,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: "#ccc",
+      borderRadius: 8,
+      padding: 8,
+      marginBottom: 10,
+      fontSize: 14,
+      width: "100%",
+      color: theme.text,
+      placeholderTextColor: theme.text,
+    },
+  });
+}

@@ -28,6 +28,7 @@ import TipsFeed from "./components/TipsFeed";
 import AddForum from './components/AddForum';
 import TempAccount from "./components/TempAccount";
 import StarRating from "./components/StarRating";
+import Onboard from "./components/Onboard";
 import { hasRole } from "./utils/roleUtils";
 import BussinessPage from "./components/businessPage";
 const Stack = createStackNavigator();
@@ -57,7 +58,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
     >
       <Tab.Screen name="Products">
 
-        {props => <Products {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
+        {props => <Onboard {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
 
       </Tab.Screen>
       <Tab.Screen name="AddProduct">
@@ -66,10 +67,10 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 
       {/* <Tab.Screen name="BountyBoard" component={BountyBoard} /> */}
 
-      <Tab.Screen name="BusinessPage">
-        {props => <BussinessPage {...props} token={token} user={user} theme={theme} />}
-      </Tab.Screen>
 
+      <Tab.Screen name="BusinessPage" >
+        {props => <BusinessPage {...props} token={token} user={user} theme={theme} />}
+      </Tab.Screen>
 
       <Tab.Screen name="BountyBoard">
         {props => <BountyBoard {...props} token={token} user={user} theme={theme} />}
@@ -78,13 +79,13 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
         {props => <AddPost {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {props => <Profile {...props} token={token} user={user} profileUser={user}/>}
+        {props => <Profile {...props} token={token} user={user} theme={theme} />}
       </Tab.Screen>
       <Tab.Screen name="LightDark">
         {props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
       </Tab.Screen>
       <Tab.Screen name="Frontpage">
-        {props => <Frontpage {...props} token={token} user={user} />}
+        {props => <Frontpage {...props} token={token} user={user} theme={theme}/>}
       </Tab.Screen>
     </Tab.Navigator>
   );
@@ -110,8 +111,8 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState(null);
-  const [systemDefault, setSystemDefault] = useState(false); 
+  const [theme, setTheme] = useState(themes.light); // Default theme
+  const [systemDefault, setSystemDefault] = useState(true); 
 
   const colorScheme = useColorScheme();
   const navigationRef = useRef();
@@ -154,14 +155,14 @@ export default function App() {
           setTheme(themes[data.theme]);
           setSystemDefault(false);
         } else if (data.theme === "system" || data.theme === null) {
-          setTheme(null); // theme is null → volg systeem
+          setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
           setSystemDefault(true);
         } else {
-          setTheme(null);
+          setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
           setSystemDefault(true);
         }
       } catch (e) {
-        setTheme(null);
+        setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
         setSystemDefault(true);
       }
     }
@@ -220,13 +221,13 @@ export default function App() {
         {!token ? (
           <>
             <Stack.Screen name="Login">
-              {props => <Login {...props} onLogin={handleLogin} />}
+              {props => <Login {...props} onLogin={handleLogin} theme={theme} />}
             </Stack.Screen>
             <Stack.Screen name="Register">
-              {props => <Register {...props} onLogin={handleLogin} />}
+              {props => <Register {...props} onLogin={handleLogin} theme={theme} />}
             </Stack.Screen>
             <Stack.Screen name="Temp">
-              {props => <TempAccount {...props} onLogin={handleLogin} />}
+              {props => <TempAccount {...props} onLogin={handleLogin} theme={theme} />}
             </Stack.Screen>
           </>
         ) : (
@@ -240,7 +241,6 @@ export default function App() {
                   onLogout={handleLogout}
                   theme={theme}
                   setTheme={setTheme}
-                  themes={themes}
                   userToChat={userToChat}
                   setUserToChat={setUserToChat}
                 />
@@ -251,23 +251,23 @@ export default function App() {
             </Stack.Screen>
             <Stack.Screen name="ProductChat">
               {props => (
-                <ProductChat {...props} token={token} user={user} userToChat={userToChat} />
+                  <ProductChat {...props} token={token} user={user} userToChat={userToChat} theme={theme} />
               )}
             </Stack.Screen>
             <Stack.Screen name="ChatOverview">
-              {props => <ChatOverview {...props} token={token} user={user} />}
+                {props => <ChatOverview {...props} token={token} user={user} theme={theme} />}
             </Stack.Screen>
             <Stack.Screen name="EditProducts">
-              {props => <EditProducts {...props} token={token} user={user} />}
+                {props => <EditProducts {...props} token={token} user={user} theme={theme} />}
             </Stack.Screen>
             <Stack.Screen name="EditPosts">
-              {props => <EditPosts {...props} token={token} user={user} />}
+                {props => <EditPosts {...props} token={token} user={user} theme={theme} />}
             </Stack.Screen>
             <Stack.Screen name="AddForum">
-              {props => <AddForum {...props} token={token} user={user} />}
+                {props => <AddForum {...props} token={token} user={user} theme={theme} />}
             </Stack.Screen>
             <Stack.Screen name="StarRating">
-              {props => <StarRating {...props} token={token} user={user} />}
+                {props => <StarRating {...props} token={token} user={user} theme={theme} />}
             </Stack.Screen>
           </>
         )}

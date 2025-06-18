@@ -6,7 +6,9 @@ import { API_URL } from '@env';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format, parseISO } from "date-fns"; // Add this import at the top
 
-export default function BussinessPage({ navigation,token }) {
+//  export default function BountyBoard({ navigation,  }) {
+
+export default function BussinessPage({ navigation,token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,6 +18,8 @@ export default function BussinessPage({ navigation,token }) {
     const [agendaVisible, setAgendaVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [eventModalVisible, setEventModalVisible] = useState(false);
+    const styles = createBusinessPageStyles(theme);
+
 
     // Fetch all companies for filters
     const fetchCompanies = async () => {
@@ -117,7 +121,7 @@ export default function BussinessPage({ navigation,token }) {
     const closeEventModal = () => {
         setEventModalVisible(false);
         setSelectedEvent(null);
-        // setAgendaVisible(true); // Remove this line so agenda does not reopen
+        setAgendaVisible(true); // Reopen agenda modal when closing event modal
     };
 
     // Place this useEffect INSIDE the component, not after the styles!
@@ -154,7 +158,7 @@ export default function BussinessPage({ navigation,token }) {
             </Animated.View>
 
             {/* Filter Row (copied from Products.jsx) */}
-            <Animated.View style={[styles.filterRow, { top: filterTop, height: 50, zIndex: 30, backgroundColor: '#fff' }]}>
+            <Animated.View style={[styles.filterRow, { top: filterTop, height: 50, zIndex: 30, backgroundColor: theme.filterRowBg }]}>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -169,7 +173,7 @@ export default function BussinessPage({ navigation,token }) {
                             </TouchableOpacity>
                         ))
                     ) : (
-                        <Text style={{color: '#888', marginLeft: 16}}>No companies found</Text>
+                        <Text style={{color: theme.text, marginLeft: 16}}>No companies found</Text>
                     )}
                 </ScrollView>
             </Animated.View>
@@ -263,7 +267,7 @@ export default function BussinessPage({ navigation,token }) {
                                     </View>
                                 ))
                             ) : (
-                                <Text style={{color: '#888', textAlign: 'center'}}>No events in agenda</Text>
+                                <Text style={{color: theme.text, textAlign: 'center'}}>No events in agenda</Text>
                             )}
                         </ScrollView>
                         <TouchableOpacity style={styles.closeModalButton} onPress={() => setAgendaVisible(false)}>
@@ -328,269 +332,272 @@ export default function BussinessPage({ navigation,token }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff"
-    },
-    topBar: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 100,
-        backgroundColor: "#2A4BA0",
-        justifyContent: "center",
-        paddingTop: 25,
-        paddingHorizontal: 16,
-        zIndex: 20,
-    },
-    topBarRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center"
-    },
-    topBarText: {
-        color: "#fff",
-        fontSize: 24,
-        fontWeight: "bold"
-    },
-    topBarIcons: {
-        flexDirection: 'row',
-        width: 125,
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    },
-    header: {
-        position: "absolute",
-        top: 100,
-        left: 0,
-        right: 0,
-        backgroundColor: '#2A4BA0',
-        justifyContent: "center",
-        alignItems: "flex-start",
-        paddingHorizontal: 16,
-        zIndex: 10,
-    },
-    headerText: {
-        color: "white",
-        fontSize: 64,
-        fontWeight: '300'
-    },
-    headerTextBold: {
-        fontWeight: 'bold',
-    },
-    filterRow: {
-        position: "absolute",
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        flexDirection: "row",
-        alignItems: "center",
-        zIndex: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: "#eee",
-        gap: 10,
-        flex: 1,
-    },
-    filterScrollContent: {
-        alignItems: "center"
-    },
-    filter: {
-        paddingHorizontal: 10,
-        marginHorizontal: 8,
-        paddingVertical: 7,
-        borderWidth: 1,
-        borderColor: 'grey',
-        borderRadius: 100,
-    },
-    activeFilter: {
-        backgroundColor: '#FFC83A'
-    },
-    scrollViewContent: {
-        paddingTop: 260, // 100 topbar + 150 header + margin
-        paddingBottom: 0,
-    },
-    loadingText: {
-        paddingTop: 300,
-        fontSize: 24,
-        color: 'black',
-        alignSelf: 'center'
-    },
-    eventContainer: {
-        backgroundColor: '#EAF0FB',
-        borderRadius: 12,
-        padding: 18,
-        marginBottom: 18,
-        marginHorizontal: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    eventTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#2A4BA0',
-        marginBottom: 4,
-    },
-    eventDate: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 8,
-    },
-    eventDescription: {
-        fontSize: 16,
-        color: '#222',
-    },
-    agendaButton: {
-        position: "absolute",
-        bottom: 30, 
-        right: 10, 
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#F9B023", 
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 20,
-        zIndex: 30,
-    },
-    agendaButtonText: {
-        color: "white",
-        fontSize: 16,
-        fontWeight: "bold",
-        marginRight: 5,
-    },
-    // Modal styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'hotpink',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 24,
-        width: '85%',
-        alignItems: 'flex-start', // left align for agenda
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    modalTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#2A4BA0',
-        alignSelf: 'center',
-    },
-    agendaDateSection: {
-        marginBottom: 18,
-        width: "100%",
-    },
-    agendaDateHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#2A4BA0',
-        marginBottom: 8,
-        marginLeft: 2,
-    },
-    agendaCard: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        backgroundColor: "#F4F6FA",
-        borderRadius: 10,
-        padding: 12,
-        marginBottom: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 2,
-        elevation: 1,
-        width: "100%",
-    },
-    agendaCardTimeBlock: {
-        width: 55,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 10,
-    },
-    agendaCardTime: {
-        fontSize: 15,
-        color: "#2A4BA0",
-        fontWeight: "bold",
-        marginTop: 2,
-    },
-    agendaCardContent: {
-        flex: 1,
-    },
-    agendaCardTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#222",
-        marginBottom: 2,
-    },
-    agendaCardDesc: {
-        fontSize: 14,
-        color: "#555",
-    },
-    closeModalButton: {
-        marginTop: 20,
-        backgroundColor: '#2A4BA0',
-        paddingVertical: 8,
-        paddingHorizontal: 24,
-        borderRadius: 10,
-        alignSelf: 'center',
-    },
-    closeModalButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
-    // Event detail modal styles
-    eventModalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 28,
-        width: '85%',
-        alignItems: 'flex-start',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    eventModalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#2A4BA0',
-        marginBottom: 10,
-        alignSelf: 'center',
-    },
-    eventModalDate: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 8,
-        alignSelf: 'center',
-    },
-    eventModalCompany: {
-        fontSize: 15,
-        color: '#222',
-        marginBottom: 6,
-    },
-    eventModalLocation: {
-        fontSize: 15,
-        color: '#222',
-        marginBottom: 6,
-    },
-    eventModalDesc: {
-        fontSize: 16,
-        color: '#444',
-        marginTop: 10,
-        marginBottom: 10,
-    },
-});
+function createBusinessPageStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+        },
+        topBar: {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 100,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            paddingTop: 25,
+            paddingHorizontal: 16,
+            zIndex: 20,
+        },
+        topBarRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center"
+        },
+        topBarText: {
+            color: "#fff",
+            fontSize: 24,
+            fontWeight: "bold"
+        },
+        topBarIcons: {
+            flexDirection: 'row',
+            width: 125,
+            justifyContent: 'space-between',
+            alignItems: 'center'
+        },
+        header: {
+            position: "absolute",
+            top: 100,
+            left: 0,
+            right: 0,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            alignItems: "flex-start",
+            paddingHorizontal: 16,
+            zIndex: 10,
+        },
+        headerText: {
+            color: theme.headerText,
+            fontSize: 64,
+            fontWeight: '300'
+        },
+        headerTextBold: {
+            fontWeight: 'bold',
+        },
+        filterRow: {
+            position: "absolute",
+            left: 0,
+            right: 0,
+            backgroundColor: theme.filterRowBg,
+            flexDirection: "row",
+            alignItems: "center",
+            zIndex: 15,
+            borderBottomWidth: 1,
+            borderBottomColor: "#eee",
+            gap: 10,
+            flex: 1,
+        },
+        filterScrollContent: {
+            alignItems: "center"
+        },
+        filter: {
+            paddingHorizontal: 10,
+            marginHorizontal: 8,
+            paddingVertical: 7,
+            borderWidth: 1,
+            borderColor: 'grey',
+            borderRadius: 100,
+        },
+        activeFilter: {
+            backgroundColor: theme.activeFilter,
+        },
+        scrollViewContent: {
+            paddingTop: 260, // 100 topbar + 150 header + margin
+            paddingBottom: 0,
+        },
+        loadingText: {
+            paddingTop: 300,
+            fontSize: 24,
+            color: theme.text,
+            alignSelf: 'center'
+        },
+        eventContainer: {
+            backgroundColor: '#EAF0FB',
+            borderRadius: 12,
+            padding: 18,
+            marginBottom: 18,
+            marginHorizontal: 8,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
+        },
+        eventTitle: {
+            fontSize: 22,
+            fontWeight: 'bold',
+            color: '#2A4BA0',
+            marginBottom: 4,
+        },
+        eventDate: {
+            fontSize: 16,
+            color: '#555',
+            marginBottom: 8,
+        },
+        eventDescription: {
+            fontSize: 16,
+            color: '#222',
+        },
+        agendaButton: {
+            position: "absolute",
+            bottom: 30,
+            right: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#F9B023",
+            paddingVertical: 10,
+            paddingHorizontal: 15,
+            borderRadius: 20,
+            zIndex: 30,
+        },
+        agendaButtonText: {
+            color: "white",
+            fontSize: 16,
+            fontWeight: "bold",
+            marginRight: 5,
+        },
+        // Modal styles
+        modalOverlay: {
+            flex: 1,
+            backgroundColor: 'hotpink',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        modalContent: {
+            backgroundColor: '#fff',
+            borderRadius: 16,
+            padding: 24,
+            width: '85%',
+            alignItems: 'flex-start', // left align for agenda
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 5,
+        },
+        modalTitle: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            marginBottom: 16,
+            color: '#2A4BA0',
+            alignSelf: 'center',
+        },
+        agendaDateSection: {
+            marginBottom: 18,
+            width: "100%",
+        },
+        agendaDateHeader: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: '#2A4BA0',
+            marginBottom: 8,
+            marginLeft: 2,
+        },
+        agendaCard: {
+            flexDirection: "row",
+            alignItems: "flex-start",
+            backgroundColor: "#F4F6FA",
+            borderRadius: 10,
+            padding: 12,
+            marginBottom: 8,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.07,
+            shadowRadius: 2,
+            elevation: 1,
+            width: "100%",
+        },
+        agendaCardTimeBlock: {
+            width: 55,
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: 10,
+        },
+        agendaCardTime: {
+            fontSize: 15,
+            color: "#2A4BA0",
+            fontWeight: "bold",
+            marginTop: 2,
+        },
+        agendaCardContent: {
+            flex: 1,
+        },
+        agendaCardTitle: {
+            fontSize: 16,
+            fontWeight: "bold",
+            color: "#222",
+            marginBottom: 2,
+        },
+        agendaCardDesc: {
+            fontSize: 14,
+            color: "#555",
+        },
+        closeModalButton: {
+            marginTop: 20,
+            backgroundColor: '#2A4BA0',
+            paddingVertical: 8,
+            paddingHorizontal: 24,
+            borderRadius: 10,
+            alignSelf: 'center',
+        },
+        closeModalButtonText: {
+            color: '#fff',
+            fontSize: 16,
+            fontWeight: 'bold'
+        },
+        // Event detail modal styles
+        eventModalContent: {
+            backgroundColor: '#fff',
+            borderRadius: 16,
+            padding: 28,
+            width: '85%',
+            alignItems: 'flex-start',
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 5,
+        },
+        eventModalTitle: {
+            fontSize: 22,
+            fontWeight: 'bold',
+            color: '#2A4BA0',
+            marginBottom: 10,
+            alignSelf: 'center',
+        },
+        eventModalDate: {
+            fontSize: 16,
+            color: '#555',
+            marginBottom: 8,
+            alignSelf: 'center',
+        },
+        eventModalCompany: {
+            fontSize: 15,
+            color: '#222',
+            marginBottom: 6,
+        },
+        eventModalLocation: {
+            fontSize: 15,
+            color: '#222',
+            marginBottom: 6,
+        },
+        eventModalDesc: {
+            fontSize: 16,
+            color: '#444',
+            marginTop: 10,
+            marginBottom: 10,
+        },
+    });
+}
+
