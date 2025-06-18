@@ -68,7 +68,6 @@ export default function EditProducts({ navigation, token, user, theme }) {
          <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollViewContent}
-            style={{paddingHorizontal: 16}}
          >
             {loading ? (
                <View style={styles.loadingContainer}>
@@ -141,18 +140,14 @@ function createEditProductsStyles(theme) {
          alignContent: 'center'
       },
       scrollViewContent: {
-         paddingTop: 16,
-         paddingBottom: 40,
-         paddingHorizontal: 0, // Remove horizontal padding
+         alignItems: "center", // Center cards horizontally
       },
       chatCard: {
          flexDirection: "row",
          alignItems: "center",
          backgroundColor: theme.background,
          borderRadius: 16,
-         padding: 16,
-         marginBottom: 12, // Only bottom margin for spacing
-         // Remove marginHorizontal and marginVertical
+         width: "95%",
       },
       loadingContainer: {
          flex: 1,
