@@ -15,8 +15,9 @@ import { API_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { Icon } from "react-native-elements";
 
-export default function Profile({ token, navigation, route, user, theme }) {
+export default function Profile({ token, navigation, route, user, theme, onLogout }) {
   const [userProfile, setUserProfile] = useState(null);
   const product = route.params?.product || null;
   const [profile, setProfile] = useState(null);
@@ -28,6 +29,13 @@ export default function Profile({ token, navigation, route, user, theme }) {
   const { t } = useTranslation();
 
   const DEFAULT_AVATAR_URL = "https://www.gravatar.com/avatar/?d=mp&s=120";
+
+  // TEMP: Logout function for testing
+  const tempLogout = async () => {
+      if (onLogout) {
+          await onLogout();
+      }
+  };
 
   const fetchProfile = async (targetUserId) => {
     try {
@@ -458,6 +466,7 @@ useFocusEffect(
                       </TouchableOpacity>
                       ) : null
                     }
+                    
 
                     <TouchableOpacity
                       style={styles.contactButton}
@@ -473,10 +482,14 @@ useFocusEffect(
                 >
                   <Text style={styles.contactButtonText}>{t("profile.contact")}</Text>
                 </TouchableOpacity>
+                
               </>
             )}
           </View>
         </View>
+        <TouchableOpacity style={styles.logoutButton} onPress={tempLogout} accessible accessibilityLabel={t("profile.logout")}>
+        <Icon name="log-out" type="feather" size={32} color="#fff" />
+      </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -685,6 +698,25 @@ function createProfileStyles(theme) {
       width: "100%",
       color: theme.text,
       placeholderTextColor: theme.text,
+    },
+    logoutButton: {
+      backgroundColor: "#e74c3c",
+      borderRadius: 24,
+      padding: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 24,
+      marginBottom: 12,
+      alignSelf: "center",
+      width: 60,
+      height: 60,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      elevation: 4,
+    },
+    logoutIcon: {
+      color: "#fff",
     },
   });
 }

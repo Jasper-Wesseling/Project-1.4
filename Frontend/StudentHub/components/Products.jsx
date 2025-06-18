@@ -8,7 +8,7 @@ import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
-export default function Products({ navigation, token, user, onLogout, setUserToChat, theme }) {
+export default function Products({ navigation, token, user, setUserToChat, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,13 +103,6 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
         return price ? priceFormat.format(price / 100) : '€0.00';
     }
 
-    // TEMP: Logout function for testing
-    const tempLogout = async () => {
-        if (onLogout) {
-            await onLogout();
-        }
-    };
-
     return (
         <View style={styles.container}>
             <SearchBar
@@ -124,9 +117,7 @@ export default function Products({ navigation, token, user, onLogout, setUserToC
                 <View style={styles.topBarRow}>
                     <Text style={styles.topBarText}>{t("products.hey", { name })}</Text>
                     <View style={styles.topBarIcons}>
-                        <TouchableOpacity onPress={tempLogout}>
-                            <Icon name="trophy" type="ionicon" size={32} color="#fff"/>
-                        </TouchableOpacity>
+                        
                         <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
                             <Icon name="plus" type="feather" size={34} color="#fff"/>
                         </TouchableOpacity>

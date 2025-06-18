@@ -65,7 +65,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 			</Tab.Screen>
 			<Tab.Screen name="Products">
 
-				{props => <Products {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
+				{props => <Products {...props} token={token} user={user} theme={theme} setUserToChat={setUserToChat}/>}
 
 			</Tab.Screen>
 			
@@ -84,7 +84,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 				{props => <AddPost {...props} token={token} user={user} theme={theme}/>}
 			</Tab.Screen>
 			<Tab.Screen name="Profile">
-				{props => <Profile {...props} token={token} user={user} theme={theme} />}
+				{props => <Profile {...props} token={token} user={user} theme={theme} onLogout={onLogout} />}
 			</Tab.Screen>
 			<Tab.Screen name="LightDark">
 				{props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
