@@ -1,7 +1,8 @@
 import { Modal, TextInput, View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
-export default function SearchBar({ visible, value, onChange, onClose, theme }) {
+// to prevent run time error undifind
+export default function SearchBar({ visible, value, onChange, onClose, theme = { searchBg: "#fff" } }) {
     const styles = createSearchBarStyles(theme);
     const { t } = useTranslation();
     return (

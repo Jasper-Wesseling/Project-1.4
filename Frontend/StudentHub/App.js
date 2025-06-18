@@ -258,7 +258,7 @@ export default function App() {
 							)}
 						</Stack.Screen>
 						<Stack.Screen name="ChatOverview">
-								{props => <ChatOverview {...props} token={token} user={user} theme={theme} />}
+							{props => <ChatOverview {...props} token={token} user={user} theme={theme} />}
 						</Stack.Screen>
 						<Stack.Screen name="EditProducts">
 								{props => <EditProducts {...props} token={token} user={user} theme={theme} />}
