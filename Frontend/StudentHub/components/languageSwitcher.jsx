@@ -9,7 +9,6 @@ export default function LanguageSwitcher({ theme }) {
   };
 
   const currentLanguage = i18n.language;
-  console.log(theme);
 
   return (
     <View style={styles.container}>
