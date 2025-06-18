@@ -1,9 +1,11 @@
 import { Image, Text, View, StyleSheet } from "react-native";
 import { API_URL } from '@env';
 import { ThemeContext } from "react-native-elements";
+import { useTranslation } from "react-i18next";
 
 export default function ProductPreview({ product, formatPrice, theme }) {
     const styles = createProductPreviewStyles(theme);
+    const { t } = useTranslation();
     if (!product) return null;
 
     return (
@@ -20,7 +22,7 @@ export default function ProductPreview({ product, formatPrice, theme }) {
                     <Text style={styles.studyTag}>{product.study_tag}</Text>
                 </View>
                 <View style={styles.priceRow}>
-                    <Text style={styles.startingFrom}>Starting from</Text>
+                    <Text style={styles.startingFrom}>{t("productPreview.startingFrom")}</Text>
                     <Text style={styles.price}>{formatPrice(product.price)}</Text>
                 </View>
             </View>

@@ -8,13 +8,14 @@ import {
     Alert,
 } from "react-native";
 import { API_URL } from "@env";
-
+import { useTranslation } from "react-i18next";
 
 export default function StarRating({ navigation, token, route, theme }) {
     const [rating, setRating] = useState(0);
     const { userProfile, onGoBack } = route.params;
   const [hoveredRating, setHoveredRating] = useState(0);
   const styles = createStarRatingStyles(theme);
+  const { t } = useTranslation();
 
     const handleStarPress = (starValue) => {
         setRating(starValue);
@@ -22,45 +23,42 @@ export default function StarRating({ navigation, token, route, theme }) {
 
     const submitRating = async() => {
         if (rating === 0) {
-            Alert.alert("Selecteer een beoordeling", "Kies een aantal sterren om je beoordeling te geven.");
-      return;
-    }
-    
+            Alert.alert(t("starRating.selectTitle"), t("starRating.selectMsg"));
+            return;
+        }
+        try {
+            const response = await fetch(`${API_URL}/api/reviews/new?user=${userProfile}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ rating }),
+            });
 
-    try {
-      const response = await fetch(`${API_URL}/api/reviews/new?user=${userProfile}`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rating }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-        Alert.alert(
-        "Beoordeling verzonden!",
-        `Je hebt ${rating} ${rating === 1 ? 'ster' : 'sterren'} gegeven.`,
-        [
-            {
-            text: "OK",
-            onPress: () => {
-              if (onGoBack) onGoBack();
-              navigation.goBack();
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-            }
-        ]
-        );
-    } catch (error) {
-      console.error("Error submitting rating:", error);
-        Alert.alert("Fout", "Er is een probleem opgetreden bij het verzenden van je beoordeling. Probeer het later opnieuw.");
-        return;
-    }
-    
-  };
+
+            Alert.alert(
+                t("starRating.sentTitle"),
+                t("starRating.sentMsg", { rating, star: t(rating === 1 ? "starRating.star" : "starRating.stars") }),
+                [
+                    {
+                        text: "OK",
+                        onPress: () => {
+                            if (onGoBack) onGoBack();
+                            navigation.goBack();
+                        }
+                    }
+                ]
+            );
+        } catch (error) {
+            console.error("Error submitting rating:", error);
+            Alert.alert(t("starRating.errorTitle"), t("starRating.errorMsg"));
+            return;
+        }
+    };
 
   const resetRating = () => {
     setRating(0);
@@ -77,7 +75,7 @@ export default function StarRating({ navigation, token, route, theme }) {
           onPress={() => handleStarPress(i)}
           activeOpacity={0.7}
           accessible
-          accessibilityLabel={`${i} ${i === 1 ? 'ster' : 'sterren'}`}
+          accessibilityLabel={`${i} ${t(i === 1 ? "starRating.star" : "starRating.stars")}`}
         >
           <Text style={[
             styles.displayStar,
@@ -99,14 +97,14 @@ export default function StarRating({ navigation, token, route, theme }) {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
             accessible
-            accessibilityLabel="Ga terug"
+            accessibilityLabel={t("starRating.goBack")}
           >
             <Text style={styles.backArrow}>←</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Geef je beoordeling</Text>
+          <Text style={styles.title}>{t("starRating.title")}</Text>
           <Text style={styles.subtitle}>
-            Hoe tevreden ben je? Selecteer het aantal sterren.
+            {t("starRating.subtitle")}
           </Text>
 
           <View style={styles.starsContainer}>
@@ -114,13 +112,14 @@ export default function StarRating({ navigation, token, route, theme }) {
           </View>
 
           <Text style={styles.ratingText}>
-            {rating === 0 ? "Geen beoordeling" : 
-             `${rating} ${rating === 1 ? 'ster' : 'sterren'}`}
+            {rating === 0
+              ? t("starRating.noRating")
+              : `${rating} ${t(rating === 1 ? "starRating.star" : "starRating.stars")}`}
           </Text>
 
           <View style={styles.ratingLabels}>
-            <Text style={styles.labelText}>Slecht</Text>
-            <Text style={styles.labelText}>Uitstekend</Text>
+            <Text style={styles.labelText}>{t("starRating.bad")}</Text>
+            <Text style={styles.labelText}>{t("starRating.excellent")}</Text>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -128,9 +127,9 @@ export default function StarRating({ navigation, token, route, theme }) {
               style={styles.resetButton}
               onPress={resetRating}
               accessible
-              accessibilityLabel="Reset beoordeling"
+              accessibilityLabel={t("starRating.reset")}
             >
-              <Text style={styles.resetButtonText}>Reset</Text>
+              <Text style={styles.resetButtonText}>{t("starRating.reset")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -141,18 +140,19 @@ export default function StarRating({ navigation, token, route, theme }) {
               onPress={submitRating}
               disabled={rating === 0}
               accessible
-              accessibilityLabel="Verzend beoordeling"
+              accessibilityLabel={t("starRating.send")}
             >
               <Text style={[
                 styles.submitButtonText,
                 rating === 0 && styles.disabledButtonText
               ]}>
-                Verzenden
+                {t("starRating.send")}
               </Text>
             </TouchableOpacity>
-          </View>          <View style={styles.instructionContainer}>
+          </View>
+          <View style={styles.instructionContainer}>
             <Text style={styles.instructionText}>
-              💡 Tip: Tik op een ster om je beoordeling te geven van 1 tot 5 sterren.
+              {t("starRating.tip")}
             </Text>
           </View>
         </View>

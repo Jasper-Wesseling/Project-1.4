@@ -1,7 +1,9 @@
 import { Modal, TextInput, View, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function SearchBar({ visible, value, onChange, onClose, theme }) {
     const styles = createSearchBarStyles(theme);
+    const { t } = useTranslation();
     return (
         <Modal
             visible={visible}
@@ -13,7 +15,7 @@ export default function SearchBar({ visible, value, onChange, onClose, theme }) 
                 <View style={styles.modalContent}>
                     <TextInput
                         style={styles.input}
-                        placeholder="Search..."
+                        placeholder={t("searchBar.placeholder")}
                         value={value}
                         onChangeText={onChange}
                         onSubmitEditing={onClose}

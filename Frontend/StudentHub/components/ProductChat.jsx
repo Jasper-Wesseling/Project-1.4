@@ -3,6 +3,7 @@ import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, Keyboard
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
+import { useTranslation } from "react-i18next";
 
 
 export default function ProductChat({ navigation, token, user, route, theme }) {
@@ -12,6 +13,7 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
     const [pageHeight, setPageHeight] = useState(0);
     const { product, userToChat, productTitle, receiverName, bountyTitle, bounty } = route.params;
     const styles = createProductChatStyles(theme);
+    const { t } = useTranslation();
 
     const fetchChats = async () => {
         let query = '';
@@ -145,7 +147,7 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
                         style={[styles.input, {width: '80%'}]}
                         onChangeText={setMessage}
                         value={message}
-                        placeholder="Type something..."
+                        placeholder={t("productChat.typeSomething")}
                         onFocus={() => setPageHeight(325)}
                         onBlur={() => setPageHeight(0)}
                         returnKeyType="send"

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { API_URL } from '@env';
 import { hasRole } from "../utils/roleUtils";
+// Add translation import
+import { useTranslation } from "react-i18next";
 
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token, theme }) {
     const [fullscreenImg, setFullscreenImg] = useState(false);
@@ -14,6 +16,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     const [editPrice, setEditPrice] = useState('');
     const [saving, setSaving] = useState(false);
     const styles = createProductModalStyles(theme);
+    const { t } = useTranslation();
 
     useEffect(() => {
         setEditMode(false); // Reset edit mode when product changes
@@ -60,11 +63,11 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                     price: parseFloat(editPrice),
                 }),
             });
-            if (!res.ok) throw new Error("Edit failed");
+            if (!res.ok) throw new Error(t("productModal.editFailed"));
             setEditMode(false);
-            Alert.alert("Success", "Product updated!");
+            Alert.alert(t("productModal.success"), t("productModal.productUpdated"));
         } catch (err) {
-            Alert.alert("Error", "Could not save changes.");
+            Alert.alert(t("productModal.error"), t("productModal.saveError"));
         }
         setSaving(false);
     };
@@ -72,12 +75,12 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     // Add delete handler
     const handleDelete = async () => {
         Alert.alert(
-            "Delete Product",
-            "Are you sure you want to delete this product?",
+            t("productModal.deleteTitle"),
+            t("productModal.deleteConfirm"),
             [
-                { text: "Cancel", style: "cancel" },
+                { text: t("productModal.cancel"), style: "cancel" },
                 {
-                    text: "Delete",
+                    text: t("productModal.delete"),
                     style: "destructive",
                     onPress: async () => {
                         try {
@@ -87,12 +90,12 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                     'Authorization': `Bearer ${token}`
                                 }
                             });
-                            if (!res.ok) throw new Error("Delete failed");
-                            Alert.alert("Deleted", "Product has been deleted.");
+                            if (!res.ok) throw new Error(t("productModal.deleteFailed"));
+                            Alert.alert(t("productModal.deleted"), t("productModal.productDeleted"));
                             setEditMode(false);
                             onClose();
                         } catch (err) {
-                            Alert.alert("Error", "Could not delete product.");
+                            Alert.alert(t("productModal.error"), t("productModal.deleteError"));
                         }
                     }
                 }
@@ -161,16 +164,16 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                 ) : (
                                     <Text style={styles.price}>{formatPrice(product.price)}</Text>
                                 )}
-                                <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} days ago</Text></View>
+                                <View style={styles.badge}><Text style={styles.badgeText}>{product.days_ago} {t("productModal.daysAgo")}</Text></View>
                             </View>
                             
                             {/* Buttons */}
                             <View style={styles.buttonRow}>
-                                <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
-                                <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>Buy Now</Text></TouchableOpacity>
+                                <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>{t("productModal.addToCart")}</Text></TouchableOpacity>
+                                <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>{t("productModal.buyNow")}</Text></TouchableOpacity>
                             </View>
                             {/* Seller Info - improved */}
-                            <Text style={styles.sectionTitle}>Seller info</Text>
+                            <Text style={styles.sectionTitle}>{t("productModal.sellerInfo")}</Text>
                             <TouchableOpacity onPress={() => {navigation.navigate('Profile', { product: product}); onClose(); }} activeOpacity={0.8} style={styles.sellerContainer}>
                                     <View style={styles.sellerRow}>
                                         <Image
@@ -194,7 +197,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                                                 ]}
                                                             >★</Text>
                                                         ))}
-                                                        <Text style={styles.reviews}> {sellerData.review_count || 'No'} Reviews</Text>
+                                                        <Text style={styles.reviews}> {sellerData.review_count || t("productModal.noReviews")} {t("productModal.reviews")}</Text>
                                                     </View>
                                                 </View>
                                             </View>
@@ -207,7 +210,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             
 
                             {/* Details */}
-                            <Text style={styles.sectionTitle}>Details</Text>
+                            <Text style={styles.sectionTitle}>{t("productModal.details")}</Text>
                             {editMode ? (
                                 <TextInput
                                     value={editDescription}
@@ -236,7 +239,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                     style={{ alignSelf: 'flex-end', marginBottom: 10, backgroundColor: '#2A4BA0', padding: 8, borderRadius: 8 }}
                                     onPress={() => setEditMode(true)}
                                 >
-                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Edit</Text>
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t("productModal.edit")}</Text>
                                 </TouchableOpacity>
                             )}
                             {isCreator && editMode && (
@@ -246,7 +249,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                         onPress={handleDelete}
                                         disabled={saving}
                                     >
-                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Delete</Text>
+                                        <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t("productModal.delete")}</Text>
                                     </TouchableOpacity>
                                     <View style={{ flexDirection: 'row' }}>
                                         <TouchableOpacity
@@ -254,14 +257,14 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                             onPress={handleSave}
                                             disabled={saving}
                                         >
-                                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? "Saving..." : "Save"}</Text>
+                                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>{saving ? t("productModal.saving") : t("productModal.save")}</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={{ backgroundColor: '#aaa', padding: 8, borderRadius: 8 }}
                                             onPress={() => setEditMode(false)}
                                             disabled={saving}
                                         >
-                                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancel</Text>
+                                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t("productModal.cancel")}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>

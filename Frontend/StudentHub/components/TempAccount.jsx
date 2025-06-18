@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { API_URL } from '@env';
-
-
+import { useTranslation } from "react-i18next";
 
 export default function TempAccount({ navigation, onLogin, theme })
 {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
     const styles = createTempAccountStyles(theme);
 
     const handleGetTempAccount = async () => {
@@ -18,7 +18,7 @@ export default function TempAccount({ navigation, onLogin, theme })
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
-            if (!res.ok) throw new Error("Failed to create temporary account");
+            if (!res.ok) throw new Error(t("tempAccount.errorCreate"));
             const data = await res.json();
             setUsername(data.username);
             setPassword(data.password);
@@ -29,39 +29,36 @@ export default function TempAccount({ navigation, onLogin, theme })
     }
 
     const handleLogin = async () => {
-            setLoading(true);
-            try {
-                const res = await fetch(API_URL + '/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username,
-                        password,
-                    }),
+        setLoading(true);
+        try {
+            const res = await fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    password,
+                }),
+            });
+            if (!res.ok) throw new Error(t("tempAccount.errorLogin"));
+            const data = await res.json();
+            const token = data.token || data.access_token;
+            if (token) {
+                // Fetch user info after login
+                const userRes = await fetch(API_URL + '/api/users/get', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!res.ok) throw new Error("Login failed");
-                const data = await res.json();
-                const token = data.token || data.access_token;
-                if (token) {
-                    // Fetch user info after login
-                    const userRes = await fetch(API_URL + '/api/users/get', {
-                        method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (!userRes.ok) throw new Error("User fetch failed");
-                    const user = await userRes.json();
-                    onLogin(token, user);
-                } else {
-                    Alert.alert("Login failed", "No token received");
-                }
-            } catch (e) {
-                Alert.alert("Login failed", e.message);
+                if (!userRes.ok) throw new Error(t("tempAccount.errorUserFetch"));
+                const user = await userRes.json();
+                onLogin(token, user);
+            } else {
+                Alert.alert(t("tempAccount.errorLogin"), t("tempAccount.errorNoToken"));
             }
-            setLoading(false);
-        };
-
-
-
+        } catch (e) {
+            Alert.alert(t("tempAccount.errorLogin"), e.message);
+        }
+        setLoading(false);
+    };
 
     if (username && password) {
         return (
@@ -70,20 +67,20 @@ export default function TempAccount({ navigation, onLogin, theme })
                     <View style={styles.iconContainer}>
                         <Text style={styles.successIcon}>✓</Text>
                     </View>
-                    <Text style={styles.successTitle}>Temporary Account Created!</Text>
-                    <Text style={styles.successSubtitle}>Your credentials are ready to use</Text>
+                    <Text style={styles.successTitle}>{t("tempAccount.createdTitle")}</Text>
+                    <Text style={styles.successSubtitle}>{t("tempAccount.createdSubtitle")}</Text>
                 </View>
                 
                 <View style={styles.credentialsCard}>
                     <View style={styles.credentialRow}>
-                        <Text style={styles.credentialLabel}>Username</Text>
+                        <Text style={styles.credentialLabel}>{t("tempAccount.username")}</Text>
                         <View style={styles.credentialValueContainer}>
                             <Text style={styles.credentialValue}>{username}</Text>
                         </View>
                     </View>
                     
                     <View style={styles.credentialRow}>
-                        <Text style={styles.credentialLabel}>Password</Text>
+                        <Text style={styles.credentialLabel}>{t("tempAccount.password")}</Text>
                         <View style={styles.credentialValueContainer}>
                             <Text style={styles.credentialValue}>{password}</Text>
                         </View>
@@ -92,7 +89,7 @@ export default function TempAccount({ navigation, onLogin, theme })
                     <View style={styles.warningContainer}>
                         <Text style={styles.warningIcon}>⚠️</Text>
                         <Text style={styles.warningText}>
-                            Please save these credentials. They cannot be recovered later.
+                            {t("tempAccount.warning")}
                         </Text>
                     </View>
                 </View>
@@ -104,7 +101,7 @@ export default function TempAccount({ navigation, onLogin, theme })
                         disabled={loading}
                     >
                         <Text style={styles.primaryButtonText}>
-                            {loading ? 'Logging in...' : 'Continue with Account'}
+                            {loading ? t("tempAccount.loggingIn") : t("tempAccount.continue")}
                         </Text>
                         {!loading && <Text style={styles.buttonArrow}>→</Text>}
                     </TouchableOpacity>
@@ -113,7 +110,7 @@ export default function TempAccount({ navigation, onLogin, theme })
                         style={styles.secondaryButton}
                         onPress={() => navigation.navigate('Login')}
                     >
-                        <Text style={styles.secondaryButtonText}>Go back to login</Text>
+                        <Text style={styles.secondaryButtonText}>{t("tempAccount.goBack")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -125,14 +122,14 @@ export default function TempAccount({ navigation, onLogin, theme })
         <View style={styles.container}>
             <View style={styles.welcomeContainer}>
                 <Text style={styles.title}>StudentHub</Text>
-                <Text style={styles.subtitle}>Get temporary access to explore the app</Text>
+                <Text style={styles.subtitle}>{t("tempAccount.subtitle")}</Text>
                 <TouchableOpacity 
                     style={[styles.button, loading && styles.buttonDisabled]} 
                     onPress={handleGetTempAccount} 
                     disabled={loading}
                 >
                     <Text style={styles.buttonText}>
-                        {loading ? 'Creating account...' : 'Get a temporary account'}
+                        {loading ? t("tempAccount.creating") : t("tempAccount.getTemp")}
                     </Text>
                 </TouchableOpacity>
                 
@@ -140,7 +137,7 @@ export default function TempAccount({ navigation, onLogin, theme })
                     style={styles.linkButton}
                     onPress={() => navigation.navigate('Login')}
                 >
-                    <Text style={styles.linkText}>Already have an account? Login</Text>
+                    <Text style={styles.linkText}>{t("tempAccount.alreadyAccount")}</Text>
                 </TouchableOpacity>
             </View>
         </View>

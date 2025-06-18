@@ -1,19 +1,21 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useTranslation } from "react-i18next";
 
-function getTimeAgo(dateString) {
+function getTimeAgo(dateString, t) {
     if (!dateString) return "";
     const now = new Date();
     const created = new Date(dateString.replace(" ", "T"));
     const diff = Math.floor((now - created) / 1000);
-    if (diff < 60) return `${diff} seconden geleden`;
-    if (diff < 3600) return `${Math.floor(diff / 60)} minuten geleden`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} uur geleden`;
-    return `${Math.floor(diff / 86400)} dagen geleden`;
+    if (diff < 60) return t("tipCard.secondsAgo", { count: diff });
+    if (diff < 3600) return t("tipCard.minutesAgo", { count: Math.floor(diff / 60) });
+    if (diff < 86400) return t("tipCard.hoursAgo", { count: Math.floor(diff / 3600) });
+    return t("tipCard.daysAgo", { count: Math.floor(diff / 86400) });
 }
 
 export default function TipCard({ tip, onPress, theme }) {
     const tag = tip.category;
     const styles = createTipCardStyles(theme);
+    const { t } = useTranslation();
 
     return (
         <TouchableOpacity activeOpacity={0.93} onPress={onPress}>
@@ -43,7 +45,7 @@ export default function TipCard({ tip, onPress, theme }) {
                         !tip.image && { marginLeft: 56 + 16 } // zelfde ruimte als image+marginRight
                     ]}>
                         <Text style={styles.title} numberOfLines={2}>{tip.title}</Text>
-                        <Text style={styles.timeAgo}>{getTimeAgo(tip.created_at)}</Text>
+                        <Text style={styles.timeAgo}>{getTimeAgo(tip.created_at, t)}</Text>
                         <Text style={styles.content} numberOfLines={3}>{tip.content}</Text>
                         {tag && (
                             <View style={styles.tagsWrap}>
@@ -54,13 +56,13 @@ export default function TipCard({ tip, onPress, theme }) {
                         )}
                         <View style={styles.statsRow}>
                             <Text style={[styles.stat, { color: "#2A4BA0" }]}>
-                                ⬆ {(tip.likes?.length || 0).toLocaleString()} Likes
+                                ⬆ {(tip.likes?.length || 0).toLocaleString()} {t("tipCard.likes")}
                             </Text>
                             <Text style={[styles.stat, { color: "red" }]}>
-                                ⬇ {(tip.dislikes?.length || 0).toLocaleString()} Dislikes
+                                ⬇ {(tip.dislikes?.length || 0).toLocaleString()} {t("tipCard.dislikes")}
                             </Text>
                             <Text style={styles.stat}>
-                                {(tip.replies?.length || 0)} comments
+                                {(tip.replies?.length || 0)} {t("tipCard.comments")}
                             </Text>
                         </View>
                     </View>

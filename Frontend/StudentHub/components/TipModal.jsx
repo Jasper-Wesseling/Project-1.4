@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView, TextInput } from "react-native";
-import { API_URL } from "@env"; // Zorg dat je de juiste API_URL importeert
+import { API_URL } from "@env";
 import ThemedAvatar from "react-native-elements/dist/avatar/Avatar";
+import { useTranslation } from "react-i18next";
 
 export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply, token, theme }) {
     const [loading, setLoading] = useState(false);
@@ -10,6 +11,7 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
     const [sendingReply, setSendingReply] = useState(false);
     const [imgSize, setImgSize] = useState({ width: 300, height: 300 });
     const styles = createTipModalStyles(theme);
+    const { t } = useTranslation();
 
     // Synchroniseer lokale tip met prop-tip bij openen of tip-wijziging
     useEffect(() => {
@@ -28,10 +30,10 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
         const now = new Date();
         const created = new Date(dateString.replace(" ", "T"));
         const diff = Math.floor((now - created) / 1000);
-        if (diff < 60) return `${diff} seconden geleden`;
-        if (diff < 3600) return `${Math.floor(diff / 60)} minuten geleden`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)} uur geleden`;
-        return `${Math.floor(diff / 86400)} dagen geleden`;
+        if (diff < 60) return t("tipCard.secondsAgo", { count: diff });
+        if (diff < 3600) return t("tipCard.minutesAgo", { count: Math.floor(diff / 60) });
+        if (diff < 86400) return t("tipCard.hoursAgo", { count: Math.floor(diff / 3600) });
+        return t("tipCard.daysAgo", { count: Math.floor(diff / 86400) });
     }
 
     // Handler voor togglen van like/dislike
@@ -169,17 +171,17 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={[styles.outlineButton, hasLiked && { borderColor: '#2A4BA0' }]} onPress={handleLikePress} disabled={loading}>
                                 <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
-                                    ⬆ {localTip.likes?.length || 0} Like
+                                    ⬆ {localTip.likes?.length || 0} {t("tipModal.like")}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={[styles.outlineButton, hasDisliked && { borderColor: '#C00' }]} onPress={handleDislikePress} disabled={loading}>
                                 <Text style={[styles.outlineButtonText, hasDisliked && { color: "#C00", fontWeight: "bold" }]}>
-                                    ⬇ {localTip.dislikes?.length || 0} Dislike
+                                    ⬇ {localTip.dislikes?.length || 0} {t("tipModal.dislike")}
                                 </Text>
                             </TouchableOpacity>
                         </View>
                         {/* Replies */}
-                        <Text style={styles.sectionTitle}>Reacties</Text>
+                        <Text style={styles.sectionTitle}>{t("tipModal.replies")}</Text>
                         <View style={{ marginBottom: 24 }}>
                             {Array.isArray(localTip.replies) && localTip.replies.length > 0 ? (
                                 localTip.replies.map((reply, idx) => {
@@ -206,11 +208,11 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                                     return (
                                         <View key={idx} style={styles.replyBox}>
                                             <Text style={styles.replyUser}>
-                                                <Text style={{ fontWeight: "bold" }}>{reply.user_name || "Username"}</Text>
+                                                <Text style={{ fontWeight: "bold" }}>{reply.user_name || t("tipModal.username")}</Text>
                                                 {"  "}
                                                 <Text style={styles.replyTime}>{getTimeAgo(reply.created_at)}</Text>
                                             </Text>
-                                            <Text style={styles.replyContent}>{reply.content || "You can reply here."}</Text>
+                                            <Text style={styles.replyContent}>{reply.content || t("tipModal.replyHere")}</Text>
                                             <View style={styles.replyActions}>
                                                 <TouchableOpacity onPress={handleReplyLikePress} disabled={loading}>
                                                     <Text style={[styles.replyAction, replyLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
@@ -227,14 +229,14 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                                     );
                                 })
                             ) : (
-                                <Text style={styles.noReplies}>Nog geen reacties.</Text>
+                                <Text style={styles.noReplies}>{t("tipModal.noReplies")}</Text>
                             )}
                         </View>
                         {/* Reactie toevoegen */}
                         <View style={styles.replyInputRow}>
                             <TextInput
                                 style={styles.replyInput}
-                                placeholder="Typ je reactie..."
+                                placeholder={t("tipModal.replyPlaceholder")}
                                 placeholderTextColor={theme.detailsText}
                                 value={replyText}
                                 onChangeText={setReplyText}
@@ -245,7 +247,7 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                                 onPress={handleAddReply}
                                 disabled={sendingReply || !replyText.trim()}
                             >
-                                <Text style={styles.replySendBtnText}>Verstuur</Text>
+                                <Text style={styles.replySendBtnText}>{t("tipModal.send")}</Text>
                             </TouchableOpacity>
                         </View>
                     </ScrollView>

@@ -14,6 +14,7 @@ import {
 import { API_URL } from "@env";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Profile({ token, navigation, route, user, theme }) {
   const [userProfile, setUserProfile] = useState(null);
@@ -24,6 +25,7 @@ export default function Profile({ token, navigation, route, user, theme }) {
   const [profileMissing, setProfileMissing] = useState(false);
   const [Interesses, setInteresses] = useState(false);
   const styles = createProfileStyles(theme);
+  const { t } = useTranslation();
 
   const DEFAULT_AVATAR_URL = "https://www.gravatar.com/avatar/?d=mp&s=120";
 
@@ -100,10 +102,14 @@ useFocusEffect(
     }
   };
   const cancelEditing = () => {
-    Alert.alert("Wijzigingen annuleren?", "Je wijzigingen worden niet opgeslagen.", [
-      { text: "Nee", style: "cancel" },
-      { text: "Ja", onPress: () => setIsEditing(false) },
-    ]);
+    Alert.alert(
+      t("profile.cancelTitle"),
+      t("profile.cancelMsg"),
+      [
+        { text: t("profile.no"), style: "cancel" },
+        { text: t("profile.yes"), onPress: () => setIsEditing(false) },
+      ]
+    );
   };
   
   const saveChanges = async () => {
@@ -163,7 +169,7 @@ useFocusEffect(
   if (profileMissing) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{ marginBottom: 10 }}>Geen profiel gevonden.</Text>
+        <Text style={{ marginBottom: 10 }}>{t("profile.noProfileFound")}</Text>
         {!isEditing ? (
           <TouchableOpacity
             onPress={() => {
@@ -180,18 +186,18 @@ useFocusEffect(
             }}
             style={styles.dotButton}
           >
-            <Text style={styles.dotButtonText}>Profiel aanmaken</Text>
+            <Text style={styles.dotButtonText}>{t("profile.createProfile")}</Text>
           </TouchableOpacity>
         ) : (
           <>
-            <Text style={{ marginBottom: 10 }}>Nieuw profiel</Text>
+            <Text style={{ marginBottom: 10 }}>{t("profile.newProfile")}</Text>
             <TextInput
               value={editedProfile.first_name || ""}
               onChangeText={(text) =>
                 setEditedProfile({ ...editedProfile, first_name: text })
               }
               style={styles.input}
-              placeholder="Voornaam"
+              placeholder={t("profile.firstName")}
             />
             <TextInput
               value={editedProfile.last_name || ""}
@@ -199,7 +205,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, last_name: text })
               }
               style={styles.input}
-              placeholder="Achternaam"
+              placeholder={t("profile.lastName")}
             />
             <TextInput
               value={editedProfile.date_of_birth || ""}
@@ -207,7 +213,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, date_of_birth: text })
               }
               style={styles.input}
-              placeholder="Geboortedatum (YYYY-MM-DD)"
+              placeholder={t("profile.dob")}
             />
             <TextInput
               value={editedProfile.study_program || ""}
@@ -215,7 +221,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, study_program: text })
               }
               style={styles.input}
-              placeholder="Studierichting"
+              placeholder={t("profile.studyProgram")}
             />
             <TextInput
               value={editedProfile.location?.name || ""}
@@ -223,7 +229,7 @@ useFocusEffect(
                 setEditedProfile({ ...editedProfile, location: text })
               }
               style={styles.input}
-              placeholder="Locatie"
+              placeholder={t("profile.location")}
             />
             <TextInput
               value={editedProfile.bio || ""}
@@ -232,13 +238,13 @@ useFocusEffect(
               }
               style={[styles.input, { height: 80 }]}
               multiline
-              placeholder="Bio"
+              placeholder={t("profile.bio")}
             />
             <TouchableOpacity
               style={styles.contactButton}
               onPress={createProfile}
             >
-              <Text style={styles.contactButtonText}>Opslaan</Text>
+              <Text style={styles.contactButtonText}>{t("profile.save")}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -250,7 +256,7 @@ useFocusEffect(
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1d3b84" />
-        <Text style={{ color: "#555", marginTop: 10 }}>Loading Profile...</Text>
+        <Text style={{ color: "#555", marginTop: 10 }}>{t("profile.loading")}</Text>
       </View>
     );
   }
@@ -260,7 +266,7 @@ useFocusEffect(
         <View style={styles.card}>
           <TouchableOpacity
             accessible
-            accessibilityLabel="Ga terug"
+            accessibilityLabel={t("profile.goBack")}
             style={{ marginBottom: 10 }}
             onPress={() => navigation.goBack()}
           >
@@ -288,7 +294,7 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, first_name: text })
                       }
                       style={styles.input}
-                      placeholder="Voornaam"
+                      placeholder={t("profile.firstName")}
                       />
                       <TextInput
                       value={editedProfile.last_name || ""}
@@ -296,7 +302,7 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, last_name: text })
                       }
                       style={styles.input}
-                      placeholder="Achternaam"
+                      placeholder={t("profile.lastName")}
                       />
                     </>
                     ) : (
@@ -313,7 +319,7 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, date_of_birth: text })
                       }
                       style={[styles.input, { flex: 1 }]}
-                    placeholder="YYYY-MM-DD"
+                    placeholder={t("profile.dobShort")}
                     placeholderTextColor={theme.text}
                       />
                       <TextInput
@@ -322,12 +328,12 @@ useFocusEffect(
                         setEditedProfile({ ...editedProfile, study_program: text })
                       }
                       style={[styles.input, { flex: 2, marginLeft: 10 }]}
-                      placeholder="Studierichting"
+                      placeholder={t("profile.studyProgram")}
                       />
                     </>
                     ) : (
                       <>
-                      <Text style={styles.age}>{age} jaar</Text>
+                      <Text style={styles.age}>{age} {t("profile.years")}</Text>
                       <View style={styles.tag}>
                         <Text style={styles.tagText}>{profile.study_program}</Text>
                       </View>
@@ -342,14 +348,14 @@ useFocusEffect(
                       setEditedProfile({ ...editedProfile, location: text })
                     }
                     style={styles.input}
-                    placeholder="Locatie"
+                    placeholder={t("profile.location")}
                     placeholderTextColor={theme.text}
                     />
                   ) : (
                     <View style={styles.locationContainer}>
                     <Text style={styles.locationIcon}>📍</Text>
                     <Text style={styles.location}>
-                      {profile.location?.name || "Locatie niet ingevuld"}
+                      {profile.location?.name || t("profile.noLocation")}
                     </Text>
                     </View>
                   )}
@@ -368,23 +374,23 @@ useFocusEffect(
                             ★
                           </Text>
                         ))}
-                        <Text style={styles.reviews}> {profile.review_count || 'No'} Reviews</Text>
+                        <Text style={styles.reviews}> {profile.review_count || t("profile.noReviews")} {t("profile.reviews")}</Text>
                       </View>
                       {user.id !== userProfile ? (
                         <TouchableOpacity
                           style={styles.rateButton}
                           onPress={() => navigation.navigate('StarRating', { userProfile, onGoBack: () => fetchProfile(userProfile) })}
                           accessible
-                          accessibilityLabel="Geef een beoordeling"
+                          accessibilityLabel={t("profile.rate")}
                         >
-                          <Text style={styles.rateButtonText}>Beoordeel</Text>
+                          <Text style={styles.rateButtonText}>{t("profile.rate")}</Text>
                         </TouchableOpacity>
                       ) : null}
                     </View>
                   </View>
                   </View>
 
-                  <Text style={styles.sectionTitle}>Details</Text>
+                  <Text style={styles.sectionTitle}>{t("profile.details")}</Text>
                   {isEditing ? (
                   <TextInput
                     value={editedProfile.bio || ""}
@@ -395,23 +401,23 @@ useFocusEffect(
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
-                    placeholder="Bio"
+                    placeholder={t("profile.bio")}
                   />
                   ) : (
                     <Text style={styles.description}>
-                    {profile.bio || "Geen bio beschikbaar."}
+                    {profile.bio || t("profile.noBio")}
                     </Text>
                   )}
 
                   <TouchableOpacity style={styles.accordion} onPress={() => setInteresses(!Interesses)}>
                   <View style={{ flex: 1 }}>
                     <View style={[styles.row, {justifyContent: "space-between"}]}>
-                    <Text style={styles.accordionText}>Interesses</Text>
+                    <Text style={styles.accordionText}>{t("profile.interests")}</Text>
                     <Text style={styles.chevron}>{Interesses ? '▲' : '▼'}</Text>
                     </View>
                     {Interesses && (
                     <Text style={styles.description}>
-                      {profile.interests || "Geen interesses beschikbaar."}
+                      {profile.interests || t("profile.noInterests")}
                     </Text>
                     )}
                   </View>
@@ -424,18 +430,18 @@ useFocusEffect(
                       style={styles.contactButton}
                       onPress={saveChanges}
                       accessible
-                      accessibilityLabel="Opslaan"
+                      accessibilityLabel={t("profile.save")}
                     >
-                      <Text style={styles.contactButtonText}>Opslaan</Text>
+                      <Text style={styles.contactButtonText}>{t("profile.save")}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={styles.dotButton}
                       onPress={cancelEditing}
                       accessible
-                      accessibilityLabel="Annuleren"
+                      accessibilityLabel={t("profile.cancel")}
                     >
-                      <Text style={styles.dotButtonText}>Annuleren</Text>
+                      <Text style={styles.dotButtonText}>{t("profile.cancel")}</Text>
                     </TouchableOpacity>
                     </>
                   ) : (
@@ -446,9 +452,9 @@ useFocusEffect(
                       style={styles.dotButton}
                       onPress={startEditing}
                       accessible
-                      accessibilityLabel="Profiel bewerken"
+                      accessibilityLabel={t("profile.edit")}
                       >
-                      <Text style={styles.dotButtonText}>Bewerken</Text>
+                      <Text style={styles.dotButtonText}>{t("profile.edit")}</Text>
                       </TouchableOpacity>
                       ) : null
                     }
@@ -456,7 +462,7 @@ useFocusEffect(
                     <TouchableOpacity
                       style={styles.contactButton}
                       accessible
-                      accessibilityLabel="Contacteer gebruiker"
+                      accessibilityLabel={t("profile.contact")}
                       onPress={() => {
                     const email = profile.email;
                     if (email) {
@@ -465,7 +471,7 @@ useFocusEffect(
                     }
                   }}
                 >
-                  <Text style={styles.contactButtonText}>Contact</Text>
+                  <Text style={styles.contactButtonText}>{t("profile.contact")}</Text>
                 </TouchableOpacity>
               </>
             )}

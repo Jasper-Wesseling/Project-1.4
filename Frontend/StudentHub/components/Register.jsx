@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacit
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
+import { useTranslation } from "react-i18next";
 
 export default function Register({ navigation, onLogin, theme }) {
     const [full_name, setFullName] = useState("");
@@ -20,6 +21,8 @@ export default function Register({ navigation, onLogin, theme }) {
             useNativeDriver: true,
         }).start();
     };
+
+    const { t } = useTranslation();
 
     const handleRegister = async () => {
         setLoading(true);
@@ -39,13 +42,13 @@ export default function Register({ navigation, onLogin, theme }) {
                     err = await res.json();
                 } catch (jsonErr) {
                     const text = await res.text();
-                    err = { message: text || "Registration failed" };
+                    err = { message: text || t("register.errorRegister") };
                 }
                 if (err.violations && Array.isArray(err.violations)) {
                     const messages = err.violations.map(v => `${v.propertyPath}: ${v.message}`).join('\n');
-                    Alert.alert("Registration failed", messages);
+                    Alert.alert(t("register.errorRegister"), messages);
                 } else {
-                    Alert.alert("Registration failed", err.error || err.message || "Registration failed");
+                    Alert.alert(t("register.errorRegister"), err.error || err.message || t("register.errorRegister"));
                 }
                 setLoading(false);
                 return;
@@ -62,9 +65,9 @@ export default function Register({ navigation, onLogin, theme }) {
                     err = await loginRes.json();
                 } catch (jsonErr) {
                     const text = await loginRes.text();
-                    err = { message: text || "Auto-login failed" };
+                    err = { message: text || t("register.errorAutoLogin") };
                 }
-                Alert.alert("Auto-login failed", err.error || err.message || "Auto-login failed");
+                Alert.alert(t("register.errorAutoLogin"), err.error || err.message || t("register.errorAutoLogin"));
                 setLoading(false);
                 return;
             }
@@ -75,14 +78,14 @@ export default function Register({ navigation, onLogin, theme }) {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!userRes.ok) throw new Error("User fetch failed");
+                if (!userRes.ok) throw new Error(t("register.errorUserFetch"));
                 const user = await userRes.json();
                 onLogin(token, user);
             } else {
-                Alert.alert("Registration failed", "No token received");
+                Alert.alert(t("register.errorRegister"), t("register.errorNoToken"));
             }
         } catch (e) {
-            Alert.alert("Registration failed", e.message);
+            Alert.alert(t("register.errorRegister"), e.message);
         }
         setLoading(false);
     };
@@ -102,10 +105,10 @@ export default function Register({ navigation, onLogin, theme }) {
                     </View>
                 </SafeAreaView>
                 <View style={styles.bottomHalf}>
-                    <Text style={styles.title}>Register</Text>
+                    <Text style={styles.title}>{t("register.title")}</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Username"
+                        placeholder={t("register.username")}
                         value={full_name}
                         onChangeText={setFullName}
                         autoCapitalize="none"
@@ -115,7 +118,7 @@ export default function Register({ navigation, onLogin, theme }) {
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Email"
+                        placeholder={t("register.email")}
                         value={email}
                         onChangeText={setEmail}
                         autoCapitalize="none"
@@ -126,7 +129,7 @@ export default function Register({ navigation, onLogin, theme }) {
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Password"
+                        placeholder={t("register.password")}
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry
@@ -139,14 +142,14 @@ export default function Register({ navigation, onLogin, theme }) {
                         onPress={handleRegister}
                         disabled={loading}
                     >
-                        <Text style={styles.buttonText}>{loading ? "Registering..." : "Register"}</Text>
+                        <Text style={styles.buttonText}>{loading ? t("register.registering") : t("register.register")}</Text>
                         <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Login')}
                     >
-                        <Text style={styles.registerText}>Already have an account? Login</Text>
+                        <Text style={styles.registerText}>{t("register.alreadyAccount")}</Text>
                     </TouchableOpacity>
                 </View>
             </Animated.View>

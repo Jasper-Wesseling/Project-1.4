@@ -3,9 +3,11 @@ import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
 import { API_URL } from "@env";
 import { themes } from "./LightDarkComponent";
+import { useTranslation } from "react-i18next";
 
 export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
     const styles = createPostPreviewStyles(theme);
+    const { t } = useTranslation();
 
     useEffect(() => {
         let isMounted = true;
@@ -37,21 +39,21 @@ export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        {post.title || "Untitled"}
+                        {post.title || t("postPreview.untitled")}
                     </Text>
                     <Text
                         style={styles.cardSubtitle}
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        Geplaatst door: {user?.full_name || "Onbekende gebruiker"}
+                        {t("postPreview.postedBy")}: {user?.full_name || t("postPreview.unknownUser")}
                     </Text>
                     <Text
                         style={styles.cardDescription}
                         numberOfLines={3}
                         ellipsizeMode="tail"
                     >
-                        {post.description || "No description"}
+                        {post.description || t("postPreview.noDescription")}
                     </Text>
                 </View>
                 {/* button + status+location */}
@@ -60,14 +62,14 @@ export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
                         style={styles.footerButton}
                         onPress={onQuickHelp}
                     >
-                        <Text style={styles.footerButtonText}>Quick Help</Text>
+                        <Text style={styles.footerButtonText}>{t("postPreview.quickHelp")}</Text>
                     </TouchableOpacity>
                     <View style={[styles.footerButton, styles.statusButton]}>
-                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status || 'Active'}</Text>
+                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status || t("postPreview.active")}</Text>
                     </View>
                     <View style={[styles.footerButton, styles.locationButton]}>
                         <Icon name="location-on" type="material" size={16} color="#000" />
-                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type || 'Local'}</Text>
+                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type || t("postPreview.local")}</Text>
                     </View>
                 </View>
             </View>

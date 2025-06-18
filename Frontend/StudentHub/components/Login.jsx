@@ -3,12 +3,14 @@ import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacit
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
+import { useTranslation } from "react-i18next";
 
 export default function Login({ navigation, onLogin, theme }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const styles = createLoginStyles(theme);
+    const { t } = useTranslation();
 
     // Replace pageHeight state with Animated.Value
     const animatedTranslateY = useRef(new Animated.Value(0)).current;
@@ -32,7 +34,7 @@ export default function Login({ navigation, onLogin, theme }) {
                     password,
                 }),
             });
-            if (!res.ok) throw new Error("Login failed");
+            if (!res.ok) throw new Error(t("login.errorLogin"));
             const data = await res.json();
             const token = data.token || data.access_token;
             if (token) {
@@ -41,14 +43,14 @@ export default function Login({ navigation, onLogin, theme }) {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!userRes.ok) throw new Error("User fetch failed");
+                if (!userRes.ok) throw new Error(t("login.errorUserFetch"));
                 const user = await userRes.json();
                 onLogin(token, user);
             } else {
-                Alert.alert("Login failed", "No token received");
+                Alert.alert(t("login.errorLogin"), t("login.errorNoToken"));
             }
         } catch (e) {
-            Alert.alert("Login failed", e.message);
+            Alert.alert(t("login.errorLogin"), e.message);
         }
         setLoading(false);
     };
@@ -68,10 +70,10 @@ export default function Login({ navigation, onLogin, theme }) {
                     </View>
                 </SafeAreaView>
                 <View style={styles.bottomHalf}>
-                    <Text style={styles.title}>Login</Text>
+                    <Text style={styles.title}>{t("login.title")}</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Email"
+                        placeholder={t("login.email")}
                         value={username}
                         onChangeText={setUsername}
                         autoCapitalize="none"
@@ -82,7 +84,7 @@ export default function Login({ navigation, onLogin, theme }) {
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Password"
+                        placeholder={t("login.password")}
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry
@@ -95,20 +97,20 @@ export default function Login({ navigation, onLogin, theme }) {
                         onPress={handleLogin}
                         disabled={loading}
                     >
-                        <Text style={styles.buttonText}>{loading ? "Logging in..." : "continue"}</Text>
+                        <Text style={styles.buttonText}>{loading ? t("login.loggingIn") : t("login.continue")}</Text>
                         <Ionicons name="arrow-forward" size={22} color="#23244A" style={{ marginLeft: 8 }} />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Register')}
                     >
-                        <Text style={styles.registerText}>Don't have an account? Register</Text>
+                        <Text style={styles.registerText}>{t("login.noAccount")}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Temp')}
                     >
-                        <Text style={styles.registerText}>Want a look around? Get a temporary account</Text>
+                        <Text style={styles.registerText}>{t("login.tempAccount")}</Text>
                     </TouchableOpacity>
                 </View>
             </Animated.View>

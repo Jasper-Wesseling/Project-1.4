@@ -14,6 +14,7 @@ import { Icon } from "react-native-elements";
 import ProductModal from "./ProductModal";
 import { API_URL } from "@env";
 import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 export default function Frontpage({ token, user, navigation, theme }) {
   const [widgets, setWidgets] = useState({});
@@ -23,6 +24,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const styles = createFrontpageStyles(theme);
+  const { t } = useTranslation();
 
   const scrollY = React.useRef(new Animated.Value(0)).current;
 
@@ -124,7 +126,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>{t("frontpage.loading")}</Text>
       </SafeAreaView>
     );
   }
@@ -132,9 +134,9 @@ export default function Frontpage({ token, user, navigation, theme }) {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.error}>Fout: {error}</Text>
+        <Text style={styles.error}>{t("frontpage.error")}: {error}</Text>
         <Text style={styles.retryText} onPress={fetchWidgets}>
-          Tik om opnieuw te proberen
+          {t("frontpage.retry")}
         </Text>
       </SafeAreaView>
     );
@@ -145,7 +147,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
       {/* Static Top Bar */}
       <View style={styles.topBar}>
         <View style={styles.topBarRow}>
-          <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
+          <Text style={styles.topBarText}>{t("frontpage.hey", { name })}</Text>
           <View style={styles.topBarIcons}>
             <TouchableOpacity>
               <Icon name="plus" type="feather" size={34} color="#fff" />
@@ -183,28 +185,28 @@ export default function Frontpage({ token, user, navigation, theme }) {
             style={{ marginRight: 8 }}
           />
           <Text style={styles.searchPlaceholder}>
-            Search for any thing you like
+            {t("frontpage.searchPlaceholder")}
           </Text>
         </View>
         <View style={styles.headerOptions}>
           <View style={styles.optionBlock}>
-            <Text style={styles.optionLabel}>ADRES</Text>
-            <Text style={styles.optionValue}>Statenweg, Emmen ▼</Text>
+            <Text style={styles.optionLabel}>{t("frontpage.addressLabel")}</Text>
+            <Text style={styles.optionValue}>{t("frontpage.addressValue")}</Text>
           </View>
           <View style={styles.optionBlock}>
-            <Text style={styles.optionLabel}>LANGUAGE</Text>
-            <Text style={styles.optionValue}>English ▼</Text>
+            <Text style={styles.optionLabel}>{t("frontpage.languageLabel")}</Text>
+            <Text style={styles.optionValue}>{t("frontpage.languageValue")}</Text>
           </View>
         </View>
       </Animated.View>
       {/* Scrollable Content */}
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>{t("frontpage.loading")}</Text>
       ) : error ? (
         <View>
-          <Text style={styles.error}>Fout: {error}</Text>
+          <Text style={styles.error}>{t("frontpage.error")}: {error}</Text>
           <Text style={styles.retryText} onPress={fetchWidgets}>
-            Tik om opnieuw te proberen
+            {t("frontpage.retry")}
           </Text>
         </View>
       ) : (
@@ -232,25 +234,25 @@ export default function Frontpage({ token, user, navigation, theme }) {
               <View style={styles.promoCard}>
                 <View style={styles.promoImage} />
                 <View>
-                  <Text style={styles.promoText}>Get</Text>
-                  <Text style={styles.promoDiscount}>50% OFF</Text>
-                  <Text style={styles.promoSub}>Hbo sport</Text>
+                  <Text style={styles.promoText}>{t("frontpage.promo1Title")}</Text>
+                  <Text style={styles.promoDiscount}>{t("frontpage.promo1Discount")}</Text>
+                  <Text style={styles.promoSub}>{t("frontpage.promo1Sub")}</Text>
                 </View>
               </View>
               <View style={styles.promoCard}>
                 <View style={styles.promoImage} />
                 <View>
-                  <Text style={styles.promoText}>Student Deal</Text>
-                  <Text style={styles.promoDiscount}>2+1 FREE</Text>
-                  <Text style={styles.promoSub}>Coffee at Campus Café</Text>
+                  <Text style={styles.promoText}>{t("frontpage.promo2Title")}</Text>
+                  <Text style={styles.promoDiscount}>{t("frontpage.promo2Discount")}</Text>
+                  <Text style={styles.promoSub}>{t("frontpage.promo2Sub")}</Text>
                 </View>
               </View>
               <View style={styles.promoCard}>
                 <View style={styles.promoImage} />
                 <View>
-                  <Text style={styles.promoText}>Exclusive</Text>
-                  <Text style={styles.promoDiscount}>30% OFF</Text>
-                  <Text style={styles.promoSub}>Bookstore Supplies</Text>
+                  <Text style={styles.promoText}>{t("frontpage.promo3Title")}</Text>
+                  <Text style={styles.promoDiscount}>{t("frontpage.promo3Discount")}</Text>
+                  <Text style={styles.promoSub}>{t("frontpage.promo3Sub")}</Text>
                 </View>
               </View>
             </ScrollView>
@@ -259,7 +261,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
           {/* Recommended Widget */}
           {widgets.recommended && recommended.length > 0 && (
             <View style={styles.recommendedBox}>
-              <Text style={styles.recommendedTitle}>Recommended</Text>
+              <Text style={styles.recommendedTitle}>{t("frontpage.recommended")}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {recommended.map((product) => (
                   <TouchableOpacity
@@ -301,10 +303,10 @@ export default function Frontpage({ token, user, navigation, theme }) {
 
           {/* Widget Switches */}
           <View style={styles.switches}>
-            <Text style={styles.switchTitle}>Widgets</Text>
+            <Text style={styles.switchTitle}>{t("frontpage.widgets")}</Text>
             {Object.entries(widgets).map(([key, value]) => (
               <View key={key} style={styles.switchRow}>
-                <Text style={styles.switchLabel}>{key}</Text>
+                <Text style={styles.switchLabel}>{t(`frontpage.widget_${key}`)}</Text>
                 <Switch value={value} onValueChange={() => toggleWidget(key)} />
               </View>
             ))}

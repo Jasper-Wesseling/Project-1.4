@@ -6,11 +6,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 export default function ChatOverview({ navigation, token, user, theme }) {
    const [search, setSearch] = useState('');
    const [searchModalVisible, setSearchModalVisible] = useState(false);
    const [chats, setChats] = useState([]);
+   const { t } = useTranslation();
    const styles = createChatOverviewStyles(theme);
 
    const fetchChats = async () => {
@@ -69,7 +71,7 @@ export default function ChatOverview({ navigation, token, user, theme }) {
          <View style={styles.topBar}>
             <View style={styles.topBarRow}>
                <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
-               <Text style={styles.topBarText}>All Chats</Text>
+               <Text style={styles.topBarText}>{t('chatOverview.allChats')}</Text>
                <View style={styles.topBarIcons}>
                      <TouchableOpacity onPress={() => {setSearchModalVisible(true)}}>
                         <Icon name="search" size={34} color="#fff" />
@@ -101,7 +103,10 @@ export default function ChatOverview({ navigation, token, user, theme }) {
                         {msg.content}
                      </Text>
                      <Text style={styles.chatMeta}>
-                        {msg.days_ago > 0 ? msg.days_ago+ (msg.days_ago == 1 ? ' day ago' : ' days ago') : 'less than 1 day ago'}
+                        {msg.days_ago > 0 
+                           ? msg.days_ago + " " + t(`chatOverview.${msg.days_ago == 1 ? 'dayAgo' : 'daysAgo'}`)
+                           : t('chatOverview.lessThanOneDayAgo')
+                        }
                      </Text>
                   </View>
                </TouchableOpacity>

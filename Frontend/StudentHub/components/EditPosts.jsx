@@ -6,6 +6,7 @@ import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
 import PostPreview from "./PostPreview";
 import BountyBoardModal from "./BountyBoardModal";
+import { useTranslation } from "react-i18next";
 
 export default function EditPosts({ navigation, token, user, theme }) {
     const [posts, setPosts] = useState([]);
@@ -13,6 +14,7 @@ export default function EditPosts({ navigation, token, user, theme }) {
     const [selectedPost, setSelectedPost] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const styles = createEditPostsStyles(theme);
+    const { t } = useTranslation();
 
     const fetchPosts = async () => {
         try {
@@ -24,7 +26,7 @@ export default function EditPosts({ navigation, token, user, theme }) {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) throw new Error("Posts fetch failed");
+            if (!res.ok) throw new Error(t("editPosts.errorFetch"));
             const data = await res.json();
             setPosts(data);
             setLoading(false);
@@ -46,7 +48,7 @@ export default function EditPosts({ navigation, token, user, theme }) {
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
                     <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()} />
-                    <Text style={styles.topBarText}>Edit Posts</Text>
+                    <Text style={styles.topBarText}>{t("editPosts.title")}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity>
                             <Icon name="search" size={34} color="#fff" />
@@ -62,7 +64,7 @@ export default function EditPosts({ navigation, token, user, theme }) {
                 {loading ? (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#2A4BA0" />
-                        <Text style={styles.loadingText}>Posts laden...</Text>
+                        <Text style={styles.loadingText}>{t("editPosts.loading")}</Text>
                     </View>
                 ) : (
                     posts.map(post => (
@@ -77,7 +79,7 @@ export default function EditPosts({ navigation, token, user, theme }) {
                             <View style={styles.chatCard}>
                                 <PostPreview
                                     post={post}
-                                    user={{ full_name: post.post_user_name || "Unknown User" }}
+                                    user={{ full_name: post.post_user_name || t("editPosts.unknownUser") }}
                                     token={token}
                                 />
                             </View>

@@ -6,6 +6,7 @@ import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
 import ProductPreview from "./ProductPreview";
 import ProductModal from "./ProductModal";
+import { useTranslation } from "react-i18next";
 
 export default function EditProducts({ navigation, token, user, theme }) {
    const [products, setProducts] = useState([]);
@@ -13,6 +14,7 @@ export default function EditProducts({ navigation, token, user, theme }) {
    const [selectedProduct, setSelectedProduct] = useState(null);
    const [modalVisible, setModalVisible] = useState(false);
    const styles = createEditProductsStyles(theme);
+   const { t } = useTranslation();
 
    const fetchProducts = async () => {
       try {
@@ -24,7 +26,7 @@ export default function EditProducts({ navigation, token, user, theme }) {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
          });
-         if (!res.ok) throw new Error("Products fetch failed");
+         if (!res.ok) throw new Error(t("editProducts.errorFetch"));
          const data = await res.json();
          setProducts(data);
          setLoading(false);
@@ -55,7 +57,7 @@ export default function EditProducts({ navigation, token, user, theme }) {
          <View style={styles.topBar}>
             <View style={styles.topBarRow}>
                <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
-               <Text style={styles.topBarText}>Edit Products</Text>
+               <Text style={styles.topBarText}>{t("editProducts.title")}</Text>
                <View style={styles.topBarIcons}>
                   <TouchableOpacity>
                      <Icon name="search" size={34} color="#fff" />
@@ -71,7 +73,7 @@ export default function EditProducts({ navigation, token, user, theme }) {
             {loading ? (
                <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#2A4BA0" />
-                  <Text style={styles.loadingText}>Producten laden...</Text>
+                  <Text style={styles.loadingText}>{t("editProducts.loading")}</Text>
                </View>
             ) : (
                products.map(product => (

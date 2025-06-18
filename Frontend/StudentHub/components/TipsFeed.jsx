@@ -5,6 +5,7 @@ import TipCard from "./TipCard";
 import TipModal from "./TipModal";
 import { Icon } from "react-native-elements";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 const FILTERS = [
     "Plannen",
@@ -32,6 +33,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
     const loadingMoreRef = useRef(false);
     const scrollViewRef = useRef(null);
     const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
+    const { t } = useTranslation();
     const styles = createTipsFeedStyles(theme);
 
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -256,7 +258,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
-                    <Text style={styles.topBarText}>{`Hey, ${name}`}</Text>
+                    <Text style={styles.topBarText}>{t("tipsFeed.hey", { name })}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate("AddForum")}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
@@ -276,10 +278,10 @@ export default function TipsFeed({ token, user, navigation, theme }) {
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
                 <Animated.Text style={[styles.headerText, { opacity: headerOpacity, fontWeight: "300" }]}>
-                    The Forum
+                    {t("tipsFeed.forum")}
                 </Animated.Text>
                 <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>
-                    By Everyone
+                    {t("tipsFeed.byEveryone")}
                 </Animated.Text>
             </Animated.View>
 
@@ -294,7 +296,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                     <View style={styles.searchBar}>
                         <Icon type="Feather" name="search" size={20} color="#A0A0A0" style={{ marginRight: 8 }} />
                         <TextInput
-                            placeholder="Search for a post"
+                            placeholder={t("tipsFeed.searchPlaceholder")}
                             value={search}
                             onChangeText={setSearch}
                             style={styles.searchInput}
@@ -305,7 +307,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                         style={styles.createBtn}
                         onPress={() => navigation.navigate("AddForum")}
                     >
-                        <Text style={styles.createBtnText}>Create post</Text>
+                        <Text style={styles.createBtnText}>{t("tipsFeed.createPost")}</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.filterRow}>
@@ -340,7 +342,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                                 minWidth: 60,
                                 textAlign: "center",
                             }}>
-                                Likes
+                                {t("tipsFeed.likes")}
                                 <Text>
                                     {sort.field === "likes" ? (sort.order === "asc" ? " ▲" : " ▼") : " "}
                                 </Text>
@@ -353,7 +355,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                                 minWidth: 60,
                                 textAlign: "center",
                             }}>
-                                Datum
+                                {t("tipsFeed.date")}
                                 <Text>
                                     {sort.field === "created_at" ? (sort.order === "asc" ? " ▲" : " ▼") : " "}
                                 </Text>
@@ -386,7 +388,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                     ))}
                 </View>
             ) : tips.length === 0 ? (
-                <Text style={{ textAlign: "center", marginTop: 40, color: "#000" }}>Geen tips gevonden</Text>
+                <Text style={{ textAlign: "center", marginTop: 40, color: "#000" }}>{t("tipsFeed.noTips")}</Text>
             ) : (
                 <>
                     <Animated.ScrollView
@@ -417,7 +419,7 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                         ))}
                         {allLoaded && tips.length > 0 ? (
                             <Text style={{ textAlign: "center", color: "#000", margin: 16 }}>
-                                Je hebt elke post gezien
+                                {t("tipsFeed.allSeen")}
                             </Text>
                         ) : null}
                     </Animated.ScrollView>
