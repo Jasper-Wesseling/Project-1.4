@@ -14,7 +14,7 @@ export default function CreateEvent({ navigation, theme }) {
     const { t } = useTranslation();
     const styles = createCreateEventStyles(theme);
 
-    const styles = createEventStyles(theme);
+    // const styles = createEventStyles(theme);
 
     const handleSubmit = async () => {
         if (!title || !date || !companyId) {

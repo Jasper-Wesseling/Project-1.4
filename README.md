@@ -96,6 +96,11 @@ in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
   ```
 
 
+* when migrations fail
+  ```sh
+  php bin/console doctrine:schema:update --force
+  ```
+
 ## WHEN WORKING ON BACKEND AND EVERYTHING IS BROKEN USE THIS AS A LAST RESORT! WARNING THIS REMOVES EVERY THING IN THE DATABASE! 
   ```sh
   php bin/console doctrine:schema:drop --force
