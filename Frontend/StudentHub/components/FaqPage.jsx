@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
-import { themes } from "./LightDarkComponent";
 import { useTranslation } from "react-i18next";
 
 // Use translation keys for FAQ
@@ -11,10 +10,9 @@ const faqs = Array.from({ length: 40 }, (_, i) => ({
   answer: `faq.a${i + 1}`,
 }));
 
-export default function FaqPage({ token, user, theme }) {
+export default function FaqPage({ token, user, theme, navigation }) {
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState(null);
-  const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
   const scrollY = useRef(new Animated.Value(0)).current;
   const { t } = useTranslation();
 
@@ -37,7 +35,7 @@ export default function FaqPage({ token, user, theme }) {
   // StickyBar marginTop animatie zodat hij altijd direct onder de header blijft
   const stickyBarMarginTop = headerHeight.interpolate({
     inputRange: [0, 166],
-    outputRange: [120, 266], // 100(topBar) + headerHeight
+    outputRange: [120, 290], // 100(topBar) + headerHeight
     extrapolate: "clamp",
   });
 
@@ -47,20 +45,16 @@ export default function FaqPage({ token, user, theme }) {
 
   return (
     <View style={styles.container}>
-      {/* Static Top Bar */}
-      <View style={styles.topBar}>
-        <View style={styles.topBarRow}>
-          <Text style={styles.topBarTitle}>
-            {t("faq.hey", { name })}
-          </Text>
-          <View style={styles.topBarIcons}>
-            <TouchableOpacity>
-              <Icon name="search" size={34} color="#fff" />
-            </TouchableOpacity>
+      /* Static Top Bar */
+        <View style={styles.topBar}>
+          <View>
+              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-left" type="feather" size={24} color="#fff" />
+                  <Text style={styles.backButtonText}>{t('go_back')}</Text>
+              </TouchableOpacity>
           </View>
         </View>
-      </View>
-      {/* Animated Header */}
+        {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
         <Animated.Text style={[styles.headerText, styles.headerTextLight, { opacity: headerOpacity }]}>
           {t("faq.getYour")}
@@ -140,22 +134,29 @@ function createFaqStyles(theme) {
       paddingTop: 25,
       paddingHorizontal: 16,
       zIndex: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      elevation: 6,
     },
-    topBarRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+    backButton: {
+        flexDirection: "row",
+        alignItems: 'center',
+        backgroundColor: theme.background,
+        borderRadius: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.10,
+        shadowRadius: 4,
+        elevation: 2,
     },
-    topBarTitle: {
-      color: "#fff",
-      fontSize: 24,
-      fontWeight: "bold",
-    },
-    topBarIcons: {
-      flexDirection: 'row',
-      width: 125,
-      justifyContent: 'space-around',
-      alignItems: 'center',
+    backButtonText: {
+        color: theme.text,
+        fontSize: 20,
+        paddingLeft: 8,
+        fontWeight: '600',
     },
     header: {
       position: "absolute",

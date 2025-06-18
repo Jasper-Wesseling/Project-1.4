@@ -265,6 +265,10 @@ export default function App() {
 						<Tab.Screen name="AddPost">
 							{props => <AddPost {...props} token={token} user={user} theme={theme}/>}
 						</Tab.Screen>
+						<Stack.Screen name="FaqPage">
+	   						{props => <FaqPage {...props} token={token} user={user} theme={theme}/>}
+						</Stack.Screen>
+
 					</>
 				)}
 			</Stack.Navigator>

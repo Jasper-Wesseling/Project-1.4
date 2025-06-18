@@ -87,7 +87,7 @@ export const themes = {
 	}
 };
 
-export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange }) {
+export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange, navigation }) {
 	const [mode, setMode] = useState(initialMode || "light");
 	const [token, setToken] = useState(propToken || null);
 	const [systemDefault, setSystemDefault] = useState(false);
@@ -244,7 +244,7 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 			
 			<View style={[styles.helpSection, { borderTopColor: theme?.borderColor || "#E7ECF0", width: '100%', justifyContent: 'center', alignItems: 'center', paddingTop: 16 }]}>
 				<Text style={{ color: theme?.text }}>Need help? visit our FAQ page!</Text>
-				<TouchableOpacity onPress={() => Alert.alert("FAQ", "This is where the FAQ would be linked.")} style={{alignSelf: "center", padding: 8, borderRadius: 8, backgroundColor: theme?.primary || "#2A4BA0", width: '90%', justifyContent: 'center', alignItems: 'center'}}>
+				<TouchableOpacity onPress={() => navigation.navigate('FaqPage')} style={{alignSelf: "center", padding: 8, borderRadius: 8, backgroundColor: theme?.primary || "#2A4BA0", width: '90%', justifyContent: 'center', alignItems: 'center'}}>
 	   				<Text style={{  color: 'white' }}>FAQ</Text>
 				</TouchableOpacity>
 			</View>
