@@ -170,8 +170,8 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             {/* Buttons */}
                             <View style={styles.buttonRow}>
 
-//                                 <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>{t("productModal.addToCart")}</Text></TouchableOpacity>
-//                                 <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>{t("productModal.buyNow")}</Text></TouchableOpacity>
+                                 {/* <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>{t("productModal.addToCart")}</Text></TouchableOpacity>
+                                 <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>{t("productModal.buyNow")}</Text></TouchableOpacity> */}
 
                                 <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
                                 <TouchableOpacity
@@ -344,7 +344,7 @@ function createProductModalStyles(theme) {
     return StyleSheet.create({
         overlay: {
             flex: 1,
-            backgroundColor: theme.modalOverlay,
+            backgroundColor: theme.backCircle,
             justifyContent: 'center',
             alignItems: 'center',
         },

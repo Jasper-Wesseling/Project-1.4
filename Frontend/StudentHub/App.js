@@ -36,6 +36,7 @@ const Tab = createBottomTabNavigator();
 
 function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserToChat }) {
 	return (
+		// bottom nevigator
 		<Tab.Navigator
 			screenOptions={({ route }) => ({
 				headerShown: false,
@@ -47,23 +48,27 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 					backgroundColor: theme?.tabBarBg || "#fff", // tabbar achtergrond
 				},
 				tabBarIcon: ({ color, size }) => {
-					if (route.name === "Products") return <Icon name="home" type="feather" color={color} size={size} />;
-					if (route.name === "AddProduct") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
+					if (route.name === "Home") return <Icon name="home" type="feather" color={color} size={size} />;
+					if (route.name === "Products") return <Icon name="plus-circle" type="feather" color={color} size={size} />;
+					
+
 					if (route.name === "BusinessPage") return <Icon name="briefcase" type="feather" color={color} size={size} />;
 					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
 					if (route.name === "AddPost") return <Icon name="edit" type="feather" color={color} size={size} />;
-					if (route.name === "Frontpage") return <Icon name="home" type="feather" color={color} size={size} />;
+					if (route.name === "Home") return <Icon name="home" type="feather" color={color} size={size} />;
+					
 				},
 			})}
 		>
+			<Tab.Screen name="Home">
+				{props => <Frontpage {...props} token={token} user={user} theme={theme}/>}
+			</Tab.Screen>
 			<Tab.Screen name="Products">
 
-				{props => <Onboard {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
+				{props => <Products {...props} token={token} user={user} theme={theme} onLogout={onLogout} setUserToChat={setUserToChat}/>}
 
 			</Tab.Screen>
-			<Tab.Screen name="AddProduct">
-				{props => <AddProduct {...props} token={token} theme={theme} />}
-			</Tab.Screen>
+			
 
 			{/* <Tab.Screen name="BountyBoard" component={BountyBoard} /> */}
 
@@ -84,9 +89,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 			<Tab.Screen name="LightDark">
 				{props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
 			</Tab.Screen>
-			<Tab.Screen name="Frontpage">
-				{props => <Frontpage {...props} token={token} user={user} theme={theme}/>}
-			</Tab.Screen>
+			
 		</Tab.Navigator>
 	);
 }
@@ -269,6 +272,9 @@ export default function App() {
 						<Stack.Screen name="StarRating">
 								{props => <StarRating {...props} token={token} user={user} theme={theme} />}
 						</Stack.Screen>
+						<Tab.Screen name="AddProduct">
+							{props => <AddProduct {...props} token={token} theme={theme} />}
+						</Tab.Screen>
 					</>
 				)}
 			</Stack.Navigator>

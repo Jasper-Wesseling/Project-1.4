@@ -40,7 +40,7 @@ function createProductPreviewStyles(theme) {
             marginVertical: 20,
             flexDirection: 'row',
             borderRadius: 20,
-            borderColor: 'grey',
+            borderColor: theme.borderColor,
             borderWidth: 2,
             overflow: 'hidden',
         },
