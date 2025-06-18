@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ theme }) {
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
@@ -9,10 +9,11 @@ export default function LanguageSwitcher() {
   };
 
   const currentLanguage = i18n.language;
+  console.log(theme);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('languageSwitcher.selectLanguage')}</Text>
+      <Text style={[styles.title, {color: theme?.text || '#222'}]}>{t('languageSwitcher.selectLanguage')}</Text>
       <View style={styles.buttonRow}>
         <TouchableOpacity
           style={[

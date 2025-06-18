@@ -34,7 +34,7 @@ import BussinessPage from "./components/businessPage";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserToChat }) {
+function MainTabs({ token, user, onLogout, theme, setTheme }) {
 	return (
 		// bottom nevigator
 		<Tab.Navigator
@@ -45,6 +45,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 				tabBarStyle: {
 					height: 60,
 					paddingBottom: 8,
+					paddingHorizontal: 8,
 					backgroundColor: theme?.tabBarBg || "#fff", // tabbar achtergrond
 				},
 				tabBarIcon: ({ color, size }) => {
@@ -54,7 +55,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
 					if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
 					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
-					
+					if (route.name === "LightDark") return <Icon name="settings" type="feather" color={color} size={size} />;					
 				},
 			})}
 		>
@@ -62,7 +63,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme, userToChat, setUserT
 				{props => <Frontpage {...props} token={token} user={user} theme={theme}/>}
 			</Tab.Screen>
 			<Tab.Screen name="Products">
-				{props => <Products {...props} token={token} user={user} theme={theme} setUserToChat={setUserToChat}/>}
+				{props => <Products {...props} token={token} user={user} theme={theme}/>}
 			</Tab.Screen>
 			<Tab.Screen name="BusinessPage" >
 				{props => <BusinessPage {...props} token={token} user={user} theme={theme} />}
@@ -99,7 +100,6 @@ function isJwtExpired(token) {
 }
 
 export default function App() {
-	const [userToChat, setUserToChat] = useState(null);
 	const [token, setToken] = useState(null);
 	const [user, setUser] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -233,17 +233,15 @@ export default function App() {
 									onLogout={handleLogout}
 									theme={theme}
 									setTheme={setTheme}
-									userToChat={userToChat}
-									setUserToChat={setUserToChat}
 								/>
 							)}
 						</Stack.Screen>
 						<Stack.Screen name="CreateEvent" >
-							{props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout} userToChat={userToChat} setUserToChat={setUserToChat}/>}
+							{props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout}/>}
 						</Stack.Screen>
 						<Stack.Screen name="ProductChat">
 							{props => (
-									<ProductChat {...props} token={token} user={user} userToChat={userToChat} theme={theme} />
+									<ProductChat {...props} token={token} user={user} theme={theme} />
 							)}
 						</Stack.Screen>
 						<Stack.Screen name="ChatOverview">

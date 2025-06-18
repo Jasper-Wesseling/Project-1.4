@@ -220,8 +220,9 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 		}
 	};
 
+
 	return (
-		<View style={styles.container}>
+		<View style={[styles.container, { backgroundColor: theme?.background || "#F8F9FB" }]}>
 			<View style={styles.row}>
 				<Text style={[styles.text, { color: theme?.text || "#222" }]}>System default</Text>
 				<Switch value={systemDefault} onValueChange={handleSystemDefault} />
@@ -239,7 +240,14 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 			>
 				<Text style={{ color: mode === "light" ? "#fff" : "#222" }}>Wissel naar {mode === "light" ? "dark" : "light"}</Text>
 			</TouchableOpacity>
-			<LanguageSwitcher/>
+			<LanguageSwitcher theme={theme}/>
+			
+			<View style={[styles.helpSection, { borderTopColor: theme?.borderColor || "#E7ECF0", width: '100%', justifyContent: 'center', alignItems: 'center', paddingTop: 16 }]}>
+				<Text style={{ color: theme?.text }}>Need help? visit our FAQ page!</Text>
+				<TouchableOpacity onPress={() => Alert.alert("FAQ", "This is where the FAQ would be linked.")} style={{alignSelf: "center", padding: 8, borderRadius: 8, backgroundColor: theme?.primary || "#2A4BA0", width: '90%', justifyContent: 'center', alignItems: 'center'}}>
+	   				<Text style={{  color: 'white' }}>FAQ</Text>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 }
@@ -248,8 +256,9 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 
 const styles = StyleSheet.create({
 	container: {
+		flex: 1,
+		justifyContent: "center",
 		alignItems: "center",
-		margin: 16,
 	},
 	row: {
 		flexDirection: "row",

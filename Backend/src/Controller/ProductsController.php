@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Constraints\Json;
 
 #[Route('api/products')]
 class ProductsController extends AbstractController
@@ -45,6 +46,7 @@ class ProductsController extends AbstractController
         }
 
         $category = $request->query->get('category', null);
+        $category = $category ? strtolower($category) : null;
         $search = $request->query->get('search', '');
 
         $productsArray = $productsRepository->findPreviewProductsExcludingUser($user->getId(), $category, $search, $limit, $offset);

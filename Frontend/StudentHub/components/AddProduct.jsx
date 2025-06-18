@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Button, SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text, ScrollView } from "react-native";
+import { useState } from "react";
+import { SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text, useRef } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
@@ -25,20 +25,57 @@ export default function AddProduct({ navigation, token, theme }) {
     const [loading, setLoading] = useState(false);
     const styles = createAddProductsStyles(theme);
 
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({ mediaType: 'image' });
+const showPhotoOptions = () => {
+    Alert.alert(
+        'Foto toevoegen',
+        'Kies een optie',
+        [
+            { text: 'Annuleren', style: 'cancel' },
+            { text: 'Foto maken', onPress: takePhoto },
+            { text: 'Selecteer uit galerij', onPress: selectPhoto },
+        ]
+    );
+};
 
-        if (result.assets && result.assets.length > 0) {
-            const manipResult = await ImageManipulator.manipulateAsync(
-                result.assets[0].uri,
-                [{ resize: { width: 1200 } }],
-                { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-            );
-            setPhoto({
-                uri: manipResult.uri,
-                fileName: result.assets[0].fileName || 'photo.jpg',
-                type: 'image/jpeg',
-            });
+    const takePhoto = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        
+        if (status !== 'granted') {
+            Alert.alert('Sorry, we hebben camera toegang nodig!');
+            return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            // Handle foto
+            console.log('Photo taken:', result.assets[0]);
+        }
+    };
+
+    const selectPhoto = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (status !== 'granted') {
+            Alert.alert('Sorry, we hebben galerij toegang nodig!');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            // Handle foto
+            console.log('Photo selected:', result.assets[0]);
         }
     };
 
@@ -104,6 +141,14 @@ export default function AddProduct({ navigation, token, theme }) {
 
     const [pageHeight, setPageHeight] = useState(0);
 
+    const descriptionInputRef = useRef(null);
+    const categoryInputRef = useRef(null);
+    const priceInputRef = useRef(null);
+
+    const focusInput = (inputRef) => {
+        inputRef.current?.focus();
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topBar}>
@@ -123,7 +168,7 @@ export default function AddProduct({ navigation, token, theme }) {
                                 style={styles.mainPhoto}
                             />
                         ) : (
-                            <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+                            <TouchableOpacity style={styles.imagePlaceholder} onPress={showPhotoOptions}>
                                 <Icon name="camera" type="feather" size={48} color="#B0B8C1" />
                                 <Text style={styles.imagePlaceholderText}>{t('add_photo')}</Text>
                             </TouchableOpacity>
@@ -135,8 +180,10 @@ export default function AddProduct({ navigation, token, theme }) {
                         value={title}
                         placeholder={t('title')}
                         placeholderTextColor={theme.text}
+                        onSubmitEditing={() => focusInput(descriptionInputRef)}
                     />
                     <TextInput
+                        ref={descriptionInputRef} 
                         style={[styles.input, styles.inputDescription]}
                         onChangeText={setDescription}
                         value={description}
@@ -147,6 +194,7 @@ export default function AddProduct({ navigation, token, theme }) {
                         placeholderTextColor={theme.text}
                     />
                     <DropDownPicker
+                        ref={categoryInputRef}
                         open={open}
                         value={value}
                         items={items}
@@ -157,8 +205,10 @@ export default function AddProduct({ navigation, token, theme }) {
                         style={styles.input}
                         textStyle={{ color: theme.text }}
                         dropDownContainerStyle={{ backgroundColor: theme.formBg }}
+                        onSubmitEditing={() => focusInput(priceInputRef)}
                     />
                     <TextInput
+                        ref={priceInputRef}
                         style={styles.input}
                         onChangeText={setPrice}
                         value={price}

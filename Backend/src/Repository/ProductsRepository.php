@@ -75,8 +75,14 @@ class ProductsRepository extends ServiceEntityRepository
 
         if ($category) {
             $categories = array_map('trim', explode(',', $category));
-            $qb->andWhere('p.study_tag IN (:categories)')
-               ->setParameter('categories', $categories);
+            $categories = array_filter($categories, function($cat) {
+                return !empty($cat);
+            });
+
+            if (!empty($categories)) {
+                $qb->andWhere('p.study_tag IN (:categories)')
+                   ->setParameter('categories', $categories);
+            }
         }
         if ($search) {
             $qb->andWhere('LOWER(p.title) LIKE :search')

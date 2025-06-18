@@ -4,6 +4,9 @@ import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
 import { useTranslation } from "react-i18next";
+import { Dimensions } from "react-native";
+
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function Login({ navigation, onLogin, theme }) {
     const [username, setUsername] = useState("");
@@ -121,8 +124,8 @@ export default function Login({ navigation, onLogin, theme }) {
 function createLoginStyles(theme) {
     return StyleSheet.create({
         container: {
-            flex: 1,
             backgroundColor: theme.background,
+            height: screenHeight * 1.0 + 400,
         },
         safeArea: {
             backgroundColor: theme.headerBg,

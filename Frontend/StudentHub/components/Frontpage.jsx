@@ -148,17 +148,6 @@ export default function Frontpage({ token, user, navigation, theme }) {
 			<View style={styles.topBar}>
 				<View style={styles.topBarRow}>
 					<Text style={styles.topBarText}>{t("frontpage.hey", { name })}</Text>
-					<View style={styles.topBarIcons}>
-						<TouchableOpacity>
-							<Icon name="plus" type="feather" size={34} color="#fff" />
-						</TouchableOpacity>
-						<TouchableOpacity>
-							<Icon name="search" size={34} color="#fff" />
-						</TouchableOpacity>
-						<TouchableOpacity>
-							<Icon name="bag-outline" type="ionicon" size={32} color="#fff" />
-						</TouchableOpacity>
-					</View>
 				</View>
 			</View>
 			{/* Animated Header */}

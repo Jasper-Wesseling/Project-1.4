@@ -8,7 +8,7 @@ import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
-export default function Products({ navigation, token, user, setUserToChat, theme }) {
+export default function Products({ navigation, token, user, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,9 +22,16 @@ export default function Products({ navigation, token, user, setUserToChat, theme
     const { t } = useTranslation();
 
     // Filters should match your backend's product categories
-    const filters = [t('products.books'), t('products.electronics'), t('products.homeGarden')];
+    const filters = {
+        'Boeken': t('products.books'),
+        'Electra': t('products.electronics'),
+        'Huis en tuin': t('products.homeGarden')
+    };
+    const reverseFilters = Object.fromEntries(
+        Object.entries(filters).map(([key, value]) => [value, key])
+    );
     const [activeFilters, setActiveFilters] = useState([]);
-
+    
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValues = activeFilters) => {
         try {
             if (!token) {
@@ -155,16 +162,16 @@ export default function Products({ navigation, token, user, setUserToChat, theme
                     contentContainerStyle={styles.filterScrollContent}
                     style={{ marginVertical: 8, marginHorizontal: 12 }}
                 >
-                    {filters.map((filter, i) => {
-                        const isActive = activeFilters.includes(filter);
+                    {Object.values(filters).map((filter, i) => {
+                        const isActive = activeFilters.includes(reverseFilters[filter]);
                         return (
                             <TouchableOpacity
                                 key={i}
                                 onPress={() => {
                                     setActiveFilters(prev =>
                                         isActive
-                                            ? prev.filter(f => f !== filter)
-                                            : [...prev, filter]
+                                            ? prev.filter(f => f !== reverseFilters[filter])
+                                            : [...prev, reverseFilters[filter]]
                                     );
                                 }}
                             >
@@ -209,7 +216,6 @@ export default function Products({ navigation, token, user, setUserToChat, theme
                 formatPrice={formatPrice}
                 navigation={navigation}
                 user={user}
-                setUserToChat={setUserToChat}
                 productUser={selectedProduct?.product_user_id}
                 productUserName={selectedProduct?.product_username}
                 token={token}
