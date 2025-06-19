@@ -131,7 +131,7 @@ class DefaultFixture extends Fixture
         $dates = ['2025-05-11', '2025-05-12', '2025-05-13', '2025-05-14', '2025-05-15', '2025-05-16', '2025-05-17', '2025-05-18', '2025-05-19' ];
 
 
-        // Create 25 products with random data
+        // Create 100 products with random data
         for ($i = 0; $i < 100; $i++) {
             $productInfo = $dummyProducts[array_rand($dummyProducts)];
             $tempdate = $dates[array_rand($dates)];
