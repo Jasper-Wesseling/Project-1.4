@@ -84,8 +84,8 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: Posts::class)]
     private Collection $posts;
 
-    #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
-    private ?Users $user_id = null;
+    // #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
+    // private ?Users $user_id = null;
 
     /**
      * @var Collection<int, Reviews>
@@ -130,18 +130,15 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Companies $company_id = null;
 
 
+    /**
+     * @var Collection<int, Forums>
+     */
+    #[ORM\OneToMany(targetEntity: Forums::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $forums_user;
 
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $date_of_birth = null;
 
-    public function getProfile(): ?Profile
-    {
-        return $this->profile;
-    }
-
-    public function setProfile(?Profile $profile): static
-    {
-        $this->profile = $profile;
-        return $this;
-    }
 
     public function __construct()
     {
@@ -151,6 +148,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tips_user = new ArrayCollection();
         $this->messages_user = new ArrayCollection();
         $this->messages_receiver = new ArrayCollection();
+        $this->forums_user = new ArrayCollection();
         $this->posts = new ArrayCollection();
     }
 
@@ -592,8 +590,45 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCompanyId(?Companies $company_id): static
     {
         $this->company_id = $company_id;
+    /**
+     * @return Collection<int, Forums>
+     */
+    public function getForumsUser(): Collection
+    {
+        return $this->forums_user;
+    }
+
+    public function addForumsUser(Forums $forumsUser): static
+    {
+        if (!$this->forums_user->contains($forumsUser)) {
+            $this->forums_user->add($forumsUser);
+            $forumsUser->setUserId($this);
+        }
 
         return $this;
     }
 
+    public function removeForumsUser(Forums $forumsUser): static
+    {
+        if ($this->forums_user->removeElement($forumsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($forumsUser->getUserId() === $this) {
+                $forumsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDateOfBirth(): ?\DateTime
+    {
+        return $this->date_of_birth;
+    }
+
+    public function setDateOfBirth(?\DateTime $date_of_birth): static
+    {
+        $this->date_of_birth = $date_of_birth;
+
+        return $this;
+    }
 }

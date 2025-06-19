@@ -3,17 +3,11 @@ import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
 import { API_URL } from "@env";
 import { themes } from "./LightDarkComponent";
+import { useTranslation } from "react-i18next";
 
-export default function PostPreview({ post, onQuickHelp, token, theme }) {
-    const [user, setUser] = useState(null);
-
-    // Theme object ophalen
-    const safeTheme =
-        typeof theme === "object" && theme
-            ? theme
-            : typeof theme === "string" && themes[theme]
-                ? themes[theme]
-                : themes.light;
+export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
+    const styles = createPostPreviewStyles(theme);
+    const { t } = useTranslation();
 
     useEffect(() => {
         let isMounted = true;
@@ -34,44 +28,57 @@ export default function PostPreview({ post, onQuickHelp, token, theme }) {
         return () => { isMounted = false; };
     }, [post?.user_id, token]);
 
-    if (!post) return null;
-
-    const styles = createPreviewStyles(safeTheme);
+    if (!post || typeof post !== 'object') return <View />;
 
     return (
-        <TouchableOpacity onPress={onQuickHelp}>
-            <View style={styles.card}>
-                <View style={styles.cardContent}>
-                    <View>
-                        <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-                            {post.title}
-                        </Text>
-                        <Text style={styles.cardSubtitle} numberOfLines={1} ellipsizeMode="tail">
-                            Geplaatst door: {user?.full_name || "Onbekende gebruiker"}
-                        </Text>
-                        <Text style={styles.cardDescription} numberOfLines={3} ellipsizeMode="tail">
-                            {post.description}
-                        </Text>
+        <View style={styles.card}>
+            <View style={styles.cardContent}>
+                <View>
+                    <Text
+                        style={styles.cardTitle}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
+                        {post.title || t("postPreview.untitled")}
+                    </Text>
+                    <Text
+                        style={styles.cardSubtitle}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
+                        {t("postPreview.postedBy")}: {user?.full_name || t("postPreview.unknownUser")}
+                    </Text>
+                    <Text
+                        style={styles.cardDescription}
+                        numberOfLines={3}
+                        ellipsizeMode="tail"
+                    >
+                        {post.description || t("postPreview.noDescription")}
+                    </Text>
+                </View>
+                {/* button + status+location */}
+                <View style={styles.cardFooter}>
+                    <TouchableOpacity
+                        style={styles.footerButton}
+                        onPress={onQuickHelp}
+                    >
+                        <Text style={styles.footerButtonText}>{t("postPreview.quickHelp")}</Text>
+                    </TouchableOpacity>
+                    <View style={[styles.footerButton, styles.statusButton]}>
+                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status || t("postPreview.active")}</Text>
                     </View>
-                    <View style={styles.cardFooter}>
-                        <TouchableOpacity style={styles.footerButton}>
-                            <Text style={styles.footerButtonText}>Quick Help</Text>
-                        </TouchableOpacity>
-                        <View style={[styles.footerButton, styles.statusButton]}>
-                            <Text style={[styles.footerButtonText, styles.blackText]}>{post.status}</Text>
-                        </View>
-                        <View style={[styles.footerButton, styles.locationButton]}>
-                            <Icon name="location-on" type="material" size={16} color={safeTheme.text} />
-                            <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type}</Text>
-                        </View>
+                    <View style={[styles.footerButton, styles.locationButton]}>
+                        <Icon name="location-on" type="material" size={16} color="#000" />
+                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type || t("postPreview.local")}</Text>
                     </View>
                 </View>
             </View>
-        </TouchableOpacity>
+        </View>
     );
 }
 
-function createPreviewStyles(theme) {
+// Use theme for dynamic styling if needed
+function createPostPreviewStyles(theme) {
     return StyleSheet.create({
         card: {
             minHeight: 125,
@@ -80,7 +87,7 @@ function createPreviewStyles(theme) {
             backgroundColor: theme.background,
             marginVertical: 20,
             borderRadius: 20,
-            borderColor: theme.filterRowBorder || '#E7ECF0',
+            borderColor: theme.border,
             borderWidth: 2,
             overflow: 'hidden',
         },
@@ -94,16 +101,16 @@ function createPreviewStyles(theme) {
             fontWeight: '400',
             fontSize: 24,
             marginBottom: 4,
-            color: theme.headerText,
+            color: theme.text,
         },
         cardSubtitle: {
             fontWeight: '500',
             fontSize: 12,
-            color: theme.reviewCount,
+            color: '#888',
             marginBottom: 8,
         },
         cardDescription: {
-            color: theme.detailsText,
+            color: theme.text,
             fontSize: 18,
         },
         cardFooter: {
@@ -111,7 +118,6 @@ function createPreviewStyles(theme) {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginTop: 16,
-            gap: 6,
         },
         footerButton: {
             flex: 1,
@@ -121,21 +127,21 @@ function createPreviewStyles(theme) {
             borderRadius: 12,
             height: 40,
             marginHorizontal: 4,
-            backgroundColor: theme.locationBg, // default voor Quick Help
+            backgroundColor: "#2A4BA0",
         },
         footerButtonText: {
-            color: theme.filledButtonText,
+            color: '#fff',
             fontWeight: 'bold',
             fontSize: 14,
         },
         statusButton: {
-            backgroundColor: theme.primary,
+            backgroundColor: '#FFC83A',
         },
         locationButton: {
-            backgroundColor: theme.primary,
+            backgroundColor: '#FFC83A',
         },
         blackText: {
-            color: theme.text,
+            color: '#000',
         },
     });
 }

@@ -1,38 +1,28 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { API_URL } from '@env';
+import { useTranslation } from "react-i18next";
+import { Icon } from "react-native-elements";
 
-export default function CreateEvent({ navigation }) {
+export default function CreateEvent({ navigation, theme, token }) {
     const [title, setTitle] = useState("");
     const [date, setDate] = useState("");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
     const [companyId, setCompanyId] = useState("");
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
+    const styles = createEventStyles(theme);
 
     const handleSubmit = async () => {
         if (!title || !date || !companyId) {
-            Alert.alert("Error", "Title, date, and company ID are required.");
+            Alert.alert(t("createEvent.errorTitle"), t("createEvent.errorRequired"));
             return;
         }
         setLoading(true);
         try {
-            // TODO: Replace with real auth
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselingjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error("Login failed");
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
-            if (!token) throw new Error("No token received");
+            if (!token) throw new Error(t("createEvent.errorNoToken"));
 
-            // Build request body with only required and non-empty optional fields
             const body = {
                 title,
                 date,
@@ -40,7 +30,6 @@ export default function CreateEvent({ navigation }) {
             };
             if (location) body.location = location;
             if (description) body.description = description;
-            console.log('Event POST body:', body); // Debug log
 
             const res = await fetch(API_URL + '/api/events/new', {
                 method: 'POST',
@@ -51,7 +40,7 @@ export default function CreateEvent({ navigation }) {
                 body: JSON.stringify(body)
             });
             if (!res.ok) {
-                let errorMsg = 'Failed to create event';
+                let errorMsg = t('createEvent.errorCreate');
                 try {
                     const errorData = await res.json();
                     errorMsg = errorData.message || JSON.stringify(errorData);
@@ -63,49 +52,130 @@ export default function CreateEvent({ navigation }) {
                 }
                 throw new Error(errorMsg);
             }
-            Alert.alert("Success", "Event created!");
+            Alert.alert(t("createEvent.successTitle"), t("createEvent.successMsg"));
             navigation.goBack();
         } catch (err) {
-            Alert.alert("Error", err.message);
+            Alert.alert(t("createEvent.errorTitle"), err.message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={{fontSize:24, fontWeight:'bold', marginBottom:16}}>Create Event</Text>
-            <Button title={loading ? "Creating..." : "Create Event"} onPress={handleSubmit} disabled={loading} />
-            <Button title="Back" onPress={() => navigation.goBack()} color="#2A4BA0" style={{marginTop: 12}} />
-            <Text style={styles.label}>Title</Text>
-            <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="Event Title" />
-            <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-            <TextInput style={styles.input} value={date} onChangeText={setDate} placeholder="2025-06-01" />
-            <Text style={styles.label}>Description</Text>
-            <TextInput style={styles.input} value={description} onChangeText={setDescription} placeholder="Description" multiline />
-            <Text style={styles.label}>Location</Text>
-            <TextInput style={styles.input} value={location} onChangeText={setLocation} placeholder="Location" />
-            <Text style={styles.label}>Company ID</Text>
-            <TextInput style={styles.input} value={companyId} onChangeText={setCompanyId} placeholder="Company ID" />
-        </View>
-    );
-}
+        <SafeAreaView style={styles.container}>
+             <View style={styles.topBar}>
+                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                     <Icon name="arrow-left" type="feather" size={24} color="#fff" />
+                     <Text style={styles.backButtonText}>{t("createEvent.back")}</Text>
+                 </TouchableOpacity>
+             </View>
+             <View style={styles.formWrapper}>
+                 <View style={styles.formFields}>
+                     <TextInput
+                         style={styles.input}
+                         value={title}
+                         onChangeText={setTitle}
+                         placeholder={t("createEvent.titlePlaceholder")}
+                         placeholderTextColor={theme.text}
+                     />
+                     <TextInput
+                         style={styles.input}
+                         value={date}
+                         onChangeText={setDate}
+                         placeholder={t("createEvent.datePlaceholder")}
+                         placeholderTextColor={theme.text}
+                     />
+                     <TextInput
+                         style={[styles.input, styles.inputDescription]}
+                         value={description}
+                         onChangeText={setDescription}
+                         placeholder={t("createEvent.descriptionPlaceholder")}
+                         placeholderTextColor={theme.text}
+                         multiline
+                     />
+                     <TextInput
+                         style={styles.input}
+                         value={location}
+                         onChangeText={setLocation}
+                         placeholder={t("createEvent.locationPlaceholder")}
+                         placeholderTextColor={theme.text}
+                     />
+                     <TextInput
+                         style={styles.input}
+                         value={companyId}
+                         onChangeText={setCompanyId}
+                         placeholder={t("createEvent.companyIdPlaceholder")}
+                         placeholderTextColor={theme.text}
+                         keyboardType="numeric"
+                     />
+                 </View>
+                 <View style={styles.uploadButtonWrapper}>
+                     <Button title={loading ? t("createEvent.creating") : t("createEvent.createEvent")} onPress={handleSubmit} color={'white'} disabled={loading} />
+                 </View>
+             </View>
+         </SafeAreaView>
+     );
+ }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 24,
-        backgroundColor: '#fff',
-    },
-    label: {
-        fontWeight: 'bold',
-        marginTop: 16,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 8,
-        marginTop: 4,
-    },
-});
+function createEventStyles(theme) {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: theme.background,
+        },
+        topBar: {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 100,
+            backgroundColor: theme.headerBg,
+            justifyContent: "center",
+            paddingTop: 25,
+            paddingHorizontal: 16,
+            zIndex: 20,
+        },
+        backButton: {
+            flexDirection: "row",
+            justifyContent: "flex-start",
+            alignItems: 'center',
+        },
+        backButtonText: {
+            color: "#fff",
+            fontSize: 24,
+            paddingLeft: 8,
+        },
+        formWrapper: {
+            flex: 1,
+            paddingTop: 100,
+            paddingHorizontal: 16,
+            justifyContent: "space-between",
+        },
+        formFields: {
+            gap: 20,
+        },
+        input: {
+            borderColor: 'grey',
+            color: theme.text,
+            backgroundColor: theme.formBg,
+            borderWidth: 1,
+            borderRadius: 16,
+            fontSize: 24,
+            padding: 12,
+            textAlign: 'left',
+            textAlignVertical: 'top',
+        },
+        inputDescription: {
+            height: 100,
+            color: theme.text,
+        },
+        uploadButtonWrapper: {
+            marginBottom: 50,
+            padding: 20,
+            backgroundColor: "#2A4BA0",
+            width: 200,
+            alignSelf: "center",
+            borderRadius: 100,
+        },
+    });
+}
