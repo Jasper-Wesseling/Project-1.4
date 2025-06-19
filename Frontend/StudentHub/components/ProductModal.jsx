@@ -191,38 +191,41 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
 
                             </View>
                             {/* Seller Info - improved */}
-                            <Text style={styles.sectionTitle}>{t("productModal.sellerInfo")}</Text>
-                            <TouchableOpacity onPress={() => {navigation.navigate('Profile', { product: product}); onClose(); }} activeOpacity={0.8} style={styles.sellerContainer}>
-                                    <View style={styles.sellerRow}>
-                                        <Image
-                                            source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
-                                            style={styles.sellerImg}
-                                        />
-                                        <Text style={styles.sellerName}>{product.product_username}</Text>
-                                    </View>
-                                    <View style={styles.sellerRatingRow}>
-                                        {sellerData && (
-                                            <View style={styles.reviewContainer}>
-                                                <View style={styles.reviewRow}>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                                                        {Array.from({ length: 5 }).map((_, i) => (
-                                                            <Text
-                                                                key={i}
-                                                                style={[
-                                                                    i < Math.round(sellerData.review_average || 0)
-                                                                        ? styles.starFilled
-                                                                        : styles.starEmpty
-                                                                ]}
-                                                            >★</Text>
-                                                        ))}
-                                                        <Text style={styles.reviews}> {sellerData.review_count || t("productModal.noReviews")} {t("productModal.reviews")}</Text>
+                            {!isCreator && (
+                                <>
+                                    <Text style={styles.sectionTitle}>{t("productModal.sellerInfo")}</Text>
+                                    <TouchableOpacity onPress={() => {navigation.navigate('Profile', { product: product}); onClose(); }} activeOpacity={0.8} style={styles.sellerContainer}>
+                                        <View style={styles.sellerRow}>
+                                            <Image
+                                                source={sellerData ? { uri: API_URL + sellerData.avatar_url } : { uri: 'https://placecats.com/300/200' }}
+                                                style={styles.sellerImg}
+                                            />
+                                            <Text style={styles.sellerName}>{product.product_username}</Text>
+                                        </View>
+                                        <View style={styles.sellerRatingRow}>
+                                            {sellerData && (
+                                                <View style={styles.reviewContainer}>
+                                                    <View style={styles.reviewRow}>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                                <Text
+                                                                    key={i}
+                                                                    style={[
+                                                                        i < Math.round(sellerData.review_average || 0)
+                                                                            ? styles.starFilled
+                                                                            : styles.starEmpty
+                                                                    ]}
+                                                                >★</Text>
+                                                            ))}
+                                                            <Text style={styles.reviews}> {sellerData.review_count || t("productModal.noReviews")} {t("productModal.reviews")}</Text>
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                        )}
-                                    </View>
-                               
-                            </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    </TouchableOpacity>
+                                </>
+                            )}
 
                             {/* Details */}
                             <Text style={styles.sectionTitle}>{t("productModal.details")}</Text>
@@ -352,7 +355,7 @@ function createProductModalStyles(theme) {
             width: 200,
             height: 200,
             borderRadius: 100,
-            backgroundColor: '#f4f5f7',
+            backgroundColor: theme.backCircle,
             justifyContent: 'center',
             alignItems: 'center',
             alignSelf: 'center',
