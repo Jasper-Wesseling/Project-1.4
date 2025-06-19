@@ -8,8 +8,8 @@ i18n
   .use(initReactI18next)
   .init({
     compatibilityJSON: 'v3',
-    lng: 'en',
-    fallbackLng: 'en',
+    lng: 'nl',
+    fallbackLng: 'nl',
     resources: {
       en: { translation: en },
       nl: { translation: nl }

@@ -4,7 +4,7 @@
     "slug": "StudentHub",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logoEmmen2.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {

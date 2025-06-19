@@ -65,7 +65,7 @@ export default function Login({ navigation, onLogin, theme }) {
                     <View style={styles.topHalf}>
                         <View style={styles.imagePlaceholder}>
                             <Image
-                                source={{ uri: API_URL + "/uploads/6828e77836564.jpg" }}
+                                source={require("../assets/logoEmmen2.png")}
                                 style={{ width: 180, height: 180, borderRadius: 28 }}
                                 resizeMode="cover"
                             />
