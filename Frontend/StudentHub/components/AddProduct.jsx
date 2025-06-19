@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text, useRef } from "react-native";
+import { useState, useRef } from "react";
+import { SafeAreaView, TextInput, View, Image, Alert, StyleSheet, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
@@ -39,42 +39,36 @@ const showPhotoOptions = () => {
 
     const takePhoto = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        
         if (status !== 'granted') {
             Alert.alert('Sorry, we hebben camera toegang nodig!');
             return;
         }
-
         const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
-
-        if (!result.canceled) {
-            // Handle foto
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setPhoto(result.assets[0]); // <-- Set photo for preview and upload
             console.log('Photo taken:', result.assets[0]);
         }
     };
 
     const selectPhoto = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        
         if (status !== 'granted') {
             Alert.alert('Sorry, we hebben galerij toegang nodig!');
             return;
         }
-
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
-
-        if (!result.canceled) {
-            // Handle foto
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setPhoto(result.assets[0]); // <-- Set photo for preview and upload
             console.log('Photo selected:', result.assets[0]);
         }
     };
@@ -88,7 +82,6 @@ const showPhotoOptions = () => {
             Alert.alert(t('error'), t('price_leading_zero'));
             return;
         }
-
         if (price.includes(",")) {
             if ((price.split(",").length - 1) > 1 || price.split(",")[1]?.length !== 2) {
                 Alert.alert(t('error'), t('invalid_price'));
@@ -96,7 +89,7 @@ const showPhotoOptions = () => {
             }
         }
         let priceToDb = price;
-        priceToDb = parseInt(priceToDb.trim().replace(",", ""))
+        priceToDb = parseInt(priceToDb.trim().replace(",", ""));
 
         const formData = new FormData();
         formData.append('title', title);
@@ -105,8 +98,8 @@ const showPhotoOptions = () => {
         formData.append('price', priceToDb);
         formData.append('photo', {
             uri: photo.uri,
-            name: photo.fileName || 'photo.jpg',
-            type: photo.type || 'image/jpeg',
+            name: photo.fileName || photo.uri.split('/').pop() || 'photo.jpg',
+            type: photo.type || photo.mimeType || 'image/jpeg',
         });
 
         try {
