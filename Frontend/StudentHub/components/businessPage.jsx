@@ -34,7 +34,6 @@ export default function BussinessPage({ navigation, token, theme }) {
             });
             if (!res.ok) throw new Error('Failed to fetch companies');
             const companies = await res.json();
-            console.log('Fetched companies:', companies); // Debug log
             // Use id and name for filters
             if (Array.isArray(companies) && companies.length > 0) {
                 setFilters(companies.map(c => ({ id: c.id, name: c.name })));

@@ -72,11 +72,10 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 				{props => <BountyBoard {...props} token={token} user={user} theme={theme} />}
 			</Tab.Screen>
 			<Tab.Screen name="Profile">
-				{props => <Profile {...props} token={token} user={user} theme={theme} />}
+				{props => <Profile {...props} token={token} user={user} theme={theme} onLogout={onLogout}/>}
 			</Tab.Screen>
-			{/* add to profile screen */}
 			<Tab.Screen name="LightDark">
-				{props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
+				{props => <LightDarkToggle {...props} token={token} onThemeChange={setTheme} theme={theme}/>}
 			</Tab.Screen>
 			
 		</Tab.Navigator>

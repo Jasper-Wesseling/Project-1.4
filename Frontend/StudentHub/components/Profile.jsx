@@ -30,13 +30,6 @@ export default function Profile({ token, navigation, route, user, theme, onLogou
 
   const DEFAULT_AVATAR_URL = "https://www.gravatar.com/avatar/?d=mp&s=120";
 
-  // TEMP: Logout function for testing
-  const tempLogout = async () => {
-      if (onLogout) {
-          await onLogout();
-      }
-  };
-
   const fetchProfile = async (targetUserId) => {
     try {
       const res = await fetch(API_URL + `/api/users/getbyid?id=${targetUserId}`, {
@@ -486,7 +479,7 @@ useFocusEffect(
             )}
           </View>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={tempLogout} accessible accessibilityLabel={t("profile.logout")}>
+        <TouchableOpacity style={styles.logoutButton} onPress={onLogout} accessible accessibilityLabel={t("profile.logout")}>
         <Icon name="log-out" type="feather" size={32} color="#fff" />
       </TouchableOpacity>
       </ScrollView>
