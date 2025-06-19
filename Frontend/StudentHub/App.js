@@ -77,6 +77,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 			<Tab.Screen name="Forum">
 				{props => <TipsFeed {...props} token={token} user={user} theme={theme}/>}
 			</Tab.Screen>
+			
 		</Tab.Navigator>
 	);
 }
