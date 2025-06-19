@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 //  export default function BountyBoard({ navigation,  }) {
 
-export default function BussinessPage({ navigation,token, theme }) {
+export default function BussinessPage({ navigation, token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
