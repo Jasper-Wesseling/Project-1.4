@@ -45,9 +45,16 @@ class Companies
     #[ORM\OneToMany(targetEntity: Events::class, mappedBy: 'company_id', orphanRemoval: true)]
     private Collection $events_company;
 
+    /**
+     * @var Collection<int, Users>
+     */
+    #[ORM\OneToMany(targetEntity: Users::class, mappedBy: 'company_id')]
+    private Collection $users;
+
     public function __construct()
     {
         $this->events_company = new ArrayCollection();
+        $this->users = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -163,6 +170,36 @@ class Companies
             // set the owning side to null (unless already changed)
             if ($eventsCompany->getCompanyId() === $this) {
                 $eventsCompany->setCompanyId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Users>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(Users $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->setCompanyId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(Users $user): static
+    {
+        if ($this->users->removeElement($user)) {
+            // set the owning side to null (unless already changed)
+            if ($user->getCompanyId() === $this) {
+                $user->setCompanyId(null);
             }
         }
 
