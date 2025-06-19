@@ -123,9 +123,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $widgets_user;
     
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
-    private ?Profile $profile = null;
-
     #[ORM\ManyToOne(inversedBy: 'users')]
     private ?Companies $company_id = null;
 
@@ -590,9 +587,10 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCompanyId(?Companies $company_id): static
     {
         $this->company_id = $company_id;
-    /**
-     * @return Collection<int, Forums>
-     */
+
+        return $this;
+    }
+
     public function getForumsUser(): Collection
     {
         return $this->forums_user;

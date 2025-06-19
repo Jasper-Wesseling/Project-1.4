@@ -288,7 +288,8 @@ class PostsController extends AbstractController
         }
         $post = $postsRepository->find($id);
         if (!$post) {
-            return new JsonResponse(['error' => 'Post not found'], 404);        }
+            return new JsonResponse(['error' => 'Post not found'], 404);       
+        }
 
         // check if post owner is the same as the user making the request
         $postUser = $post->getUserId();
@@ -317,8 +318,8 @@ class PostsController extends AbstractController
         return new JsonResponse("Post updated", 200);
     }
 
-    #[Route('/delete', name: 'api_posts_delete', methods: ['DELETE'])]
-    public function deletePost(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
+    #[Route('/delete', name: 'api_posts_delete_by_id', methods: ['DELETE'])]
+    public function deletePostById(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
@@ -345,7 +346,9 @@ class PostsController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'Post deleted'], 200);
-    }    #[Route('/get/fromCurrentUser', name: 'api_posts_get_from_current_user', methods: ['GET'])]
+    }    
+    
+    #[Route('/get/fromCurrentUser', name: 'api_posts_get_from_current_user', methods: ['GET'])]
     public function getPostsFromUser( Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository ): Response {
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;

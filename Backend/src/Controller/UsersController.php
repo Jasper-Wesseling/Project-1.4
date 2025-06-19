@@ -128,6 +128,7 @@ class UsersController extends AbstractController
                 'location_id' => $user->getLocationId() ? $user->getLocationId()->getId() : null,
                 'disabled' => $user->getRoles() ? in_array('ROLE_DISABLED', $user->getRoles()) : false,
                 'date_of_birth' => $user->getDateOfBirth() ? $user->getDateOfBirth()->format('Y-m-d') : null,
+            ];
         }
 
         return new JsonResponse($usersData, 200);
@@ -436,7 +437,9 @@ class UsersController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['username' => $user->getEmail(), 'password' => $password, 'roles' => $user->getRoles()], 201);
-    }    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
+    }    
+    
+    #[Route('/update', name: 'api_users_update', methods: ['PUT'])]
     public function updateProfile(
         Request $request,
         TokenStorageInterface $tokenStorage,
@@ -538,14 +541,6 @@ class UsersController extends AbstractController
             $user->setInterests($data['interests']);
         }
 
-        $profile = new Profile();
-        $profile->setUser($user);
-        $profile->setFullName('');
-        $profile->setAge(null);
-        $profile->setStudyProgram('');
-        $profile->setLocation('');
-        $profile->setBio('');
-
 
         $company = new Companies();
         $company->setName($data['name'] ?? 'Business User');
@@ -559,7 +554,6 @@ class UsersController extends AbstractController
 
 
         $entityManager->persist($user);
-        $entityManager->persist($profile);
         $entityManager->persist($company);
         $entityManager->flush();
 
