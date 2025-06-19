@@ -4,15 +4,7 @@ import { API_URL } from '@env';
 import { useTranslation } from "react-i18next";
 import { Icon } from "react-native-elements";
 
-export default function CreateEvent({ navigation, theme }) {
-    const defaultTheme = {
-        background: "#fff",
-        headerBg: "#2A4BA0",
-        text: "#222",
-        formBg: "#f5f5f5"
-    };
-    theme = theme || defaultTheme;
-
+export default function CreateEvent({ navigation, theme, token }) {
     const [title, setTitle] = useState("");
     const [date, setDate] = useState("");
     const [description, setDescription] = useState("");
@@ -29,19 +21,6 @@ export default function CreateEvent({ navigation, theme }) {
         }
         setLoading(true);
         try {
-            // TODO: Replace with real auth
-            const loginRes = await fetch(API_URL + '/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "username": "jasper.wesseling@student.nhlstenden.com",
-                    "password": "wesselinawdkmlkanwddgjasper",
-                    "full_name": "Jasper Wesseling"
-                })
-            });
-            if (!loginRes.ok) throw new Error(t("createEvent.errorLogin"));
-            const loginData = await loginRes.json();
-            const token = loginData.token || loginData.access_token;
             if (!token) throw new Error(t("createEvent.errorNoToken"));
 
             const body = {
@@ -87,7 +66,7 @@ export default function CreateEvent({ navigation, theme }) {
              <View style={styles.topBar}>
                  <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                      <Icon name="arrow-left" type="feather" size={24} color="#fff" />
-                     <Text style={styles.backButtonText}>Back</Text>
+                     <Text style={styles.backButtonText}>{t("createEvent.back")}</Text>
                  </TouchableOpacity>
              </View>
              <View style={styles.formWrapper}>
@@ -96,21 +75,21 @@ export default function CreateEvent({ navigation, theme }) {
                          style={styles.input}
                          value={title}
                          onChangeText={setTitle}
-                         placeholder="Event Title"
+                         placeholder={t("createEvent.titlePlaceholder")}
                          placeholderTextColor={theme.text}
                      />
                      <TextInput
                          style={styles.input}
                          value={date}
                          onChangeText={setDate}
-                         placeholder="YYYY-MM-DD"
+                         placeholder={t("createEvent.datePlaceholder")}
                          placeholderTextColor={theme.text}
                      />
                      <TextInput
                          style={[styles.input, styles.inputDescription]}
                          value={description}
                          onChangeText={setDescription}
-                         placeholder="Description"
+                         placeholder={t("createEvent.descriptionPlaceholder")}
                          placeholderTextColor={theme.text}
                          multiline
                      />
@@ -118,20 +97,20 @@ export default function CreateEvent({ navigation, theme }) {
                          style={styles.input}
                          value={location}
                          onChangeText={setLocation}
-                         placeholder="Location"
+                         placeholder={t("createEvent.locationPlaceholder")}
                          placeholderTextColor={theme.text}
                      />
                      <TextInput
                          style={styles.input}
                          value={companyId}
                          onChangeText={setCompanyId}
-                         placeholder="Company ID"
+                         placeholder={t("createEvent.companyIdPlaceholder")}
                          placeholderTextColor={theme.text}
                          keyboardType="numeric"
                      />
                  </View>
                  <View style={styles.uploadButtonWrapper}>
-                     <Button title={loading ? "Creating..." : "Create Event"} onPress={handleSubmit} color={'white'} disabled={loading} />
+                     <Button title={loading ? t("createEvent.creating") : t("createEvent.createEvent")} onPress={handleSubmit} color={'white'} disabled={loading} />
                  </View>
              </View>
          </SafeAreaView>

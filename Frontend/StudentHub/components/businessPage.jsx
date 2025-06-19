@@ -5,10 +5,11 @@ import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format, parseISO } from "date-fns"; // Add this import at the top
+import { useTranslation } from "react-i18next";
 
 //  export default function BountyBoard({ navigation,  }) {
 
-export default function BussinessPage({ navigation,token, theme }) {
+export default function BussinessPage({ navigation, token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,7 +20,7 @@ export default function BussinessPage({ navigation,token, theme }) {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [eventModalVisible, setEventModalVisible] = useState(false);
     const styles = createBusinessPageStyles(theme);
-
+    const { t } = useTranslation();
 
     // Fetch all companies for filters
     const fetchCompanies = async () => {
@@ -136,7 +137,7 @@ export default function BussinessPage({ navigation,token, theme }) {
             {/* Static Top Bar */}
             <View style={styles.topBar}>
                 <View style={styles.topBarRow}>
-                    <Text style={styles.topBarText}>Hey, Jasper</Text>
+                    <Text style={styles.topBarText}>{t("businessPage.hey", { name: "Jasper" })}</Text>
                     <View style={styles.topBarIcons}>
                         <TouchableOpacity onPress={() => navigation.navigate('CreateEvent')}>
                             <Icon name="plus" type="feather" size={30} color="#fff" />
@@ -153,11 +154,11 @@ export default function BussinessPage({ navigation,token, theme }) {
 
             {/* Animated Header */}
             <Animated.View style={[styles.header, { height: headerHeight }]}>
-                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>Discover</Animated.Text>
-                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>By Company</Animated.Text>
+                <Animated.Text style={[styles.headerText, { opacity: headerOpacity }]}>{t("businessPage.discover")}</Animated.Text>
+                <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>{t("businessPage.byCompany")}</Animated.Text>
             </Animated.View>
 
-            {/* Filter Row (copied from Products.jsx) */}
+            {/* Filter Row */}
             <Animated.View style={[styles.filterRow, { top: filterTop, height: 50, zIndex: 30, backgroundColor: theme.filterRowBg }]}>
                 <ScrollView
                     horizontal
@@ -173,13 +174,13 @@ export default function BussinessPage({ navigation,token, theme }) {
                             </TouchableOpacity>
                         ))
                     ) : (
-                        <Text style={{color: theme.text, marginLeft: 16}}>No companies found</Text>
+                        <Text style={{color: theme.text, marginLeft: 16}}>{t("businessPage.noCompanies")}</Text>
                     )}
                 </ScrollView>
             </Animated.View>
 
             {loading ? (
-                <Text style={styles.loadingText}>Loading...</Text>
+                <Text style={styles.loadingText}>{t("businessPage.loading")}</Text>
             ) : (
                 <Animated.ScrollView
                     contentContainerStyle={styles.scrollViewContent}
@@ -206,7 +207,7 @@ export default function BussinessPage({ navigation,token, theme }) {
                         ))
                     ) : (
                         <View style={styles.eventContainer}>
-                            <Text style={styles.eventTitle}>No events found</Text>
+                            <Text style={styles.eventTitle}>{t("businessPage.noEvents")}</Text>
                         </View>
                     )}
                 </Animated.ScrollView>
@@ -216,7 +217,7 @@ export default function BussinessPage({ navigation,token, theme }) {
                 style={styles.agendaButton}
                 onPress={() => setAgendaVisible(true)}
             >
-                <Text style={styles.agendaButtonText}>View Agenda</Text>
+                <Text style={styles.agendaButtonText}>{t("businessPage.viewAgenda")}</Text>
                 <MaterialIcons name="event" size={20} color="white" />
             </Pressable>
 
@@ -229,7 +230,7 @@ export default function BussinessPage({ navigation,token, theme }) {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Agenda</Text>
+                        <Text style={styles.modalTitle}>{t("businessPage.agenda")}</Text>
                         <ScrollView style={{maxHeight: 400, width: "100%"}}>
                             {events && events.length > 0 ? (
                                 getEventsByDate().map(({ date, events }) => (
@@ -267,11 +268,11 @@ export default function BussinessPage({ navigation,token, theme }) {
                                     </View>
                                 ))
                             ) : (
-                                <Text style={{color: theme.text, textAlign: 'center'}}>No events in agenda</Text>
+                                <Text style={{color: theme.text, textAlign: 'center'}}>{t("businessPage.noEventsAgenda")}</Text>
                             )}
                         </ScrollView>
                         <TouchableOpacity style={styles.closeModalButton} onPress={() => setAgendaVisible(false)}>
-                            <Text style={styles.closeModalButtonText}>Close</Text>
+                            <Text style={styles.closeModalButtonText}>{t("businessPage.close")}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -290,14 +291,14 @@ export default function BussinessPage({ navigation,token, theme }) {
                             <>
                                 <Text style={styles.eventModalTitle}>{selectedEvent.title}</Text>
                                 <View style={{marginBottom: 8, width: '100%'}}>
-                                    <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>Date & Time:</Text>
+                                    <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>{t("businessPage.dateTime")}</Text>
                                     <Text style={styles.eventModalDate}>
                                         {selectedEvent.date ? format(parseISO(selectedEvent.date), "EEEE, MMMM d, yyyy HH:mm") : ""}
                                     </Text>
                                 </View>
                                 {selectedEvent.company && (
                                     <View style={{marginBottom: 8, width: '100%'}}>
-                                        <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>Company:</Text>
+                                        <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>{t("businessPage.company")}</Text>
                                         <Text style={styles.eventModalCompany}>
                                             {selectedEvent.company.name || selectedEvent.company}
                                         </Text>
@@ -305,7 +306,7 @@ export default function BussinessPage({ navigation,token, theme }) {
                                 )}
                                 {selectedEvent.location && (
                                     <View style={{marginBottom: 8, width: '100%'}}>
-                                        <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>Location:</Text>
+                                        <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>{t("businessPage.location")}</Text>
                                         <Text style={styles.eventModalLocation}>
                                             {selectedEvent.location}
                                         </Text>
@@ -313,17 +314,16 @@ export default function BussinessPage({ navigation,token, theme }) {
                                 )}
                                 {selectedEvent.description && (
                                     <View style={{marginBottom: 8, width: '100%'}}>
-                                        <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>Description:</Text>
+                                        <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>{t("businessPage.description")}</Text>
                                         <Text style={styles.eventModalDesc}>{selectedEvent.description}</Text>
                                     </View>
                                 )}
-                                {/* Add more fields as needed, following the same pattern */}
                             </>
                         ) : (
-                            <Text>No event data</Text>
+                            <Text>{t("businessPage.noEventData")}</Text>
                         )}
                         <TouchableOpacity style={styles.closeModalButton} onPress={closeEventModal}>
-                            <Text style={styles.closeModalButtonText}>Close</Text>
+                            <Text style={styles.closeModalButtonText}>{t("businessPage.close")}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

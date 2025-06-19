@@ -256,7 +256,7 @@ export default function App() {
 							)}
 						</Stack.Screen>
 						<Stack.Screen name="CreateEvent" >
-							{props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout}/>}
+								{props => <CreateEvent {...props} token={token} user={user} onLogout={handleLogout} theme={theme} />}
 						</Stack.Screen>
 						<Stack.Screen name="ProductChat">
 							{props => (
