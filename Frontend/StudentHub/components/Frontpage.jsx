@@ -319,6 +319,11 @@ export default function Frontpage({ token, user, navigation, theme }) {
 				onClose={() => setModalVisible(false)}
 				formatPrice={formatPrice}
 				theme={theme}
+				productUser={selectedProduct?.product_user_id}
+				productUserName={selectedProduct?.product_username}
+				user={user}
+				token={token}
+				navigation={navigation}
 			/>
 		</View>
 	);
