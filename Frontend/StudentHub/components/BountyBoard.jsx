@@ -103,7 +103,6 @@ export default function BountyBoard({ navigation, token, theme }) {
     });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
-    console.log(posts);
     const filteredPosts = posts
         .filter(post => post && typeof post === 'object' && post.title)
         .filter(post =>

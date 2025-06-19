@@ -173,7 +173,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                  {/* <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>{t("productModal.addToCart")}</Text></TouchableOpacity>
                                  <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>{t("productModal.buyNow")}</Text></TouchableOpacity> */}
 
-                                <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>Add To Cart</Text></TouchableOpacity>
                                 <TouchableOpacity
                                     style={[
                                         styles.filledButton,
@@ -186,7 +185,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                     disabled={isCreator}
                                 >
                                     <Text style={styles.filledButtonText}>
-                                        Buy Now
+                                        Chat about this product
                                     </Text>
                                 </TouchableOpacity>
 
@@ -224,9 +223,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                     </View>
                                
                             </TouchableOpacity>
-                            
-
-                            
 
                             {/* Details */}
                             <Text style={styles.sectionTitle}>{t("productModal.details")}</Text>
@@ -288,35 +284,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                     </View>
                                 </View>
                             )}
-
-                            {/* for later use when there needs to be more infomation added to the modal */}
-                            {/* <TouchableOpacity
-                                style={styles.sectionRow}
-                                onPress={() => setShowOverige(!showOverige)}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={styles.sectionTitle}>overige</Text>
-                                <Text style={styles.sectionArrow}>{showOverige ? "▲" : "▼"}</Text>
-                            </TouchableOpacity>
-                            {showOverige && (
-                                <Text style={styles.details}>
-                                    test
-                                </Text>
-                            )}
-                            
-                            <TouchableOpacity
-                                style={styles.sectionRow}
-                                onPress={() => setShowReviews(!showReviews)}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={styles.sectionTitle}>Reviews</Text>
-                                <Text style={styles.sectionArrow}>{showReviews ? "▲" : "▼"}</Text>
-                            </TouchableOpacity>
-                            {showReviews && (
-                                <Text style={styles.details}>
-                                    Hier komen de reviews van het product.
-                                </Text>
-                            )} */}
                         </ScrollView>
                     </View>
                 </KeyboardAvoidingView>

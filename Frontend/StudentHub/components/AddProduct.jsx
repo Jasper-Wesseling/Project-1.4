@@ -51,7 +51,6 @@ const showPhotoOptions = () => {
         });
         if (!result.canceled && result.assets && result.assets.length > 0) {
             setPhoto(result.assets[0]); // <-- Set photo for preview and upload
-            console.log('Photo taken:', result.assets[0]);
         }
     };
 
@@ -69,7 +68,6 @@ const showPhotoOptions = () => {
         });
         if (!result.canceled && result.assets && result.assets.length > 0) {
             setPhoto(result.assets[0]); // <-- Set photo for preview and upload
-            console.log('Photo selected:', result.assets[0]);
         }
     };
 

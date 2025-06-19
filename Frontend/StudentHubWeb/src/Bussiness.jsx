@@ -72,7 +72,6 @@ const Bussiness = () => {
             }
             
             const data = await res.json();
-            console.log('Business account created:', data);
             setSubmitted(true);
             
         } catch (e) {
