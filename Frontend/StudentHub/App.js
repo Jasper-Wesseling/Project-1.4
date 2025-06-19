@@ -71,29 +71,9 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 			<Tab.Screen name="BountyBoard">
 				{props => <BountyBoard {...props} token={token} user={user} theme={theme} />}
 			</Tab.Screen>
-			<Tab.Screen 
-				name="Profile" 
-				component={Profile}
-				listeners={({ navigation, route, token, theme }) => ({
-					tabPress: (e) => {
-						// Check if already on this tab
-						const isFocused = navigation.isFocused();
-						
-						if (isFocused) {
-							// Already on tab - do custom action
-							e.preventDefault();
-							
-							// Clear route params
-							navigation.setParams({});
-							
-							// Or scroll to top, refresh, etc.
-							console.log('Already focused - clearing params');
-						}
-						// If not focused, allow normal navigation
-					},
-				})}
-			/>
-
+			<Tab.Screen name="Profile">
+				{props => <Profile {...props} token={token} user={user} theme={theme} />}
+			</Tab.Screen>
 			{/* add to profile screen */}
 			<Tab.Screen name="LightDark">
 				{props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}

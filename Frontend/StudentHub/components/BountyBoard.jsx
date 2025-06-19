@@ -55,8 +55,8 @@ export default function BountyBoard({ navigation, token, theme }) {
             setHasMorePages(postsData.length === 20);
             setPosts(prev =>
                 append
-                    ? [...prev, ...postsData.filter(p => !prev.some(existing => existing.id === p.id))]
-                    : postsData
+                    ? [...prev, ...postsData.posts.filter(p => !prev.some(existing => existing.id === p.id))]
+                    : postsData.posts
             );
             setCurrentUser(currentUser);
             setLoading(false);
@@ -103,6 +103,7 @@ export default function BountyBoard({ navigation, token, theme }) {
     });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
+    console.log(posts);
     const filteredPosts = posts
         .filter(post => post && typeof post === 'object' && post.title)
         .filter(post =>
