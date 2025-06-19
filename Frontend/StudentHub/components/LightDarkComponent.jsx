@@ -3,6 +3,8 @@ import { TouchableOpacity, Alert, View, Text, Switch, useColorScheme, Animated, 
 import { API_URL } from '@env';
 import LanguageSwitcher from './languageSwitcher.jsx';
 import { useTranslation } from 'react-i18next'; 
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Icon } from 'react-native-elements';
 
 export const themes = {
 	light: {
@@ -86,7 +88,6 @@ export const themes = {
 		text: "#fff",
 	}
 };
-
 export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange, navigation }) {
 	const [mode, setMode] = useState(initialMode || "light");
 	const [token, setToken] = useState(propToken || null);
@@ -94,6 +95,7 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 	const colorScheme = useColorScheme();
 	const [theme, setTheme] = useState(themes[initialMode || "light"]);
 	const fadeAnim = useRef(new Animated.Value(1)).current;
+	const { t } = useTranslation();
 
 	// Ophalen van token als die niet als prop wordt meegegeven
 	useEffect(() => {
@@ -220,39 +222,46 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 		}
 	};
 
-
 	return (
-		<View style={[styles.container, { backgroundColor: theme?.background || "#F8F9FB" }]}>
-			<View style={styles.row}>
-				<Text style={[styles.text, { color: theme?.text || "#222" }]}>System default</Text>
-				<Switch value={systemDefault} onValueChange={handleSystemDefault} />
+		<SafeAreaView style={{ flex: 1, backgroundColor: theme?.background || "#F8F9FB" }}>
+			<View style={[styles.topBar, { backgroundColor: theme?.headerBg || "#2A4BA0" }]}>
+				<View>
+					<TouchableOpacity style={[styles.backButton, { backgroundColor: theme?.background || "#F8F9FB" }]} onPress={() => navigation.goBack()}>
+						<Icon name="arrow-left" type="feather" size={24} color={ theme?.text || "#222"} />
+						<Text style={[styles.backButtonText, { color: theme?.text || "#222" }]}>{t('go_back')}</Text>
+					</TouchableOpacity>
+				</View>
 			</View>
-			<TouchableOpacity
-				onPress={toggleTheme}
-				style={[
-					styles.button,
-					{
-						backgroundColor: mode === "light" ? "#222" : "#fff",
-						opacity: systemDefault ? 0.5 : 1,
-					},
-				]}
-				disabled={systemDefault}
-			>
-				<Text style={{ color: mode === "light" ? "#fff" : "#222" }}>Wissel naar {mode === "light" ? "dark" : "light"}</Text>
-			</TouchableOpacity>
-			<LanguageSwitcher theme={theme}/>
-			
-			<View style={[styles.helpSection, { borderTopColor: theme?.borderColor || "#E7ECF0", width: '100%', justifyContent: 'center', alignItems: 'center', paddingTop: 16 }]}>
-				<Text style={{ color: theme?.text }}>Need help? visit our FAQ page!</Text>
-				<TouchableOpacity onPress={() => navigation.navigate('FaqPage')} style={{alignSelf: "center", padding: 8, borderRadius: 8, backgroundColor: theme?.primary || "#2A4BA0", width: '90%', justifyContent: 'center', alignItems: 'center'}}>
-	   				<Text style={{  color: 'white' }}>FAQ</Text>
+			<View style={[styles.container, { backgroundColor: theme?.background || "#F8F9FB" }]}>
+				<View style={styles.row}>
+					<Text style={[styles.text, { color: theme?.text || "#222" }]}>System default</Text>
+					<Switch value={systemDefault} onValueChange={handleSystemDefault} />
+				</View>
+				<TouchableOpacity
+					onPress={toggleTheme}
+					style={[
+						styles.button,
+						{
+							backgroundColor: mode === "light" ? "#222" : "#fff",
+							opacity: systemDefault ? 0.5 : 1,
+						},
+					]}
+					disabled={systemDefault}
+				>
+					<Text style={{ color: mode === "light" ? "#fff" : "#222" }}>Wissel naar {mode === "light" ? "dark" : "light"}</Text>
 				</TouchableOpacity>
+				<LanguageSwitcher theme={theme}/>
+				
+				<View style={[styles.helpSection, { borderTopColor: theme?.borderColor || "#E7ECF0", width: '100%', justifyContent: 'center', alignItems: 'center', paddingTop: 16 }]}>
+					<Text style={{ color: theme?.text }}>Need help? visit our FAQ page!</Text>
+					<TouchableOpacity onPress={() => navigation.navigate('FaqPage')} style={{alignSelf: "center", padding: 8, borderRadius: 8, backgroundColor: theme?.primary || "#2A4BA0", width: '90%', justifyContent: 'center', alignItems: 'center'}}>
+						<Text style={{  color: 'white' }}>FAQ</Text>
+					</TouchableOpacity>
+				</View>
 			</View>
-		</View>
+		</SafeAreaView>
 	);
 }
-
-
 
 const styles = StyleSheet.create({
 	container: {
@@ -280,4 +289,37 @@ const styles = StyleSheet.create({
 		marginTop: 8,
 		fontSize: 16,
 	},
+	topBar: {
+		position: "absolute",
+		top: 0,
+		left: 0,
+		right: 0,
+		height: 100,
+		justifyContent: "center",
+		paddingTop: 25,
+		paddingHorizontal: 16,
+		zIndex: 20,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.12,
+		shadowRadius: 8,
+		elevation: 6,
+	},
+	backButton: {
+		flexDirection: "row",
+		alignItems: 'center',
+		borderRadius: 16,
+		paddingVertical: 8,
+		paddingHorizontal: 14,
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.10,
+		shadowRadius: 4,
+		elevation: 2,
+	},
+	backButtonText: {
+		fontSize: 20,
+		paddingLeft: 8,
+		fontWeight: '600',
+	},
 });
+
