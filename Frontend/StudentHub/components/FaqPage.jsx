@@ -1,53 +1,24 @@
 import { useState, useRef } from "react";
-import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity, Appearance } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { Icon } from "react-native-elements";
-import LightDarkToggle, { themes } from "./LightDarkComponent";
-import UserFirstName from "./UserFirstName";
+import { useTranslation } from "react-i18next";
 
-const faqs = [
-  { id: 1, question: "blaaablaaa", answer: "Antwoord 1" },
-  { id: 2, question: "blaaablaaaa", answer: "Antwoord 2" },
-  { id: 3, question: "bloooo bloooo", answer: "Antwoord 3, ben het antwoord vergeten" },
-  { id: 4, question: "blooooblllaaa", answer: "Antwoord 4" },
-  { id: 5, question: "luke het aapje", answer: "Antwoord 5" },
-  { id: 6, question: "luke het aapje", answer: "Antwoord 6" },
-  { id: 7, question: "luke het aapje", answer: "Antwoord 7" },
-  { id: 8, question: "luke het aapje", answer: "Antwoord 8" },
-  { id: 9, question: "luke het aapje", answer: "Antwoord 9" },
-  { id: 10, question: "luke het aapje", answer: "Antwoord 10" },
-  { id: 11, question: "luke het aapje", answer: "Antwoord 11" },
-  { id: 12, question: "luke het aapje", answer: "Antwoord 12" },
-  { id: 13, question: "luke het aapje", answer: "Antwoord 13, is geen 12" },
-  { id: 14, question: "luke het aapje", answer: "Antwoord 14" },
-  { id: 15, question: "luke het aapje", answer: "Antwoord 15" },
-  { id: 16, question: "luke het aapje", answer: "Antwoord 16" },
-  { id: 17, question: "luke het aapje", answer: "Antwoord 17" },
-  { id: 18, question: "luke het aapje", answer: "Antwoord 18" },
-  { id: 19, question: "luke het aapje", answer: "Antwoord 19" },
-  { id: 20, question: "luke het aapje", answer: "Antwoord 20" },
-  { id: 21, question: "luke het aapje", answer: "Antwoord 21" },
-  { id: 22, question: "luke het aapje", answer: "Antwoord 22" },
-  { id: 23, question: "luke het aapje", answer: "Antwoord 23" },
-  { id: 24, question: "luke het aapje", answer: "Antwoord 24" },  
-  { id: 25, question: "luke het aapje", answer: "Antwoord 25" },
-  { id: 26, question: "luke het aapje", answer: "Antwoord 26" },
-  { id: 27, question: "luke het aapje", answer: "Antwoord 27" },
-  { id: 28, question: "luke het aapje", answer: "easter egg luke het aapje" },
-  { id: 29, question: "luke het aapje", answer: "Antwoord 29" },
-  { id: 30, question: "luke het aapje", answer: "Antwoord 30" },
-  { id: 31, question: "luke het aapje", answer: "Antwoord 31" },
-  { id: 32, question: "luke het aapje", answer: "Antwoord 32" },
-];
+// Use translation keys for FAQ
+const faqs = Array.from({ length: 40 }, (_, i) => ({
+  id: i + 1,
+  question: `faq.q${i + 1}`,
+  answer: `faq.a${i + 1}`,
+}));
 
-export default function FaqPage() {
+export default function FaqPage({ token, user, theme, navigation }) {
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState(null);
-  const [theme, setTheme] = useState(Appearance.getColorScheme() === "dark" ? themes.dark : themes.light);
-
   const scrollY = useRef(new Animated.Value(0)).current;
+  const { t } = useTranslation();
 
-  // Animated header height (from 166 to 0)
+  const styles = createFaqStyles(theme);
+
+  // Animated header height (from 249 to 0)
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 249],
     outputRange: [166, 0],
@@ -64,56 +35,47 @@ export default function FaqPage() {
   // StickyBar marginTop animatie zodat hij altijd direct onder de header blijft
   const stickyBarMarginTop = headerHeight.interpolate({
     inputRange: [0, 166],
-    outputRange: [120, 290], // 100(topBar) + headerHeight + 24 margin
+    outputRange: [120, 290], // 100(topBar) + headerHeight
     extrapolate: "clamp",
   });
 
   const filteredFaqs = faqs.filter(faq =>
-    faq.question.toLowerCase().includes(search.toLowerCase())
+    t(faq.question).toLowerCase().includes(search.toLowerCase())
   );
-
-  const styles = createFaqStyles(theme);
 
   return (
     <View style={styles.container}>
-      {/* Static Top Bar */}
-      <View style={styles.topBar}>
-        <View style={styles.topBarRow}>
-          <Text style={styles.topBarTitle}>
-            Hey, <UserFirstName style={styles.topBarTitle} />
-          </Text>
-          <View style={styles.topBarIcons}>
-            <TouchableOpacity>
-              <Icon name="search" size={34} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <LightDarkToggle onThemeChange={setTheme} />
-            </TouchableOpacity>
+      /* Static Top Bar */
+        <View style={styles.topBar}>
+          <View>
+              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                  <Icon name="arrow-left" type="feather" size={24} color="#fff" />
+                  <Text style={styles.backButtonText}>{t('go_back')}</Text>
+              </TouchableOpacity>
           </View>
         </View>
-      </View>
-      {/* Animated Header */}
+        {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
         <Animated.Text style={[styles.headerText, styles.headerTextLight, { opacity: headerOpacity }]}>
-          Get your
+          {t("faq.getYour")}
         </Animated.Text>
         <Animated.Text style={[styles.headerText, styles.headerTextBold, { opacity: headerOpacity }]}>
-          answers
+          {t("faq.answers")}
         </Animated.Text>
       </Animated.View>
       {/* Sticky zoekbalk + FAQ titel, schuift mee omhoog */}
       <Animated.View style={[styles.stickyBar, { marginTop: stickyBarMarginTop }]}>
         <View style={styles.searchBarInner}>
-          <Feather name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
+          <Icon type="Feather" name="search" size={22} color="#A0A0A0" style={styles.searchIcon} />
           <TextInput
-            placeholder="Search Help"
+            placeholder={t("faq.searchHelp")}
             value={search}
             onChangeText={setSearch}
             style={styles.searchBarInput}
             placeholderTextColor="#A0A0A0"
           />
         </View>
-        <Text style={styles.faqTitle}>FAQ</Text>
+        <Text style={styles.faqTitle}>{t("faq.title")}</Text>
       </Animated.View>
       {/* Scrollbare FAQ lijst */}
       <Animated.ScrollView
@@ -133,21 +95,21 @@ export default function FaqPage() {
               activeOpacity={0.7}
             >
               <Text style={styles.faqQuestion}>
-                {faq.question.charAt(0).toUpperCase() + faq.question.slice(1)}
+                {t(faq.question).charAt(0).toUpperCase() + t(faq.question).slice(1)}
               </Text>
               <Text style={styles.plus}>{openId === faq.id ? "-" : "+"}</Text>
             </TouchableOpacity>
             {openId === faq.id && (
               <View style={styles.faqAnswerBox}>
                 <Text style={styles.faqAnswer}>
-                  {faq.answer.charAt(0).toUpperCase() + faq.answer.slice(1)}
+                  {t(faq.answer).charAt(0).toUpperCase() + t(faq.answer).slice(1)}
                 </Text>
               </View>
             )}
           </View>
         ))}
         {filteredFaqs.length === 0 && (
-          <Text style={styles.noResults}>Geen resultaten gevonden.</Text>
+          <Text style={styles.noResults}>{t("faq.noResults")}</Text>
         )}
       </Animated.ScrollView>
     </View>
@@ -159,7 +121,7 @@ function createFaqStyles(theme) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background
+      backgroundColor: theme.background,
     },
     topBar: {
       position: "absolute",
@@ -172,21 +134,29 @@ function createFaqStyles(theme) {
       paddingTop: 25,
       paddingHorizontal: 16,
       zIndex: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      elevation: 6,
     },
-    topBarRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
+    backButton: {
+        flexDirection: "row",
+        alignItems: 'center',
+        backgroundColor: theme.background,
+        borderRadius: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.10,
+        shadowRadius: 4,
+        elevation: 2,
     },
-    topBarTitle: {
-      color: "#fff",
-      fontSize: 24,
-      fontWeight: "bold",
-    },
-    topBarIcons: {
-      flexDirection: 'row',
-      width: 125,
-      justifyContent: 'space-around',
-      alignItems: 'center',
+    backButtonText: {
+        color: theme.text,
+        fontSize: 20,
+        paddingLeft: 8,
+        fontWeight: '600',
     },
     header: {
       position: "absolute",
@@ -258,7 +228,7 @@ function createFaqStyles(theme) {
       flexDirection: "row",
       alignItems: "center",
       borderBottomWidth: 1,
-      borderColor: theme.border,
+      borderColor: "grey",
       paddingVertical: 18,
       paddingHorizontal: 24,
       backgroundColor: theme.background,
@@ -278,7 +248,7 @@ function createFaqStyles(theme) {
       marginLeft: 12,
     },
     faqAnswerBox: {
-      backgroundColor: theme.answerBg,
+      backgroundColor: theme.formBg,
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderBottomWidth: 1,
@@ -293,7 +263,7 @@ function createFaqStyles(theme) {
       marginRight: 8,
     },
     noResults: {
-      color: "gray",
+      color: theme.text,
       textAlign: "center",
       marginTop: 24,
     },

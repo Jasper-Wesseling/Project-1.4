@@ -9,15 +9,22 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-navigation/bottom-tabs": "^7.3.13",
     "@react-navigation/native": "^7.1.8",
     "@react-navigation/stack": "^7.3.1",
+    "date-fns": "^4.1.0",
     "expo": "~53.0.9",
     "expo-image-manipulator": "~13.1.7",
     "expo-image-picker": "~16.1.4",
+    "expo-secure-store": "~14.2.3",
     "expo-status-bar": "~2.2.3",
+    "i18next": "^23.16.8",
+    "i18next-browser-languagedetector": "^8.2.0",
     "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-i18next": "^13.5.0",
     "react-native": "^0.79.2",
     "react-native-dotenv": "^3.4.11",
     "react-native-dropdown-picker": "^5.4.6",
@@ -27,7 +34,8 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

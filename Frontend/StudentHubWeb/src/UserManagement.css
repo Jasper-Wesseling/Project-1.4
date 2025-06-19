@@ -1,0 +1,27 @@
+/* UserManagement specific styles - using global modern styles from App.css */
+
+/* Override table responsive behavior for user management */
+@media (max-width: 768px) {
+  .admin-table {
+    font-size: 0.8rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .admin-table th:nth-child(2),
+  .admin-table td:nth-child(2) {
+    display: none; /* Hide full name on mobile */
+  }
+}
+
+/* Small adjustments for action buttons in table */
+.admin-table td button {
+  white-space: nowrap;
+}
+
+.admin-table td select {
+  min-width: 80px;
+}

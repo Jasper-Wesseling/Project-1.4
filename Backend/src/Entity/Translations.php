@@ -12,7 +12,7 @@ class Translations
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'uuid')]
     private ?Uuid $id = null;
 
     #[ORM\Column(length: 255)]

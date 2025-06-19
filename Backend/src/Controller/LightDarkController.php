@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Users;
-use App\Repository\UserRepository;
 use App\Repository\UsersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;

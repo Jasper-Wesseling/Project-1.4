@@ -1,8 +1,34 @@
+import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
+import { API_URL } from "@env";
+import { themes } from "./LightDarkComponent";
+import { useTranslation } from "react-i18next";
 
-export default function PostPreview({ post }) {
-    if (!post) return null;
+export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
+    const styles = createPostPreviewStyles(theme);
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        let isMounted = true;
+        async function fetchUser() {
+            if (!post?.user_id || !token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/users/getbyid/${post.user_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (isMounted) setUser(data);
+            } catch (e) { }
+        }
+        fetchUser();
+        return () => { isMounted = false; };
+    }, [post?.user_id, token]);
+
+    if (!post || typeof post !== 'object') return <View />;
 
     return (
         <View style={styles.card}>
@@ -13,29 +39,37 @@ export default function PostPreview({ post }) {
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        {post.title}
+                        {post.title || t("postPreview.untitled")}
+                    </Text>
+                    <Text
+                        style={styles.cardSubtitle}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
+                        {t("postPreview.postedBy")}: {user?.full_name || t("postPreview.unknownUser")}
                     </Text>
                     <Text
                         style={styles.cardDescription}
                         numberOfLines={3}
                         ellipsizeMode="tail"
                     >
-                        {post.description}
+                        {post.description || t("postPreview.noDescription")}
                     </Text>
                 </View>
                 {/* button + status+location */}
                 <View style={styles.cardFooter}>
-                    <TouchableOpacity style={styles.quickHelpButton}>
-                        <Text style={styles.quickHelpButtonText}>Quick Help</Text>
+                    <TouchableOpacity
+                        style={styles.footerButton}
+                        onPress={onQuickHelp}
+                    >
+                        <Text style={styles.footerButtonText}>{t("postPreview.quickHelp")}</Text>
                     </TouchableOpacity>
-                    <View style={styles.statusLocationRow}>
-                        <Text style={styles.statusText}>
-                            {post.status}
-                        </Text>
-                        <View style={styles.locationBox}>
-                            <Icon name="location-on" type="material" size={16} />
-                            <Text style={styles.locationText}>{post.type}</Text>
-                        </View>
+                    <View style={[styles.footerButton, styles.statusButton]}>
+                        <Text style={[styles.footerButtonText, styles.blackText]}>{post.status || t("postPreview.active")}</Text>
+                    </View>
+                    <View style={[styles.footerButton, styles.locationButton]}>
+                        <Icon name="location-on" type="material" size={16} color="#000" />
+                        <Text style={[styles.footerButtonText, styles.blackText, { marginLeft: 4 }]}>{post.type || t("postPreview.local")}</Text>
                     </View>
                 </View>
             </View>
@@ -43,79 +77,71 @@ export default function PostPreview({ post }) {
     );
 }
 
-const styles = StyleSheet.create({
-    card: {
-        height: 200,
-        width: '90%',
-        alignSelf: 'center',
-        backgroundColor: '#F8F9FB',
-        marginVertical: 20,
-        borderRadius: 20,
-        borderColor: '#E7ECF0',
-        borderWidth: 2,
-        overflow: 'hidden',
-    },
-    cardContent: {
-        flex: 1,
-        padding: 16,
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-    },
-    cardTitle: {
-        fontWeight: '400',
-        fontSize: 24,
-        marginBottom: 4,
-        color: '#2A4BA0',
-    },
-    cardDescription: {
-        color: '#555',
-        fontSize: 18,
-    },
-    cardFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 16,
-    },
-    quickHelpButton: {
-        width: '30%',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#2A4BA0',
-        paddingVertical: 10,
-        borderRadius: 12,
-    },
-    quickHelpButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    statusLocationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '60%',
-        justifyContent: 'space-between',
-    },
-    statusText: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        backgroundColor: '#FFC83A',
-        borderRadius: 20,
-        fontWeight: 'bold',
-        minWidth: 70,
-        textAlign: 'center',
-        marginRight: 8,
-        fontSize: 12,
-    },
-    locationBox: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFC83A',
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-    },
-    locationText: {
-        marginLeft: 6,
-        fontWeight: '500',
-    },
-});
+// Use theme for dynamic styling if needed
+function createPostPreviewStyles(theme) {
+    return StyleSheet.create({
+        card: {
+            minHeight: 125,
+            width: '90%',
+            alignSelf: 'center',
+            backgroundColor: theme.background,
+            marginVertical: 20,
+            borderRadius: 20,
+            borderColor: theme.border,
+            borderWidth: 2,
+            overflow: 'hidden',
+        },
+        cardContent: {
+            flex: 1,
+            padding: 16,
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+        },
+        cardTitle: {
+            fontWeight: '400',
+            fontSize: 24,
+            marginBottom: 4,
+            color: theme.text,
+        },
+        cardSubtitle: {
+            fontWeight: '500',
+            fontSize: 12,
+            color: '#888',
+            marginBottom: 8,
+        },
+        cardDescription: {
+            color: theme.text,
+            fontSize: 18,
+        },
+        cardFooter: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 16,
+        },
+        footerButton: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 12,
+            height: 40,
+            marginHorizontal: 4,
+            backgroundColor: "#2A4BA0",
+        },
+        footerButtonText: {
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: 14,
+        },
+        statusButton: {
+            backgroundColor: '#FFC83A',
+        },
+        locationButton: {
+            backgroundColor: '#FFC83A',
+        },
+        blackText: {
+            color: '#000',
+        },
+    });
+}

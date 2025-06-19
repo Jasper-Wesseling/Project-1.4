@@ -44,9 +44,16 @@ class Posts
     #[ORM\OneToMany(targetEntity: Reviews::class, mappedBy: 'post_id')]
     private Collection $reviews_post;
 
+    /**
+     * @var Collection<int, Messages>
+     */
+    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'post_id')]
+    private Collection $messages;
+
     public function __construct()
     {
         $this->reviews_post = new ArrayCollection();
+        $this->messages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -162,6 +169,36 @@ class Posts
             // set the owning side to null (unless already changed)
             if ($reviewsPost->getPostId() === $this) {
                 $reviewsPost->setPostId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Messages>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Messages $message): static
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
+            $message->setPostId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Messages $message): static
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getPostId() === $this) {
+                $message->setPostId(null);
             }
         }
 

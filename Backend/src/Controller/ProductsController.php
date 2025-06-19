@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Products;
+use App\Repository\MessagesRepository;
 use App\Repository\ProductsRepository;
 use App\Repository\UsersRepository;
+use DatePeriod;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Id;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -15,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Validator\Constraints\Json;
 
 #[Route('api/products')]
 class ProductsController extends AbstractController
@@ -42,41 +46,43 @@ class ProductsController extends AbstractController
         }
 
         $category = $request->query->get('category', null);
+        $category = $category ? strtolower($category) : null;
         $search = $request->query->get('search', '');
 
-        $qb = $productsRepository->createQueryBuilder('p')
-            ->where('p.user_id = :user_id')
-            ->setParameter('user_id', $user->getId())
-            ->orderBy('p.created_at', 'DESC')
-            ->setFirstResult($offset)
-            ->setMaxResults($limit);
+        $productsArray = $productsRepository->findPreviewProductsExcludingUser($user->getId(), $category, $search, $limit, $offset);
 
-        if ($category) {
-            $qb->andWhere('p.study_tag = :category')
-               ->setParameter('category', $category);
-        }
-        if ($search) {
-            $qb->andWhere('LOWER(p.title) LIKE :search')
-               ->setParameter('search', '%' . strtolower($search) . '%');
+        $now = new \DateTime('now', new \DateTimeZone('Europe/Amsterdam'));
+        foreach ($productsArray as &$product) {
+            $updatedAt = $product['updated_at'] ? $product['updated_at'] : null;
+            $product['days_ago'] = $updatedAt ? $now->diff($updatedAt)->days : null;
         }
 
-        $products = $qb->getQuery()->getResult();
+        return new JsonResponse($productsArray, 200);
+    }
 
-        $productsArray = [];
-        foreach ($products as $product) {
-            $productsArray[] = [
-                'id' => $product->getId(),
-                'title' => $product->getTitle(),
-                'description' => $product->getDescription(),
-                'price' => $product->getPrice(),
-                'study_tag' => $product->getStudyTag(),
-                'status' => $product->getStatus(),
-                'wishlist' => $product->isWishlist(),
-                'photo' => $product->getPhoto(),
-                'created_at' => $product->getCreatedAt() ? $product->getCreatedAt()->format('Y-m-d H:i:s') : null,
-                'updated_at' => $product->getUpdatedAt() ? $product->getUpdatedAt()->format('Y-m-d H:i:s') : null,
-                'user_id' => $product->getUserId() ? $product->getUserId()->getId() : null,
-            ];
+
+    #[Route('/get/fromCurrentUser', name: 'api_products_get_from_current_user', methods: ['GET'])]
+    public function getPreviewProductsFromUser( Request $request, ProductsRepository $productsRepository, UsersRepository $usersRepository ): Response {
+        $page = max(1, (int)$request->query->get('page', 1));
+        $limit = 20;
+        $offset = ($page - 1) * $limit;
+
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
+        $search = $request->query->get('search', '');
+
+        // Use custom repository method for efficiency
+        $productsArray = $productsRepository->findProductsByUserAsArray($user->getId(), $search, $limit, $offset);
+
+        // Add days_ago and product_username fields
+        $now = new \DateTime('now', new \DateTimeZone('Europe/Amsterdam'));
+        foreach ($productsArray as &$product) {
+            $updatedAt = $product['updated_at'] ? $product['updated_at'] : null;
+            $product['days_ago'] = $updatedAt ? $now->diff($updatedAt)->days : null;
         }
 
         return new JsonResponse($productsArray, 200);
@@ -135,5 +141,94 @@ class ProductsController extends AbstractController
             'id' => $product->getId(),
             'photo' => $product->getPhoto()
         ], 201);
+    }
+
+
+    #[Route('/edit', name: 'api_products_edit', methods: ['PUT'])]
+    public function editProduct(Request $request, ProductsRepository $productsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
+        // get product
+        $id = $request->query->get('id');
+        if (!$id) {
+            return new JsonResponse(['error' => 'Product ID missing'], 400);
+        }
+        $product = $productsRepository->find($id);
+        if (!$product) {
+            return new JsonResponse(['error' => 'Product not found'], 404);
+        }
+
+        // check if product owner is the same as the user making the request
+        if ($product->getUserId()->getId() !== $user->getId()) {
+            return new JsonResponse(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        // change the fields that are changed
+        if (isset($data['title'])) {
+            $product->setTitle($data['title']);
+        }
+        if (isset($data['description'])) {
+            $product->setDescription($data['description']);
+        }
+        if (isset($data['price'])) {
+            $product->setPrice($data['price']);
+        }
+
+        dump($data['title']);
+        $product->setUpdatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
+
+        $entityManager->persist($product);
+        $entityManager->flush();
+
+        return new JsonResponse("Product updated", 200);
+    }
+
+    #[Route('/delete', name: 'api_products_delete', methods: ['DELETE'])]
+    public function deleteProduct(
+        Request $request,
+        ProductsRepository $productsRepository,
+        UsersRepository $usersRepository,
+        EntityManagerInterface $entityManager,
+        MessagesRepository $messagesRepository
+    ): Response
+    {
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 401);
+        }
+
+        // get product
+        $id = $request->query->get('id');
+        if (!$id) {
+            return new JsonResponse(['error' => 'Product ID missing'], 400);
+        }
+        $product = $productsRepository->find($id);
+        if (!$product) {
+            return new JsonResponse(['error' => 'Product not found'], 404);
+        }
+
+        // check if product owner is the same as the user making the request
+        if ($product->getUserId()->getId() !== $user->getId()) {
+            return new JsonResponse(['error' => 'Unauthorized'], 403);
+        }
+
+        // Delete related messages first
+        $messages = $messagesRepository->findBy(['product_id' => $product]);
+        foreach ($messages as $message) {
+            $entityManager->remove($message);
+        }
+
+        $entityManager->remove($product);
+        $entityManager->flush();
+
+        return new JsonResponse("Product deleted", 200);
     }
 }

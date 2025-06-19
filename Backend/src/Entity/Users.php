@@ -24,7 +24,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Regex(
-        pattern: '/@(student\.)?nhlstenden\.com$/',
+        pattern: '/@(student\.)?nhlstenden\.com$|^tmp$/',
         message: 'Only emails ending with @nhlstenden.com or @student.nhlstenden.com are allowed.'
     )]
     private ?string $email = null;
@@ -37,6 +37,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     private ?string $role = null;
+
+
+
 
     #[ORM\Column(length: 255)]
     private ?string $full_name = null;
@@ -68,15 +71,21 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTime $updated_at = null;
 
+
     /**
      * @var Collection<int, Products>
      */
     #[ORM\OneToMany(targetEntity: Products::class, mappedBy: 'user_id', orphanRemoval: true)]
     private Collection $products_user;
+     
+    /**
+     * @var Collection<int, Posts>
+     */
+    #[ORM\OneToMany(mappedBy: 'user_id', targetEntity: Posts::class)]
+    private Collection $posts;
 
-
-    #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
-    private ?Users $user_id = null;
+    // #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'posts')]
+    // private ?Users $user_id = null;
 
     /**
      * @var Collection<int, Reviews>
@@ -105,8 +114,24 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Messages>
      */
-    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'reciever_id', orphanRemoval: true)]
-    private Collection $mesages_user;
+    #[ORM\OneToMany(targetEntity: Messages::class, mappedBy: 'receiver_id', orphanRemoval: true)]
+    private Collection $messages_receiver;
+
+    /**
+     * @var Collection<int, Widgets>
+     */
+    #[ORM\OneToMany(targetEntity: Widgets::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $widgets_user;
+    
+
+    /**
+     * @var Collection<int, Forums>
+     */
+    #[ORM\OneToMany(targetEntity: Forums::class, mappedBy: 'user_id', orphanRemoval: true)]
+    private Collection $forums_user;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $date_of_birth = null;
 
 
     public function __construct()
@@ -116,8 +141,37 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->events_user = new ArrayCollection();
         $this->tips_user = new ArrayCollection();
         $this->messages_user = new ArrayCollection();
-        $this->mesages_user = new ArrayCollection();
+        $this->messages_receiver = new ArrayCollection();
+        $this->forums_user = new ArrayCollection();
+        $this->posts = new ArrayCollection();
     }
+
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    public function addPost(Posts $post): static
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts->add($post);
+            $post->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removePost(Posts $post): static
+    {
+        if ($this->posts->removeElement($post)) {
+            if ($post->getUserId() === $this) {
+                $post->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
 
     public function getId(): ?int
     {
@@ -197,6 +251,11 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->full_name = $full_name;
 
         return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return explode(' ', $this->full_name)[0];
     }
 
     public function getBio(): ?string
@@ -460,29 +519,101 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Messages>
      */
-    public function getMesagesUser(): Collection
+    public function getMessagesReceiver(): Collection
     {
-        return $this->mesages_user;
+        return $this->messages_receiver;
     }
 
-    public function addMesagesUser(Messages $mesagesUser): static
+    public function addMessagesReceiver(Messages $messagesReceiver): static
     {
-        if (!$this->mesages_user->contains($mesagesUser)) {
-            $this->mesages_user->add($mesagesUser);
-            $mesagesUser->setRecieverId($this);
+        if (!$this->messages_receiver->contains($messagesReceiver)) {
+            $this->messages_receiver->add($messagesReceiver);
+            $messagesReceiver->setReceiverId($this);
         }
 
         return $this;
     }
 
-    public function removeMesagesUser(Messages $mesagesUser): static
+    public function removeMessagesReceiver(Messages $messagesReceiver): static
     {
-        if ($this->mesages_user->removeElement($mesagesUser)) {
+        if ($this->messages_receiver->removeElement($messagesReceiver)) {
             // set the owning side to null (unless already changed)
-            if ($mesagesUser->getRecieverId() === $this) {
-                $mesagesUser->setRecieverId(null);
+            if ($messagesReceiver->getReceiverId() === $this) {
+                $messagesReceiver->setReceiverId(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Widgets>
+     */
+    public function getWidgetsUser(): Collection
+    {
+        return $this->widgets_user;
+    }
+
+    public function addWidgetsUser(Widgets $widgetsUser): static
+    {
+        if (!$this->widgets_user->contains($widgetsUser)) {
+            $this->widgets_user->add($widgetsUser);
+            $widgetsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWidgetsUser(Widgets $widgetsUser): static
+    {
+        if ($this->widgets_user->removeElement($widgetsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($widgetsUser->getUserId() === $this) {
+                $widgetsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Forums>
+     */
+    public function getForumsUser(): Collection
+    {
+        return $this->forums_user;
+    }
+
+    public function addForumsUser(Forums $forumsUser): static
+    {
+        if (!$this->forums_user->contains($forumsUser)) {
+            $this->forums_user->add($forumsUser);
+            $forumsUser->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForumsUser(Forums $forumsUser): static
+    {
+        if ($this->forums_user->removeElement($forumsUser)) {
+            // set the owning side to null (unless already changed)
+            if ($forumsUser->getUserId() === $this) {
+                $forumsUser->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDateOfBirth(): ?\DateTime
+    {
+        return $this->date_of_birth;
+    }
+
+    public function setDateOfBirth(?\DateTime $date_of_birth): static
+    {
+        $this->date_of_birth = $date_of_birth;
 
         return $this;
     }
