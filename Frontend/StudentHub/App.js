@@ -55,7 +55,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
 					if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
 					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
-					if (route.name === "LightDark") return <Icon name="settings" type="feather" color={color} size={size} />;					
+					// if (route.name === "LightDark") return <Icon name="settings" type="feather" color={color} size={size} />;					
 				},
 			})}
 		>
@@ -74,9 +74,9 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 			<Tab.Screen name="Profile">
 				{props => <Profile {...props} token={token} user={user} theme={theme} onLogout={onLogout}/>}
 			</Tab.Screen>
-			<Tab.Screen name="LightDark">
+			{/* <Tab.Screen name="LightDark">
 				{props => <LightDarkToggle {...props} token={token} onThemeChange={setTheme} theme={theme}/>}
-			</Tab.Screen>
+			</Tab.Screen> */}
 			
 		</Tab.Navigator>
 	);
