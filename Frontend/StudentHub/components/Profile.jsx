@@ -258,9 +258,9 @@ useFocusEffect(
 
                   {isEditing ? (
                     <TextInput
-                    value={editedProfile.location?.name || ""}
+                    value={editedProfile.location?.name || editedProfile.location || ""}
                     onChangeText={(text) =>
-                      setEditedProfile({ ...editedProfile, location: text })
+                      setEditedProfile({ ...editedProfile, location: { name: text } })
                     }
                     style={styles.input}
                     placeholder={t("profile.location")}
