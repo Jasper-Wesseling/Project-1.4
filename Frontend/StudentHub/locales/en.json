@@ -78,27 +78,21 @@
     "lessThanOneDayAgo": "less than 1 day ago"
   },
   "createEvent": {
-    "title": "Create Event",
-    "createBtn": "Create Event",
+    "back": "Back",
+    "titlePlaceholder": "Event Title",
+    "datePlaceholder": "YYYY-MM-DD",
+    "descriptionPlaceholder": "Description",
+    "locationPlaceholder": "Location",
+    "companyIdPlaceholder": "Company ID",
     "creating": "Creating...",
-    "backBtn": "Back",
-    "labelTitle": "Title",
-    "labelDate": "Date (YYYY-MM-DD)",
-    "labelDescription": "Description",
-    "labelLocation": "Location",
-    "labelCompanyId": "Company ID",
-    "placeholderTitle": "Event Title",
-    "placeholderDate": "2025-06-01",
-    "placeholderDescription": "Description",
-    "placeholderLocation": "Location",
-    "placeholderCompanyId": "Company ID",
+    "createEvent": "Create Event",
     "errorTitle": "Error",
-    "errorRequired": "Title, date, and company ID are required.",
+    "errorRequired": "Please fill in all required fields (title, date, company).",
     "errorLogin": "Login failed",
     "errorNoToken": "No token received",
     "errorCreate": "Failed to create event",
-    "successTitle": "Success",
-    "successMsg": "Event created!"
+    "successTitle": "Event created",
+    "successMsg": "Your event has been created!"
   },
   "editPosts": {
     "title": "Edit Posts",
@@ -414,5 +408,22 @@
     "date": "Date",
     "noTips": "No tips found",
     "allSeen": "You have seen every post"
+  },
+  "businessPage": {
+    "hey": "Hey, {{name}}",
+    "discover": "Discover",
+    "byCompany": "By Company",
+    "noCompanies": "No companies found",
+    "loading": "Loading...",
+    "noEvents": "No events found",
+    "viewAgenda": "View Agenda",
+    "agenda": "Agenda",
+    "noEventsAgenda": "No events in agenda",
+    "close": "Close",
+    "dateTime": "Date & Time:",
+    "company": "Company:",
+    "location": "Location:",
+    "description": "Description:",
+    "noEventData": "No event data"
   }
 }

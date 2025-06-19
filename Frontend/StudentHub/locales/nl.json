@@ -78,27 +78,21 @@
     "lessThanOneDayAgo": "minder dan 1 dag geleden"
   },
   "createEvent": {
-    "title": "Evenement aanmaken",
-    "createBtn": "Evenement aanmaken",
-    "creating": "Bezig met aanmaken...",
-    "backBtn": "Terug",
-    "labelTitle": "Titel",
-    "labelDate": "Datum (JJJJ-MM-DD)",
-    "labelDescription": "Beschrijving",
-    "labelLocation": "Locatie",
-    "labelCompanyId": "Bedrijfs-ID",
-    "placeholderTitle": "Evenement titel",
-    "placeholderDate": "2025-06-01",
-    "placeholderDescription": "Beschrijving",
-    "placeholderLocation": "Locatie",
-    "placeholderCompanyId": "Bedrijfs-ID",
+    "back": "Terug",
+    "titlePlaceholder": "Evenement titel",
+    "datePlaceholder": "JJJJ-MM-DD",
+    "descriptionPlaceholder": "Beschrijving",
+    "locationPlaceholder": "Locatie",
+    "companyIdPlaceholder": "Bedrijf ID",
+    "creating": "Aanmaken...",
+    "createEvent": "Evenement aanmaken",
     "errorTitle": "Fout",
-    "errorRequired": "Titel, datum en bedrijfs-ID zijn verplicht.",
+    "errorRequired": "Vul alle verplichte velden in (titel, datum, bedrijf).",
     "errorLogin": "Inloggen mislukt",
     "errorNoToken": "Geen token ontvangen",
     "errorCreate": "Evenement aanmaken mislukt",
-    "successTitle": "Succes",
-    "successMsg": "Evenement aangemaakt!"
+    "successTitle": "Evenement aangemaakt",
+    "successMsg": "Je evenement is aangemaakt!"
   },
   "editPosts": {
     "title": "Berichten bewerken",
@@ -414,5 +408,22 @@
     "date": "Datum",
     "noTips": "Geen tips gevonden",
     "allSeen": "Je hebt elke post gezien"
+  },
+  "businessPage": {
+    "hey": "Hey, {{name}}",
+    "discover": "Ontdek",
+    "byCompany": "Per bedrijf",
+    "noCompanies": "Geen bedrijven gevonden",
+    "loading": "Laden...",
+    "noEvents": "Geen evenementen gevonden",
+    "viewAgenda": "Bekijk agenda",
+    "agenda": "Agenda",
+    "noEventsAgenda": "Geen evenementen in agenda",
+    "close": "Sluiten",
+    "dateTime": "Datum & tijd:",
+    "company": "Bedrijf:",
+    "location": "Locatie:",
+    "description": "Beschrijving:",
+    "noEventData": "Geen evenementgegevens"
   }
 }
