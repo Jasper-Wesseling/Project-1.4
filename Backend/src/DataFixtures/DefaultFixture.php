@@ -7,6 +7,7 @@ use App\Entity\Posts;
 use App\Entity\Users;
 use App\Entity\Products;
 use App\Entity\Forums;
+use App\Entity\Companies;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -167,6 +168,7 @@ class DefaultFixture extends Fixture
         $location->setName('Emmen');
 
         $manager->persist($location);
+        
         $forumCategories = [
             "Plannen",
             "Stress",
