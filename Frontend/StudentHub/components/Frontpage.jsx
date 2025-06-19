@@ -31,7 +31,14 @@ export default function Frontpage({ token, user, navigation, theme }) {
 	const name = user && user.full_name ? user.full_name.split(" ")[0] : "";
 
 	const defaultWidgets = { promo: false, recommended: false };
-	const formatPrice = (price) => (price ? `€${price}` : "");
+	const formatPrice = (price) => {
+		if (!price) return "€0.00";
+		return new Intl.NumberFormat("nl-NL", {
+			style: "currency",
+			currency: "EUR",
+			minimumFractionDigits: 2,
+		}).format(price / 100);
+	};
 
 	const fetchWidgets = async () => {
 		try {
@@ -291,7 +298,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
 										</Text>
 										<View style={styles.productRow}>
 											<Text style={styles.productPrice}>
-												{product.price ? `€${product.price}` : ""}
+												{formatPrice(product.price)}
 											</Text>
 										</View>
 									</TouchableOpacity>
