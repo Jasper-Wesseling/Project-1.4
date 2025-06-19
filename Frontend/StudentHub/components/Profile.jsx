@@ -91,10 +91,9 @@ useFocusEffect(
     }
 
     return () => {
-      // Reset params alleen als je echt wilt dat ze weg zijn
-      // if (route.params) {
-      //   navigation.setParams({ product: null, userToChat: null });
-      // }
+      if (route.params) {
+        navigation.setParams({ product: null, userToChat: null });
+      }
     };
   }, [token, product, route.params?.userToChat, route.params?.userProfile, user.id])
 );
