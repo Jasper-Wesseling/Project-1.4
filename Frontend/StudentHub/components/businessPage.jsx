@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState, useRef, useEffect } from "react";
 import { SafeAreaView, View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity, Pressable, Modal } from "react-native";
-import { Icon } from "react-native-elements";
+import { Icon, ThemeContext } from "react-native-elements";
 import { API_URL } from '@env';
 import { MaterialIcons } from '@expo/vector-icons';
 import { format, parseISO } from "date-fns"; // Add this import at the top
@@ -408,6 +408,7 @@ function createBusinessPageStyles(theme) {
             borderWidth: 1,
             borderColor: 'grey',
             borderRadius: 100,
+            color: theme.text,
         },
         activeFilter: {
             backgroundColor: theme.activeFilter,
@@ -423,7 +424,7 @@ function createBusinessPageStyles(theme) {
             alignSelf: 'center'
         },
         eventContainer: {
-            backgroundColor: '#EAF0FB',
+            backgroundColor: theme.formBg,
             borderRadius: 12,
             padding: 18,
             marginBottom: 18,
@@ -437,17 +438,17 @@ function createBusinessPageStyles(theme) {
         eventTitle: {
             fontSize: 22,
             fontWeight: 'bold',
-            color: '#2A4BA0',
+            color: theme.text,
             marginBottom: 4,
         },
         eventDate: {
             fontSize: 16,
-            color: '#555',
+            color: theme.detailsText,
             marginBottom: 8,
         },
         eventDescription: {
             fontSize: 16,
-            color: '#222',
+            color: theme.text,
         },
         agendaButton: {
             position: "absolute",
@@ -470,12 +471,12 @@ function createBusinessPageStyles(theme) {
         // Modal styles
         modalOverlay: {
             flex: 1,
-            backgroundColor: 'hotpink',
+            backgroundColor: theme.modalOverlay,
             justifyContent: 'center',
             alignItems: 'center',
         },
         modalContent: {
-            backgroundColor: '#fff',
+            backgroundColor: theme.background,
             borderRadius: 16,
             padding: 24,
             width: '85%',
@@ -500,14 +501,14 @@ function createBusinessPageStyles(theme) {
         agendaDateHeader: {
             fontSize: 18,
             fontWeight: 'bold',
-            color: '#2A4BA0',
+            color: theme.text,
             marginBottom: 8,
             marginLeft: 2,
         },
         agendaCard: {
             flexDirection: "row",
             alignItems: "flex-start",
-            backgroundColor: "#F4F6FA",
+            backgroundColor: theme.formBg,
             borderRadius: 10,
             padding: 12,
             marginBottom: 8,
@@ -536,12 +537,12 @@ function createBusinessPageStyles(theme) {
         agendaCardTitle: {
             fontSize: 16,
             fontWeight: "bold",
-            color: "#222",
+            color: theme.text,
             marginBottom: 2,
         },
         agendaCardDesc: {
             fontSize: 14,
-            color: "#555",
+            color: theme.detailsText,
         },
         closeModalButton: {
             marginTop: 20,
@@ -558,7 +559,7 @@ function createBusinessPageStyles(theme) {
         },
         // Event detail modal styles
         eventModalContent: {
-            backgroundColor: '#fff',
+            backgroundColor: theme.background,
             borderRadius: 16,
             padding: 28,
             width: '85%',
@@ -578,23 +579,22 @@ function createBusinessPageStyles(theme) {
         },
         eventModalDate: {
             fontSize: 16,
-            color: '#555',
+            color: theme.detailsText,
             marginBottom: 8,
-            alignSelf: 'center',
         },
         eventModalCompany: {
             fontSize: 15,
-            color: '#222',
+            color: theme.text,
             marginBottom: 6,
         },
         eventModalLocation: {
             fontSize: 15,
-            color: '#222',
+            color: theme.text,
             marginBottom: 6,
         },
         eventModalDesc: {
             fontSize: 16,
-            color: '#444',
+            color: theme.text,
             marginTop: 10,
             marginBottom: 10,
         },

@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use App\Entity\Locations;
 
 #[Route('/api/companies')]
 class CompaniesController extends AbstractController
@@ -78,9 +79,10 @@ class CompaniesController extends AbstractController
 
         $company = new Companies();
         $company->setName($name);
-        $company->setType($type);
         // You may need to fetch the location entity if needed
         // $company->setLocationId($location);
+        $location = $entityManager->getRepository(Locations::class)->find($location_id);
+        $company->setLocationId($location);
         $company->setDescription($data['description'] ?? null);
         $company->setContactInfo($data['contact_info'] ?? null);
         $company->setCreatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
