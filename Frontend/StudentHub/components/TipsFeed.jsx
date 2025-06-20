@@ -6,6 +6,8 @@ import TipModal from "./TipModal";
 import { Icon } from "react-native-elements";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { hasRole } from "../utils/roleUtils";
+
 
 const FILTERS = [
     "Plannen",
@@ -260,17 +262,8 @@ export default function TipsFeed({ token, user, navigation, theme }) {
                 <View style={styles.topBarRow}>
                     <Text style={styles.topBarText}>{t("tipsFeed.hey", { name })}</Text>
                     <View style={styles.topBarIcons}>
-                        <TouchableOpacity onPress={() => navigation.navigate("AddForum")}>
+                        <TouchableOpacity onPress={() => navigation.navigate("AddForum")} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Icon name="search" size={34} color="#fff" />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Icon name="trophy" type="ionicon" size={32} color="#fff" />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Icon name="bag-outline" type="ionicon" size={32} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -9,8 +9,10 @@ import { Icon } from "react-native-elements";
 import PostPreview from "./PostPreview";
 import BountyBoardModal from "./BountyBoardModal";
 import { useTranslation } from "react-i18next";
+import { hasRole } from "../utils/roleUtils";
 
-export default function BountyBoard({ navigation, token, theme }) {
+
+export default function BountyBoard({ navigation, token, theme, user }) {
     const { t } = useTranslation();
 
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -124,13 +126,13 @@ export default function BountyBoard({ navigation, token, theme }) {
                 <View style={styles.topBarRow}>
                     <Text style={styles.topBarText}>{!loading ? `${t('hey')}, ${name}` : t('hey')}</Text>
                     <View style={styles.topBarIcons}>
-                        <TouchableOpacity onPress={() => navigation.navigate('AddPost')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddPost')} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="plus" type="feather" size={34} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('EditPosts')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditPosts')} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="cog" type="material-community" size={34} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="chat" type="material-community" size={32} color="#fff" />
                         </TouchableOpacity>
                     </View>

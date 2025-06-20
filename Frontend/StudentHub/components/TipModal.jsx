@@ -3,6 +3,7 @@ import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, Act
 import { API_URL } from "@env";
 import ThemedAvatar from "react-native-elements/dist/avatar/Avatar";
 import { useTranslation } from "react-i18next";
+import { hasRole } from "../utils/roleUtils";
 
 export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply, token, theme }) {
     const [loading, setLoading] = useState(false);
@@ -169,12 +170,12 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                         <Text style={styles.content}>{localTip.content}</Text>
                         {/* Like/Dislike post */}
                         <View style={styles.buttonRow}>
-                            <TouchableOpacity style={[styles.outlineButton, hasLiked && { borderColor: '#2A4BA0' }]} onPress={handleLikePress} disabled={loading}>
+                            <TouchableOpacity style={[styles.outlineButton, hasLiked && { borderColor: '#2A4BA0' }]} onPress={handleLikePress} disabled={loading || hasRole(user, "ROLE_TEMP")}>
                                 <Text style={[styles.outlineButtonText, hasLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
                                     ⬆ {localTip.likes?.length || 0} {t("tipModal.like")}
                                 </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[styles.outlineButton, hasDisliked && { borderColor: '#C00' }]} onPress={handleDislikePress} disabled={loading}>
+                            <TouchableOpacity style={[styles.outlineButton, hasDisliked && { borderColor: '#C00' }]} onPress={handleDislikePress} disabled={loading || hasRole(user, "ROLE_TEMP")}>
                                 <Text style={[styles.outlineButtonText, hasDisliked && { color: "#C00", fontWeight: "bold" }]}>
                                     ⬇ {localTip.dislikes?.length || 0} {t("tipModal.dislike")}
                                 </Text>
@@ -214,12 +215,12 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
                                             </Text>
                                             <Text style={styles.replyContent}>{reply.content || t("tipModal.replyHere")}</Text>
                                             <View style={styles.replyActions}>
-                                                <TouchableOpacity onPress={handleReplyLikePress} disabled={loading}>
+                                                <TouchableOpacity onPress={handleReplyLikePress} disabled={loading || hasRole(user, "ROLE_TEMP")}>
                                                     <Text style={[styles.replyAction, replyLiked && { color: "#2A4BA0", fontWeight: "bold" }]}>
                                                         ⬆ {reply.upvotes?.length || 0}
                                                     </Text>
                                                 </TouchableOpacity>
-                                                <TouchableOpacity onPress={handleReplyDislikePress} disabled={loading}>
+                                                <TouchableOpacity onPress={handleReplyDislikePress} disabled={loading || hasRole(user, "ROLE_TEMP")}>
                                                     <Text style={[styles.replyAction, replyDisliked && { color: "red", fontWeight: "bold" }]}>
                                                         ⬇ {reply.downvotes?.length || 0}
                                                     </Text>

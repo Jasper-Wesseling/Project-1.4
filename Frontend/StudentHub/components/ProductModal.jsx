@@ -176,13 +176,14 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                 <TouchableOpacity
                                     style={[
                                         styles.filledButton,
+                                        hasRole(user, "ROLE_TEMP") && { backgroundColor: '#ccc' },
                                         isCreator && { backgroundColor: '#ccc' }
                                     ]}
                                     onPress={() => {
                                         navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName });
                                         onClose();
                                     }}
-                                    disabled={isCreator}
+                                    disabled={isCreator || hasRole(user, "ROLE_TEMP")}
                                 >
                                     <Text style={styles.filledButtonText}>
                                         Chat about this product
