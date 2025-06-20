@@ -42,7 +42,7 @@ got to studenthubweb folder
 ## to run the admin panel frontend
 * expo
   ```sh
-  npx expo start
+  npm run dev
   ```
 
 
