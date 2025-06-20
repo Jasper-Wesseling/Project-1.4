@@ -151,8 +151,6 @@ export default function Frontpage({ token, user, navigation, theme }) {
 		);
 	}
 
-	console.log(recommended)
-
 	return (
 		<View style={styles.container}>
 			{/* Static Top Bar */}
