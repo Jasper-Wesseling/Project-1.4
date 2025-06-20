@@ -43,6 +43,16 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
 
     }
 
+    // useEffect(() => {
+    //     fetchChats();
+    // }, [userIDReciever]);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchChats();
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [userIDReciever]);
+
     useEffect(() => {
         fetchChats();
     }, [userIDReciever]);
@@ -63,6 +73,7 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
             }
         ]);
         try {
+            setMessage('');
             const body = {
                 content: messageContent,
                 receiver: userToChat,
@@ -81,7 +92,6 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
             if (!response.ok) {
                 setChats(prevChats => prevChats.map(msg => msg.id === tempId ? {...msg,  content: '[Failed to send] ' + msg.content } : msg));
             }
-            setMessage('');
             fetchChats();
         } catch (err) {
             console.error("API error:", err);
