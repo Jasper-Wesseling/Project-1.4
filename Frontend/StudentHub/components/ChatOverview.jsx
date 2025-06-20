@@ -89,7 +89,7 @@ export default function ChatOverview({ navigation, token, user, theme }) {
          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollViewContent]}>
             {filteredChats.map((msg, idx) => (
                <TouchableOpacity
-                  onPress={()=> navigation.navigate('ProductChat', { product: msg.product, userToChat: msg.sender_id === user.id ? msg.receiver_id : msg.sender_id, productTitle: msg.product_title, bountyTitle: msg.bounty_title, receiverName: msg.sender })}
+                  onPress={()=> navigation.navigate('ProductChat', { product: msg.product, userToChat: msg.sender_id === user.id ? msg.receiver_id : msg.sender_id, productTitle: msg.product_title, bountyTitle: msg.bounty_title, receiverName: msg.receiver })}
                   key={idx}
                   style={styles.chatCard}
                   activeOpacity={0.8}
