@@ -40,7 +40,7 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 		<Tab.Navigator
 			screenOptions={({ route }) => ({
 				headerShown: false,
-				tabBarActiveTintColor: theme?.tabBarActive || "#2A4BA0",
+				tabBarActiveTintColor:  !route?.params?.userProfile ? theme?.tabBarActive || "#2A4BA0" : theme?.tabBarInactive || "#888",
 				tabBarInactiveTintColor: theme?.tabBarInactive || "#888",
 				tabBarStyle: {
 					height: 60,
@@ -53,9 +53,8 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 					if (route.name === "Products") return <Icon name="bag-outline" type="ionicon" color={color} size={size} />;
 					if (route.name === "BusinessPage") return <Icon name="briefcase" type="feather" color={color} size={size} />;
 					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
-					if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;
-					if (route.name === "BountyBoard") return <Icon name="award" type="feather" color={color} size={size} />;
-					if (route.name === "LightDark") return <Icon name="settings" type="feather" color={color} size={size} />;					
+					if (route.name === "Forum") return <Icon name="message-circle" type="feather" color={color} size={size} />;
+					if (route.name === "Profile") return <Icon name="user" type="feather" color={color} size={size} />;					
 				},
 			})}
 		>
@@ -71,15 +70,12 @@ function MainTabs({ token, user, onLogout, theme, setTheme }) {
 			<Tab.Screen name="BountyBoard">
 				{props => <BountyBoard {...props} token={token} user={user} theme={theme} />}
 			</Tab.Screen>
+			<Tab.Screen name="Forum">
+				{props => <TipsFeed {...props} token={token} user={user} theme={theme}/>}
+			</Tab.Screen>
 			<Tab.Screen name="Profile">
-				{props => <Profile {...props} token={token} user={user} theme={theme} onLogout={onLogout} />}
+				{props => <Profile {...props} token={token} user={user} theme={theme} onLogout={onLogout}/>}
 			</Tab.Screen>
-
-			{/* add to profile screen */}
-			<Tab.Screen name="LightDark">
-				{props => <LightDarkToggle {...props} onLogout={onLogout} token={token} onThemeChange={setTheme} theme={theme}/>}
-			</Tab.Screen>
-			
 		</Tab.Navigator>
 	);
 }
@@ -259,14 +255,17 @@ export default function App() {
 						<Stack.Screen name="StarRating">
 								{props => <StarRating {...props} token={token} user={user} theme={theme} />}
 						</Stack.Screen>
-						<Tab.Screen name="AddProduct">
+						<Stack.Screen name="AddProduct">
 							{props => <AddProduct {...props} token={token} theme={theme} />}
-						</Tab.Screen>
-						<Tab.Screen name="AddPost">
+						</Stack.Screen>
+						<Stack.Screen name="AddPost">
 							{props => <AddPost {...props} token={token} user={user} theme={theme}/>}
-						</Tab.Screen>
+						</Stack.Screen>
 						<Stack.Screen name="FaqPage">
 	   						{props => <FaqPage {...props} token={token} user={user} theme={theme}/>}
+						</Stack.Screen>
+						<Stack.Screen name="LightDark">
+							{props => <LightDarkToggle {...props} token={token} onThemeChange={setTheme} theme={theme}/>}
 						</Stack.Screen>
 
 					</>

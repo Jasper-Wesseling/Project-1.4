@@ -55,8 +55,8 @@ export default function BountyBoard({ navigation, token, theme }) {
             setHasMorePages(postsData.length === 20);
             setPosts(prev =>
                 append
-                    ? [...prev, ...postsData.filter(p => !prev.some(existing => existing.id === p.id))]
-                    : postsData
+                    ? [...prev, ...postsData.posts.filter(p => !prev.some(existing => existing.id === p.id))]
+                    : postsData.posts
             );
             setCurrentUser(currentUser);
             setLoading(false);

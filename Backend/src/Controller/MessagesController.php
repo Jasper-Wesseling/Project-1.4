@@ -223,29 +223,33 @@ class MessagesController extends AbstractController
             $latestMessage = end($contentArray) ?: null;
 
             if ($latestMessage) {
-            $senderId = $latestMessage['sender'];
-            $senderUser = $message->getSenderId();
-            $receiverUser = $message->getReceiverId();
+                $senderId = $latestMessage['sender'];
+                $senderUser = $message->getSenderId();
+                $receiverUser = $message->getReceiverId();
 
-            // Determine the other user
-            if ($senderUser->getId() == $senderId) {
-                $otherUser = $receiverUser;
-            } else {
-                $otherUser = $senderUser;
+                // Determine the other user
+                if ($senderUser->getId() == $senderId) {
+                    $otherUser = $receiverUser;
+                } else {
+                    $otherUser = $senderUser;
+                }
+
+                $messagesArray[] = [
+                    'content' => $latestMessage['content'] ? $latestMessage['content'] : '',
+                    'sender' => $senderUser->getFullName(),
+                    'receiver' => $otherUser->getFullName(),
+                    'sender_id' => $senderUser->getId(),
+                    'receiver_id' => $receiverUser->getId(),
+                    'product' => $message->getProductId() ? $message->getProductId()->getId() : null,
+                    'product_title' => $message->getProductId() ? $message->getProductId()->getTitle() : null,
+                    'bounty' => $message->getPostId() ? $message->getPostId()->getId() : null,
+                    'bounty_title' => $message->getPostId() ? $message->getPostId()->getTitle() : null,
+                    'timestamp' => $latestMessage['timestamp'] ?? $message->getTimestamp()->format('Y-m-d H:i:s'),
+                    'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), new \DateTime($latestMessage['timestamp']))->days
+                ];
             }
 
-            $messagesArray[] = [
-                'content' => $latestMessage['content'] ? $latestMessage['content'] : '',
-                'sender' => $senderUser->getFullName(),
-                'receiver' => $otherUser->getFullName(),
-                'sender_id' => $senderUser->getId(),
-                'receiver_id' => $receiverUser->getId(),
-                'product' => $message->getProductId() ? $message->getProductId()->getId() : null,
-                'post' => $message->getPostId() ? $message->getPostId()->getId() : null,
-                'timestamp' => $latestMessage['timestamp'] ?? $message->getTimestamp()->format('Y-m-d H:i:s'),
-                'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), new \DateTime($latestMessage['timestamp']))->days
-            ];
-            }
+
         }
 
         return new JsonResponse($messagesArray, 200);

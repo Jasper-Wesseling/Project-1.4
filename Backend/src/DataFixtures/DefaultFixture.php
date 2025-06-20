@@ -2,10 +2,12 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Locations;
 use App\Entity\Posts;
 use App\Entity\Users;
 use App\Entity\Products;
 use App\Entity\Forums;
+use App\Entity\Companies;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -129,7 +131,7 @@ class DefaultFixture extends Fixture
         $dates = ['2025-05-11', '2025-05-12', '2025-05-13', '2025-05-14', '2025-05-15', '2025-05-16', '2025-05-17', '2025-05-18', '2025-05-19' ];
 
 
-        // Create 25 products with random data
+        // Create 100 products with random data
         for ($i = 0; $i < 100; $i++) {
             $productInfo = $dummyProducts[array_rand($dummyProducts)];
             $tempdate = $dates[array_rand($dates)];
@@ -162,6 +164,11 @@ class DefaultFixture extends Fixture
         $manager->persist($post);
         $manager->flush();
 
+        $location = new Locations();
+        $location->setName('Emmen');
+
+        $manager->persist($location);
+        
         $forumCategories = [
             "Plannen",
             "Stress",

@@ -45,8 +45,15 @@ export default function ChatOverview({ navigation, token, user, theme }) {
       }, [token])
    );
 
-   const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
+   useEffect(() => {
+      if (!token) return;
+      const interval = setInterval(() => {
+         fetchChats();
+      }, 3000);
+      return () => clearInterval(interval);
+   }, [token]);
 
+   const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
    // Filter chats based on search input
    const filteredChats = search
       ? chats.filter(
@@ -82,7 +89,7 @@ export default function ChatOverview({ navigation, token, user, theme }) {
          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollViewContent]}>
             {filteredChats.map((msg, idx) => (
                <TouchableOpacity
-                  onPress={()=> navigation.navigate('ProductChat', { product: msg.product, userToChat: msg.sender_id === user.id ? msg.receiver_id : msg.sender_id })}
+                  onPress={()=> navigation.navigate('ProductChat', { product: msg.product, userToChat: msg.sender_id === user.id ? msg.receiver_id : msg.sender_id, productTitle: msg.product_title, bountyTitle: msg.bounty_title, receiverName: msg.sender })}
                   key={idx}
                   style={styles.chatCard}
                   activeOpacity={0.8}

@@ -30,13 +30,6 @@ export default function Profile({ token, navigation, route, user, theme, onLogou
 
   const DEFAULT_AVATAR_URL = "https://www.gravatar.com/avatar/?d=mp&s=120";
 
-  // TEMP: Logout function for testing
-  const tempLogout = async () => {
-      if (onLogout) {
-          await onLogout();
-      }
-  };
-
   const fetchProfile = async (targetUserId) => {
     try {
       const res = await fetch(API_URL + `/api/users/getbyid?id=${targetUserId}`, {
@@ -91,10 +84,9 @@ useFocusEffect(
     }
 
     return () => {
-      // Reset params alleen als je echt wilt dat ze weg zijn
-      // if (route.params) {
-      //   navigation.setParams({ product: null, userToChat: null });
-      // }
+      if (route.params) {
+        navigation.setParams({ product: null, userToChat: null });
+      }
     };
   }, [token, product, route.params?.userToChat, route.params?.userProfile, user.id])
 );
@@ -174,91 +166,6 @@ useFocusEffect(
   };
   const age = profile && profile.date_of_birth ? new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear() : null;
 
-  if (profileMissing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={{ marginBottom: 10 }}>{t("profile.noProfileFound")}</Text>
-        {!isEditing ? (
-          <TouchableOpacity
-            onPress={() => {
-              setEditedProfile({
-                first_name: "",
-                last_name: "",
-                full_name: "",
-                date_of_birth: "",
-                study_program: "",
-                location: "",
-                bio: "",
-              });
-              setIsEditing(true);
-            }}
-            style={styles.dotButton}
-          >
-            <Text style={styles.dotButtonText}>{t("profile.createProfile")}</Text>
-          </TouchableOpacity>
-        ) : (
-          <>
-            <Text style={{ marginBottom: 10 }}>{t("profile.newProfile")}</Text>
-            <TextInput
-              value={editedProfile.first_name || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, first_name: text })
-              }
-              style={styles.input}
-              placeholder={t("profile.firstName")}
-            />
-            <TextInput
-              value={editedProfile.last_name || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, last_name: text })
-              }
-              style={styles.input}
-              placeholder={t("profile.lastName")}
-            />
-            <TextInput
-              value={editedProfile.date_of_birth || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, date_of_birth: text })
-              }
-              style={styles.input}
-              placeholder={t("profile.dob")}
-            />
-            <TextInput
-              value={editedProfile.study_program || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, study_program: text })
-              }
-              style={styles.input}
-              placeholder={t("profile.studyProgram")}
-            />
-            <TextInput
-              value={editedProfile.location?.name || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, location: text })
-              }
-              style={styles.input}
-              placeholder={t("profile.location")}
-            />
-            <TextInput
-              value={editedProfile.bio || ""}
-              onChangeText={(text) =>
-                setEditedProfile({ ...editedProfile, bio: text })
-              }
-              style={[styles.input, { height: 80 }]}
-              multiline
-              placeholder={t("profile.bio")}
-            />
-            <TouchableOpacity
-              style={styles.contactButton}
-              onPress={createProfile}
-            >
-              <Text style={styles.contactButtonText}>{t("profile.save")}</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    );
-  }
 
   if (!profile) {
     return (
@@ -351,9 +258,9 @@ useFocusEffect(
 
                   {isEditing ? (
                     <TextInput
-                    value={editedProfile.location?.name || ""}
+                    value={editedProfile.location?.name || editedProfile.location || ""}
                     onChangeText={(text) =>
-                      setEditedProfile({ ...editedProfile, location: text })
+                      setEditedProfile({ ...editedProfile, location: { name: text } })
                     }
                     style={styles.input}
                     placeholder={t("profile.location")}
@@ -487,9 +394,19 @@ useFocusEffect(
             )}
           </View>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={tempLogout} accessible accessibilityLabel={t("profile.logout")}>
-        <Icon name="log-out" type="feather" size={32} color="#fff" />
-      </TouchableOpacity>
+        <View style={{ justifyContent: "space-around", flexDirection: "row", marginTop: 20, width: "50%" }}>
+          {user.id === userProfile ? (
+            <>
+              <TouchableOpacity style={styles.logoutButton} onPress={onLogout} accessible accessibilityLabel={t("profile.logout")}>
+                <Icon name="log-out" type="feather" size={32} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.logoutButton, {backgroundColor: 'grey'}]} onPress={() => navigation.navigate('LightDark')}>
+                <Icon name="settings" type="feather" color="#fff" size={32} />
+              </TouchableOpacity>
+
+            </>
+          ) : null}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

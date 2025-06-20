@@ -14,7 +14,6 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
     const { product, userToChat, productTitle, receiverName, bountyTitle, bounty } = route.params;
     const styles = createProductChatStyles(theme);
     const { t } = useTranslation();
-
     const fetchChats = async () => {
         let query = '';
         if (bountyTitle) {
@@ -44,6 +43,16 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
 
     }
 
+    // useEffect(() => {
+    //     fetchChats();
+    // }, [userIDReciever]);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchChats();
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [userIDReciever]);
+
     useEffect(() => {
         fetchChats();
     }, [userIDReciever]);
@@ -53,24 +62,25 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
             return;
         }
         const tempId = Date.now();
+        const messageContent = message;
         setChats(prevChats => [
             ...prevChats,
             {
             id: tempId,
-            content: message,
+            content: messageContent,
             sender: user.id,
             // add other fields if needed (e.g., timestamp)
             }
         ]);
-        setMessage('');
         try {
+            setMessage('');
             const body = {
-                content: message,
+                content: messageContent,
                 receiver: userToChat,
             };
             if (product) body.product = product;
             if (bounty) body.bounty = bounty['id'];
-
+            
             const response = await fetch(API_URL + `/api/messages/new`, {
                 method: 'POST',
                 headers: {
@@ -148,7 +158,7 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
                         onChangeText={setMessage}
                         value={message}
                         placeholder={t("productChat.typeSomething")}
-                        onFocus={() => setPageHeight(325)}
+                        onFocus={() => setPageHeight(280)}
                         onBlur={() => setPageHeight(0)}
                         returnKeyType="send"
                         blurOnSubmit={false}
