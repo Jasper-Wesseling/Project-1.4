@@ -7,6 +7,8 @@ import SearchBar from "./SearchBar";
 import ProductModal from "./ProductModal";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { hasRole } from "../utils/roleUtils";
+
 
 export default function Products({ navigation, token, user, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -125,13 +127,13 @@ export default function Products({ navigation, token, user, theme }) {
                     <Text style={styles.topBarText}>{t("products.hey", { name })}</Text>
                     <View style={styles.topBarIcons}>
                         
-                        <TouchableOpacity onPress={() => navigation.navigate('AddProduct')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('AddProduct')} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="plus" type="feather" size={34} color="#fff"/>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('EditProducts')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditProducts')} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="cog" type="material-community" size={34} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('ChatOverview')} disabled={hasRole(user, "ROLE_TEMP")}>
                             <Icon name="chat" type="material-community" size={32} color="#fff"/>
                         </TouchableOpacity>
                     </View>

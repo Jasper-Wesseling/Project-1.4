@@ -16,6 +16,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "react-native-elements";
+import { hasRole } from "../utils/roleUtils";
 
 export default function Profile({ token, navigation, route, user, theme, onLogout }) {
   const [userProfile, setUserProfile] = useState(null);
@@ -291,7 +292,7 @@ useFocusEffect(
                         ))}
                         <Text style={styles.reviews}> {profile.review_count || t("profile.noReviews")} {t("profile.reviews")}</Text>
                       </View>
-                      {user.id !== userProfile ? (
+                      {userProfile && user.id !== userProfile && !hasRole(user, "ROLE_TEMP") ? (
                         <TouchableOpacity
                           style={styles.rateButton}
                           onPress={() => navigation.navigate('StarRating', { userProfile, onGoBack: () => fetchProfile(userProfile) })}
