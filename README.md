@@ -14,7 +14,7 @@ got to studenthub folder
   npm install
   ```
 
-* copy .env and make a .env.local version and add you credentia etc
+* copy .env and make a .env.local version and add your credentia etc
 
 ## to run the mobile Frontend
 * expo
@@ -37,7 +37,7 @@ got to studenthubweb folder
   npm install
   ```
 
-* copy .env and make a .env.local version and add you credentia etc
+* copy .env and make a .env.local version and add your credentia etc
 
 ## to run the admin panel frontend
 * npm run 
@@ -50,7 +50,7 @@ got to studenthubweb folder
 
 What you should have installed already
 + composer 
-+ database of you choice 
++ database of your choice 
 + openssl
 + php
 
@@ -64,7 +64,7 @@ What you should have installed already
   ```
 
 
-* copy .env and make a .env.local version and add you credentia etc
+* copy .env and make a .env.local version and add your credentia etc
 
 
 * database create
