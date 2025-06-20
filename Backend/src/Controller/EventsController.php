@@ -21,23 +21,25 @@ class EventsController extends AbstractController
     private $jwtManager;
     private $tokenStorageInterface;
 
+    // Constructor, hier worden JWT en TokenStorage ingesteld
     public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
     }
 
+    // Haal evenementen op, met optionele zoekfunctie en paginering
     #[Route('/get', name: 'api_events_get', methods: ['GET'])]
     public function getEvents(Request $request, EventsRepository $eventsRepository): Response
     {
-        // Auth (optional: add user filtering if needed)
+        // Haal JWT token op (voor authenticatie)
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
 
-        $page = max(1, (int)$request->query->get('page', 1));
-        $limit = 20;
-        $offset = ($page - 1) * $limit;
-        $search = $request->query->get('search', '');
-        $company_id = $request->query->get('company_id', null);
+        $page = max(1, (int)$request->query->get('page', 1)); // Huidige pagina
+        $limit = 20; // Aantal evenementen per pagina
+        $offset = ($page - 1) * $limit; // Offset voor paginering
+        $search = $request->query->get('search', ''); // Zoekterm
+        $company_id = $request->query->get('company_id', null); // Filter op bedrijf
 
         $qb = $eventsRepository->createQueryBuilder('e')
             ->orderBy('e.created_at', 'DESC')
@@ -45,18 +47,21 @@ class EventsController extends AbstractController
             ->setMaxResults($limit);
 
         if ($company_id) {
+            // Filter op bedrijf
             $qb->andWhere('e.company_id = :company_id')
-               ->setParameter('company_id', $company_id);
+                ->setParameter('company_id', $company_id);
         }
         if ($search) {
+            // Zoek op titel of beschrijving
             $qb->andWhere('LOWER(e.title) LIKE :search OR LOWER(e.description) LIKE :search')
-               ->setParameter('search', '%' . strtolower($search) . '%');
+                ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
         $events = $qb->getQuery()->getResult();
 
         $eventsArray = [];
         foreach ($events as $event) {
+            // Zet elk event om naar een array
             $eventsArray[] = [
                 'id' => $event->getId(),
                 'company_id' => $event->getCompanyId()?->getId(),
@@ -72,6 +77,7 @@ class EventsController extends AbstractController
         return new JsonResponse($eventsArray, 200);
     }
 
+    // Voeg een nieuw event toe
     #[Route('/new', name: 'api_events_new', methods: ['POST'])]
     public function addEvent(
         Request $request,
@@ -80,15 +86,17 @@ class EventsController extends AbstractController
     ): Response {
         $data = json_decode($request->getContent(), true);
 
-        // Required fields
+        // Verplichte velden
         $title = $data['title'] ?? null;
         $date = $data['date'] ?? null;
         $company_id = $data['company_id'] ?? null;
 
+        // Controleer of verplichte velden zijn ingevuld
         if (!$title || !$date || !$company_id) {
             return new JsonResponse(['error' => 'Missing required fields'], 400);
         }
 
+        // Zoek het bedrijf op
         $company = $companiesRepository->find($company_id);
         if (!$company) {
             return new JsonResponse(['error' => 'Company not found'], 404);
@@ -112,6 +120,7 @@ class EventsController extends AbstractController
         ], 201);
     }
 
+    // Toon details van één event
     #[Route('/{id}', name: 'api_events_show', methods: ['GET'])]
     public function showEvent(Events $event): Response
     {
@@ -127,6 +136,7 @@ class EventsController extends AbstractController
         ]);
     }
 
+    // Werk een bestaand event bij
     #[Route('/{id}', name: 'api_events_update', methods: ['PUT', 'PATCH'])]
     public function updateEvent(
         Events $event,
@@ -137,6 +147,7 @@ class EventsController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         if (isset($data['company_id'])) {
+            // Pas bedrijf aan
             $company = $companiesRepository->find($data['company_id']);
             if (!$company) {
                 return new JsonResponse(['error' => 'Company not found'], 404);
@@ -162,6 +173,7 @@ class EventsController extends AbstractController
         return new JsonResponse(['message' => 'Event updated']);
     }
 
+    // Verwijder een event
     #[Route('/{id}', name: 'api_events_delete', methods: ['DELETE'])]
     public function deleteEvent(Events $event, EntityManagerInterface $entityManager): Response
     {

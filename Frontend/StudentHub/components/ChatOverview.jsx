@@ -1,5 +1,3 @@
-// Only the styling and related style usage has been updated for a more "chat overview" look.
-
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import SearchBar from "./SearchBar";
 import { useCallback, useEffect, useState } from "react";
@@ -8,6 +6,7 @@ import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 
+// ChatOverview component
 export default function ChatOverview({ navigation, token, user, theme }) {
    const [search, setSearch] = useState('');
    const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -15,8 +14,10 @@ export default function ChatOverview({ navigation, token, user, theme }) {
    const { t } = useTranslation();
    const styles = createChatOverviewStyles(theme);
 
+   // Haal de chats uit de backend
    const fetchChats = async () => {
       try {
+         // check de token 
          const chatsRes = await fetch(API_URL + `/api/messages/get_preview`, {
                method: 'GET',
                headers: {
@@ -25,26 +26,32 @@ export default function ChatOverview({ navigation, token, user, theme }) {
 
          });
 
+         // check of de response ok is
          if (!chatsRes.ok) {
+            // Als de response niet ok is, lees de tekst en gooi een fout
                const errorText = await chatsRes.text();
                console.error("Backend error:", errorText);
                throw new Error("messages fetch failed");
          };
 
+         // Als de response ok is, parse de json en zet de chats
          const chatData = await chatsRes.json();
          setChats(chatData);
       } catch (err) {
+         // Als er een error is, geef een foutmelding
          console.error("API error:", err);   
       }
 
    }
 
+   // Gebruikt useFocusEffect om de chats te laden wanneer de component in focus is
    useFocusEffect(
       useCallback(() => {
          fetchChats();
       }, [token])
    );
 
+   // Gebruik useEffect om de chats elke 3 seconden te verversen
    useEffect(() => {
       if (!token) return;
       const interval = setInterval(() => {
@@ -53,8 +60,7 @@ export default function ChatOverview({ navigation, token, user, theme }) {
       return () => clearInterval(interval);
    }, [token]);
 
-   const name = user && user.full_name ? user.full_name.split(' ')[0] : "";
-   // Filter chats based on search input
+   // Filter chats gebasseerd op de zoekterm
    const filteredChats = search
       ? chats.filter(
            (msg) =>
@@ -64,6 +70,7 @@ export default function ChatOverview({ navigation, token, user, theme }) {
          )
       : chats;
    
+   // Functie om de tijdstempel van een bericht te formatteren
    const getTimeStamp = (msg) => msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: "2-digit"}) : '';
 
    return(

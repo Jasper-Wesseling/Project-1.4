@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 
+// Tip card 
 function getTimeAgo(dateString, t) {
     if (!dateString) return "";
     const now = new Date();
@@ -12,6 +13,7 @@ function getTimeAgo(dateString, t) {
     return t("tipCard.daysAgo", { count: Math.floor(diff / 86400) });
 }
 
+// Laat de tip zien
 export default function TipCard({ tip, onPress, theme }) {
     const tag = tip.category;
     const styles = createTipCardStyles(theme);
@@ -42,7 +44,7 @@ export default function TipCard({ tip, onPress, theme }) {
                     {/* Content */}
                     <View style={[
                         { flex: 1 },
-                        !tip.image && { marginLeft: 56 + 16 } // zelfde ruimte als image+marginRight
+                        !tip.image && { marginLeft: 56 + 16 }
                     ]}>
                         <Text style={styles.title} numberOfLines={2}>{tip.title}</Text>
                         <Text style={styles.timeAgo}>{getTimeAgo(tip.created_at, t)}</Text>

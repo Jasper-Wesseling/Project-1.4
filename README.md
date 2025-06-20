@@ -2,30 +2,55 @@
 Studenthub
 
 
-# Frontend
+# Frontend mobile
 What you should have installed already
 + Nodejs
++ npm
 
-
-
-## to install the Frontend
+## to install the mobile Frontend
+got to studenthub folder
 * npm
   ```sh
   npm install
   ```
 
-## to run the Frontend
+* copy .env and make a .env.local version and add your credentia etc
+
+## to run the mobile Frontend
 * expo
   ```sh
   npx expo start
   ```
 
 
+
+# Frontend admin panel frontend
+What you should have installed already
++ Nodejs
++ npm
+
+
+## to install the admin panel frontend
+got to studenthubweb folder
+* npm
+  ```sh
+  npm install
+  ```
+
+* copy .env and make a .env.local version and add your credentia etc
+
+## to run the admin panel frontend
+* npm run 
+  ```sh
+  npm run dev
+  ```
+
+
 # Backend
 
-you should have installed
+What you should have installed already
 + composer 
-+ database of you choice 
++ database of your choice 
 + openssl
 + php
 
@@ -39,7 +64,7 @@ you should have installed
   ```
 
 
-* copy .env and make a .env.local version and add you credentia etc
+* copy .env and make a .env.local version and add your credentia etc
 
 
 * database create
@@ -104,6 +129,10 @@ in this file uncomment: pdo_mysql, pdo_sqlite, sodium, zip
 ## WHEN WORKING ON BACKEND AND EVERYTHING IS BROKEN USE THIS AS A LAST RESORT! WARNING THIS REMOVES EVERY THING IN THE DATABASE! 
   ```sh
   php bin/console doctrine:schema:drop --force
+  ```
+remove migrations from the migration folder
+  ```sh
+  php bin/console make:migration
   php bin/console doctrine:migrations:migrate
   php bin/console doctrine:fixtures:load
   ```

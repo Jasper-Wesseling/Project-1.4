@@ -6,6 +6,7 @@ import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useTranslation } from 'react-i18next';
 
+// Forum artikel toevoegen component
 export default function AddForum({ navigation, token, theme }) {
     const [title, onChangeTitle] = useState('');
     const [content, onChangecontent] = useState('');
@@ -28,37 +29,41 @@ export default function AddForum({ navigation, token, theme }) {
     const { t } = useTranslation();
 
     const translatedItems = items.map(item => ({
-        label: t(`${item.value.toLowerCase()}`), // adjust your keys accordingly
+        label: t(`${item.value.toLowerCase()}`),
         value: item.value
     }));
+    // foto uploaden
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             quality: 0.7,
         });
-
+        // wanneer geannuleerd foto weer op null zetten
         if (!result.canceled && result.assets && result.assets.length > 0) {
             setImage(result.assets[0].uri);
         }
     };
 
+    // Forum artikel uploaden
     const uploadForum = async () => {
+        // checken of alle velden zijn ingevuld
         if (!title || !content || !category) {
             Alert.alert('Error', 'Fill in all fields');
             return;
         }
-
+        // laden aanzetten
         setUploading(true);
 
         try {
+            // token check
             if (!token) throw new Error("No token received");
-
+            // data uit form verzamelen
             let formData = new FormData();
             formData.append("title", title);
             formData.append("content", content);
             formData.append("category", category);
-
+            // als er een foto deel aan formData toevoegen
             if (image) {
                 const filename = image.split('/').pop();
                 const match = /\.(\w+)$/.exec(filename);
@@ -69,7 +74,7 @@ export default function AddForum({ navigation, token, theme }) {
                     type,
                 });
             }
-
+            // API call om forum artikel toe te voegen
             const response = await fetch(API_URL + '/api/forums/new', {
                 method: 'POST',
                 headers: {
@@ -78,12 +83,13 @@ export default function AddForum({ navigation, token, theme }) {
                 },
                 body: formData,
             });
-
+            // checken of de response ok is en daarna laden uitzetten
             if (!response.ok) throw new Error("add forum failed");
             setUploading(false);
             navigation.goBack();
 
         } catch (error) {
+            // als er een error is laden uitzetten en error tonen
             setUploading(false);
             console.error(error);
             Alert.alert('Upload Failed', 'Try again');

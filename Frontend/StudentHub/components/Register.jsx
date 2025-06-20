@@ -1,10 +1,11 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Animated } from "react-native";
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from "react-native-elements";
 import { useTranslation } from "react-i18next";
 
+// Register component
 export default function Register({ navigation, onLogin, theme }) {
     const [full_name, setFullName] = useState("");
     const [password, setPassword] = useState("");
@@ -24,9 +25,11 @@ export default function Register({ navigation, onLogin, theme }) {
 
     const { t } = useTranslation();
 
+    // Register handler
     const handleRegister = async () => {
         setLoading(true);
         try {
+            // Haal de API URL uit de omgevingsvariabelen
             const res = await fetch(API_URL + '/api/users/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -53,7 +56,8 @@ export default function Register({ navigation, onLogin, theme }) {
                 setLoading(false);
                 return;
             }
-            // Optionally auto-login after registration
+
+            // Automatisch inloggen na registratie
             const loginRes = await fetch(API_URL + '/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

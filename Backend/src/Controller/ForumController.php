@@ -17,12 +17,14 @@ class ForumController extends AbstractController
     private $jwtManager;
     private $tokenStorageInterface;
 
+    // Constructor: zet JWT en TokenStorage klaar
     public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
     }
 
+    // Haal lijst van forums op, met zoeken, sorteren en filteren
     #[Route('/get', name: 'api_forums_list', methods: ['GET'])]
     public function list(Request $request, ForumsRepository $forumsRepository): JsonResponse
     {
@@ -32,8 +34,8 @@ class ForumController extends AbstractController
             return new JsonResponse(['error' => 'Invalid token'], 401);
         }
 
-        $limit = (int) $request->query->get('limit', 10);
-        $offset = (int) $request->query->get('offset', 0);
+        $limit = (int) $request->query->get('limit', 10); // Hoeveel forums per pagina
+        $offset = (int) $request->query->get('offset', 0); // Vanaf welke forum
 
         // Filters
         $criteria = [];
@@ -42,10 +44,10 @@ class ForumController extends AbstractController
             $criteria['category'] = $category;
         }
 
-        // Haal eerst ALLE forums op die voldoen aan de criteria (zonder limit/offset)
+        // Haal alle forums op die voldoen aan de filters
         $forums = $forumsRepository->findBy($criteria, ['created_at' => 'DESC']);
 
-        // Custom filter: search in title/content
+        // Zoek in titel of inhoud
         $search = $request->query->get('search');
         if ($search) {
             $forums = array_filter($forums, function (Forums $forum) use ($search) {
@@ -54,7 +56,7 @@ class ForumController extends AbstractController
             });
         }
 
-        // Custom sort
+        // Sorteer forums
         $sortField = $request->query->get('sort', 'created_at');
         $sortOrder = strtolower($request->query->get('order', 'desc'));
         $forums = is_array($forums) ? $forums : iterator_to_array($forums);
@@ -79,10 +81,10 @@ class ForumController extends AbstractController
             return $sortOrder === 'asc' ? $aCount <=> $bCount : $bCount <=> $aCount;
         });
 
-        // Pas nu pas limit/offset toe op het gefilterde en gesorteerde resultaat
+        // Pas limit en offset toe
         $forums = array_slice($forums, $offset, $limit);
 
-        // Map naar array voor JSON output
+        // Zet forums om naar array voor JSON
         $data = array_map(function (Forums $forums) use ($request) {
             $image = $forums->getImage();
             if ($image && !str_starts_with($image, "http")) {
@@ -115,6 +117,7 @@ class ForumController extends AbstractController
         return $this->json(array_values($data));
     }
 
+    // Maak een nieuw forum aan
     #[Route('/new', name: 'api_forums_create', methods: ['POST'])]
     public function create(Request $request, ForumsRepository $forumsRepository, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
@@ -124,7 +127,7 @@ class ForumController extends AbstractController
             return new JsonResponse(['error' => 'Invalid token'], 401);
         }
 
-        // Haal data uit form-data
+        // Haal data uit formulier
         $title = $request->request->get('title');
         $content = $request->request->get('content');
         $category = $request->request->get('category');
@@ -145,7 +148,7 @@ class ForumController extends AbstractController
         $forum->setLikes([]);
         $forum->setDislikes([]);
 
-        // Afbeelding opslaan indien aanwezig
+        // Sla afbeelding op als die is meegestuurd
         if ($imageFile) {
             $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads/forums';
             $newFileName = uniqid() . '.' . pathinfo($imageFile->getClientOriginalName(), PATHINFO_EXTENSION);
@@ -166,6 +169,7 @@ class ForumController extends AbstractController
         return $this->json(['success' => true, 'id' => $forum->getId()]);
     }
 
+    // Voeg een reactie toe aan een forum
     #[Route('/{id}/reply', name: 'api_forums_reply', methods: ['POST'])]
     public function reply(int $id, Request $request, ForumsRepository $forumsRepository, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
@@ -187,7 +191,7 @@ class ForumController extends AbstractController
         $replies = $forum->getReplies() ?? [];
         $replies[] = [
             'user_name' => $this->getUser()->getFullName(),
-            'user_id' => $this->getUser()->getId(), 
+            'user_id' => $this->getUser()->getId(),
             'created_at' => (new \DateTime('Europe/Amsterdam'))->format('Y-m-d H:i:s'),
             'content' => $data['content'],
             'upvotes' => [],
@@ -199,6 +203,7 @@ class ForumController extends AbstractController
         return $this->json(['success' => true, 'replies' => $replies]);
     }
 
+    // Like een forum (of haal like weg)
     #[Route('/{id}/like', name: 'api_forums_like', methods: ['POST'])]
     public function like(int $id, ForumsRepository $forumsRepository, Request $request, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
@@ -234,6 +239,7 @@ class ForumController extends AbstractController
         return $this->json(['success' => true, 'likes' => $likes]);
     }
 
+    // Dislike een forum (of haal dislike weg)
     #[Route('/{id}/dislike', name: 'api_forums_dislike', methods: ['POST'])]
     public function dislike(int $id, ForumsRepository $forumsRepository, Request $request, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
@@ -269,6 +275,7 @@ class ForumController extends AbstractController
         return $this->json(['success' => true, 'dislikes' => $dislikes]);
     }
 
+    // Stem op een reactie (upvote/downvote/undo)
     #[Route('/{id}/reply-vote', name: 'api_forums_reply_vote', methods: ['POST'])]
     public function replyVote(int $id, Request $request, ForumsRepository $forumsRepository, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
     {
@@ -323,6 +330,7 @@ class ForumController extends AbstractController
         return $this->json(['success' => true, 'replies' => $replies]);
     }
 
+    // Haal één forum op
     #[Route('/{id}', name: 'api_forums_get_one', methods: ['GET'])]
     public function getOne(int $id, ForumsRepository $forumsRepository, Request $request): JsonResponse
     {

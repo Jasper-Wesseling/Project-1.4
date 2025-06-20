@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { SafeAreaView, View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { API_URL } from '@env';
 import { useTranslation } from "react-i18next";
 import { Icon } from "react-native-elements";
 
+// creeer event component
 export default function CreateEvent({ navigation, theme, token }) {
     const [title, setTitle] = useState("");
     const [date, setDate] = useState("");
@@ -14,15 +15,20 @@ export default function CreateEvent({ navigation, theme, token }) {
     const { t } = useTranslation();
     const styles = createEventStyles(theme);
 
+    // Event aanmaken handelen
     const handleSubmit = async () => {
+        // Controleer of alle velden zijn ingevuld
         if (!title || !date || !companyId) {
+            // Toon een foutmelding als verplichte velden niet zijn ingevuld
             Alert.alert(t("createEvent.errorTitle"), t("createEvent.errorRequired"));
             return;
         }
         setLoading(true);
         try {
+            // Controleer of de token aanwezig is
             if (!token) throw new Error(t("createEvent.errorNoToken"));
 
+            // Controleer de velden en of de companyId een geldig getal is 
             const body = {
                 title,
                 date,
@@ -39,24 +45,28 @@ export default function CreateEvent({ navigation, theme, token }) {
                 },
                 body: JSON.stringify(body)
             });
+            // Controleer of de response ok is
             if (!res.ok) {
                 let errorMsg = t('createEvent.errorCreate');
                 try {
+                    // Probeer de foutmelding van de server te lezen
                     const errorData = await res.json();
                     errorMsg = errorData.message || JSON.stringify(errorData);
                 } catch (e) {
-                    // fallback to text if not JSON
                     try {
+                        // Probeer de tekst van de response te lezen
                         errorMsg = await res.text();
                     } catch {}
                 }
                 throw new Error(errorMsg);
             }
+            // Toon een succesmelding en ga terug naar de vorige pagina
             Alert.alert(t("createEvent.successTitle"), t("createEvent.successMsg"));
             navigation.goBack();
         } catch (err) {
             Alert.alert(t("createEvent.errorTitle"), err.message);
         } finally {
+            // laden uit (mag niet meer aan vandaag)
             setLoading(false);
         }
     };

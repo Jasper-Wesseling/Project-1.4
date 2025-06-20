@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import ProductPreview from "./ProductPreview";
 import { API_URL } from '@env';
@@ -9,7 +9,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { hasRole } from "../utils/roleUtils";
 
-
+// products component
 export default function Products({ navigation, token, user, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [products, setProducts] = useState([]);
@@ -22,8 +22,6 @@ export default function Products({ navigation, token, user, theme }) {
     const [hasMorePages, setHasMorePages] = useState(true);
     const styles = createProductsStyles(theme);
     const { t } = useTranslation();
-
-    // Filters should match your backend's product categories
     const filters = {
         'Boeken': t('products.books'),
         'Electra': t('products.electronics'),
@@ -34,6 +32,7 @@ export default function Products({ navigation, token, user, theme }) {
     );
     const [activeFilters, setActiveFilters] = useState([]);
     
+    // Haal alle producten op bij het laden van de component
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValues = activeFilters) => {
         try {
             if (!token) {
@@ -73,6 +72,7 @@ export default function Products({ navigation, token, user, theme }) {
         }, [search, activeFilters, token])
     );
 
+    // Laad meer producten bij scrollen
     const loadMore = () => {
         if (hasMorePages && !loading) {
             const nextPage = page + 1;
@@ -81,7 +81,7 @@ export default function Products({ navigation, token, user, theme }) {
         }
     };
 
-    // Animated header height (from 150 to 0)
+    // Animaties voor de header en sticky bar
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 249],
         outputRange: [166, 0],

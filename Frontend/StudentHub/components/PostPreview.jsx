@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { Icon } from "react-native-elements";
 import { API_URL } from "@env";
-import { themes } from "./LightDarkComponent";
 import { useTranslation } from "react-i18next";
 
+// preview component voor posts
 export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
     const styles = createPostPreviewStyles(theme);
     const { t } = useTranslation();
 
+    // haalt de gebruiker op basis van user_id in de post
     useEffect(() => {
         let isMounted = true;
         async function fetchUser() {
@@ -77,7 +78,6 @@ export default function PostPreview({ post, onQuickHelp, token, theme, user }) {
     );
 }
 
-// Use theme for dynamic styling if needed
 function createPostPreviewStyles(theme) {
     return StyleSheet.create({
         card: {

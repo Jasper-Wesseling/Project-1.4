@@ -5,6 +5,7 @@ import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useTranslation } from 'react-i18next';
 
+// Post toevoegen component
 export default function AddPost({ navigation, token, theme }) {
     const { t } = useTranslation();
 
@@ -19,12 +20,15 @@ export default function AddPost({ navigation, token, theme }) {
     const [loading, setLoading] = useState(true);
     const styles = createAddPostStyles(theme);
 
+    // post uploaden
     const uploadPost = async () => {
+        // checken of alle velden zijn ingevuld
         if (!title || !description || !type) {
             Alert.alert(t('error'), t('fill_all_fields'));
             return;
         }
         try {
+            // token check
             if (!token) throw new Error("No token received");
             const response = await fetch(API_URL + '/api/posts/new', {
                 method: 'POST',
@@ -37,13 +41,16 @@ export default function AddPost({ navigation, token, theme }) {
                     "type": type,
                 }),
             });
+            // checken of de response ok is en laden uitzetten
             if (!response.ok)
                 setLoading(false);
-            Alert.alert(t('successfully_created'), '', [{
+                Alert.alert(t('successfully_created'), '', [{
                 text: t('ok'),
                 onPress: () => navigation.goBack()
             }]);
         } catch (error) {
+            // laden uitzetten en foutmelding tonen
+            setLoading(false);
             console.error(error);
             Alert.alert(t('upload_failed'), t('try_again'));
         }

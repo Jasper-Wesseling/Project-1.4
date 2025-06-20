@@ -5,26 +5,30 @@ import { useTranslation } from "react-i18next";
 import { API_URL } from '@env';
 import { hasRole } from "../utils/roleUtils";
 
+// BountyBoardModal Component
 export default function BountyBoardModal({ visible, bounty, onClose, user, token, onPostDeleted, navigation, theme }) {
     const { t } = useTranslation();
 
     const [showOverige, setShowOverige] = useState(false);
-    // Edit mode state
     const [editMode, setEditMode] = useState(false);
     const [editTitle, setEditTitle] = useState('');
     const [editDescription, setEditDescription] = useState('');
     const [saving, setSaving] = useState(false);
     const styles = createBountyBoardModalStyles(theme);
 
+    // Reset edit velden wanneer de bounty verandert
     useEffect(() => {
-        setEditMode(false); // Reset edit mode when bounty changes
+        setEditMode(false);
         setEditTitle(bounty?.title || '');
         setEditDescription(bounty?.description || '');
     }, [bounty]);
 
+    // opslaan van wijzigingen
     const handleSave = async () => {
+        // opslaan aanzetten
         setSaving(true);
         try {
+            // API post bij id fetch
             const res = await fetch(`${API_URL}/api/posts/edit?id=${bounty.id}`, {
                 method: 'PUT',
                 headers: {
@@ -36,17 +40,23 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                     description: editDescription,
                 }),
             });
+            // checken of de response ok is
             if (!res.ok) throw new Error("Edit failed");
+            // als de response ok is, dan de wijzigingen opslaan en edit mode uitzetten
             setEditMode(false);
             Alert.alert(t('success'), t('postUpdated'));
-            if (onPostDeleted) onPostDeleted(); // Refresh the list
+            if (onPostDeleted) onPostDeleted();
         } catch (err) {
+            // als er een error is, dan de wijzigingen niet opslaan en error tonen
             Alert.alert(t('error'), t('couldNotSaveChanges'));
         }
+        // opslaan uitzetten
         setSaving(false);
     };
 
+    // Verwijderen van bounty
     const handleDelete = async () => {
+        // bevestiging van verwijderen
         Alert.alert(
             t('deletePost'),
             t('deleteConfirmation'),
@@ -56,16 +66,20 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                     text: t('delete'),
                     style: "destructive",
                     onPress: async () => {
+                        // API call om bounty te verwijderen
                         try {
+                            // API post bij id verwijderen
                             const res = await fetch(`${API_URL}/api/posts/delete?id=${bounty.id}`, {
                                 method: 'DELETE',
                                 headers: {
                                     'Authorization': `Bearer ${token}`
                                 },
                             });
+                            // checken of de response ok is
                             if (!res.ok) throw new Error("Delete failed");
                             Alert.alert(t('success'), t('postDeleted'), [
                                 {
+                                    // als de response ok is, dan de post verwijderen en onClose aanroepen
                                     text: t('ok'), onPress: () => {
                                         onClose();
                                         if (onPostDeleted) onPostDeleted();
@@ -73,6 +87,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                                 }
                             ]);
                         } catch (err) {
+                            // als er een error is, dan de bounty niet verwijderen en error tonen
                             Alert.alert(t('error'), t('couldNotDeletePost'));
                         }
                     }
@@ -81,7 +96,9 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
         );
     };
 
+    // Als er geen bounty is, dan null retourneren
     if (!bounty) return null;
+    // Checken of de gebruiker de creator is
     const isCreator = user && user.id === bounty.post_user_id;
 
     return (

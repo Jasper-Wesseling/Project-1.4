@@ -181,7 +181,6 @@ class ProductsController extends AbstractController
             $product->setPrice($data['price']);
         }
 
-        dump($data['title']);
         $product->setUpdatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
 
         $entityManager->persist($product);

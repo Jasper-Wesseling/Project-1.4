@@ -9,14 +9,16 @@ import {
 	View,
 	Image,
 	Switch,
+	TextInput,
 } from "react-native";
 import { Icon } from "react-native-elements";
 import ProductModal from "./ProductModal";
 import { API_URL } from "@env";
-import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 
+// voorpagina component
 export default function Frontpage({ token, user, navigation, theme }) {
+	const [search, setSearch] = useState("");
 	const [widgets, setWidgets] = useState({});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -31,6 +33,8 @@ export default function Frontpage({ token, user, navigation, theme }) {
 	const name = user && user.full_name ? user.full_name.split(" ")[0] : "";
 
 	const defaultWidgets = { promo: false, recommended: false };
+
+	// Prijs formatteren
 	const formatPrice = (price) => {
 		if (!price) return "€0.00";
 		return new Intl.NumberFormat("nl-NL", {
@@ -40,9 +44,11 @@ export default function Frontpage({ token, user, navigation, theme }) {
 		}).format(price / 100);
 	};
 
+	// widgets ophalen
 	const fetchWidgets = async () => {
 		try {
 			setLoading(true);
+			// APi-aanroep om widgets op te halen
 			const widgetResponse = await fetch(`${API_URL}/api/widgets/get`, {
 				method: "GET",
 				headers: {
@@ -51,23 +57,29 @@ export default function Frontpage({ token, user, navigation, theme }) {
 				},
 			});
 
+			// Controleer of de response ok is
 			if (!widgetResponse.ok) {
 				throw new Error(`Widget fetch failed: ${widgetResponse.status}`);
 			}
 
+			// Widgets data verwerken
 			const widgetData = await widgetResponse.json();
 			setWidgets({ ...defaultWidgets, ...widgetData });
 			setError(null);
 		} catch (err) {
+			// Foutafhandeling
 			setError(err.message);
 			setWidgets(defaultWidgets);
 		} finally {
+			// Loading status bijwerken
 			setLoading(false);
 		}
 	};
 
+	// Aanbevolen producten ophalen
 	const fetchRecommended = async () => {
 		try {
+			// APi-aanroep om aanbevolen producten op te halen
 			const response = await fetch(`${API_URL}/api/products/get?page=1`, {
 				method: "GET",
 				headers: {
@@ -75,22 +87,31 @@ export default function Frontpage({ token, user, navigation, theme }) {
 					"Content-Type": "application/json",
 				},
 			});
+			// Controleer of de response ok is
 			if (!response.ok) {
+				// Foutafhandeling als de response niet ok is
 				throw new Error(`Products fetch failed: ${response.status}`);
 			}
+			// // Aanbevolen producten verwerken
 			const data = await response.json();
 			setRecommended(data.slice(0, 3));
 		} catch (err) {
+			// z
+			t
 			setRecommended([]);
 		}
 	};
 
+	// Widget toggle functie
 	const toggleWidget = async (key) => {
+		//	 Als de widget niet bestaat, returnen
 		const updated = { ...widgets, [key]: !widgets[key] };
 		const previous = { ...widgets };
 
+		// wist je dat try catch gewoon probeer en vang is in het Nederlands?
 		try {
 			setWidgets(updated);
+			// APi-aanroep om de widgets bij te werken
 			const updateResponse = await fetch(`${API_URL}/api/widgets/update`, {
 				method: "PUT",
 				headers: {
@@ -100,36 +121,43 @@ export default function Frontpage({ token, user, navigation, theme }) {
 				body: JSON.stringify({ widgets: updated }),
 			});
 
+			// Controleer of de update response ok is
 			if (!updateResponse.ok) {
 				throw new Error(`Update failed: ${updateResponse.status}`);
 			}
 
+			// Widgets data verwerken
 			const widgetData = await updateResponse.json();
 			setWidgets({ ...defaultWidgets, ...widgetData });
 			setError(null);
 		} catch (err) {
+			// Foutafhandeling
 			setError(err.message);
 			setWidgets(previous);
 		}
 	};
 
+	// UseEffect om widgets en aanbevolen producten op te halen bij het laden van de component
 	useEffect(() => {
 		fetchWidgets();
 		fetchRecommended();
 	}, [token]);
 
+	// Interpolatie voor de header hoogte en transparantie
 	const headerHeight = scrollY.interpolate({
 		inputRange: [0, 100],
 		outputRange: [150, 0],
 		extrapolate: "clamp",
 	});
 
+	// Interpolatie voor de header transparantie
 	const headerOpacity = scrollY.interpolate({
 		inputRange: [0, 40],
 		outputRange: [1, 0],
 		extrapolate: "clamp",
 	});
 
+	// Render de component wanneer laden
 	if (loading) {
 		return (
 			<SafeAreaView style={styles.container}>
@@ -138,6 +166,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
 		);
 	}
 
+	// Render de component wanneer er een fout is
 	if (error) {
 		return (
 			<SafeAreaView style={styles.container}>
@@ -180,18 +209,21 @@ export default function Frontpage({ token, user, navigation, theme }) {
 						color="#A3A3A3"
 						style={{ marginRight: 8 }}
 					/>
-					<Text style={styles.searchPlaceholder}>
-						{t("frontpage.searchPlaceholder")}
-					</Text>
+					<TextInput
+						placeholder={t("faq.searchHelp")}
+						value={search}
+						onChangeText={setSearch}
+						style={[styles.searchBarInput, { width: "85%" }]}
+						placeholderTextColor="#A0A0A0"
+					/>
+					<TouchableOpacity onPress={() => setSearch("")}>
+						<Icon name="remove" size={22} color="#A3A3A3" style={{ alignSelf: "flex-end" }} type="font-awesome" />
+					</TouchableOpacity>
 				</View>
 				<View style={styles.headerOptions}>
 					<View style={styles.optionBlock}>
 						<Text style={styles.optionLabel}>{t("frontpage.addressLabel")}</Text>
 						<Text style={styles.optionValue}>{t("frontpage.addressValue")}</Text>
-					</View>
-					<View style={styles.optionBlock}>
-						<Text style={styles.optionLabel}>{t("frontpage.languageLabel")}</Text>
-						<Text style={styles.optionValue}>{t("frontpage.languageValue")}</Text>
 					</View>
 				</View>
 			</Animated.View>
@@ -208,9 +240,9 @@ export default function Frontpage({ token, user, navigation, theme }) {
 			) : (
 				<Animated.ScrollView
 					contentContainerStyle={{
-						paddingTop: 250, // 100(topBar) + 150(header)
+						paddingTop: 250,
 						paddingBottom: 40,
-						paddingLeft: 16, // <-- extra padding links toegevoegd
+						paddingLeft: 16,
 					}}
 					showsVerticalScrollIndicator={true}
 					onScroll={Animated.event(
@@ -259,7 +291,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
 						<View style={styles.recommendedBox}>
 							<Text style={styles.recommendedTitle}>{t("frontpage.recommended")}</Text>
 							<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-								{recommended.map((product) => (
+								{recommended.filter(product => product.title?.toLowerCase().includes(search.toLowerCase())).map((product) => (
 									<TouchableOpacity
 										key={product.id}
 										style={styles.productCard}
@@ -392,7 +424,7 @@ function createFrontpageStyles(theme) {
 			height: 48,
 			marginBottom: 18,
 			marginTop: 8,
-			width: "100%", // <-- voeg toe
+			width: "100%",
 		},
 		searchPlaceholder: {
 			color: "#A3A3A3",
@@ -402,7 +434,7 @@ function createFrontpageStyles(theme) {
 			flexDirection: "row",
 			justifyContent: "space-between",
 			marginTop: 0,
-			width: "100%", // <-- voeg toe
+			width: "100%",
 		},
 		optionBlock: {
 			flex: 1,

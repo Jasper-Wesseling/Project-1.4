@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from 'react-native-elements';
 
+// gigantisch veel thema's, maar ik heb ze allemaal nodig voor de light/dark mode
 export const themes = {
 	light: {
 		activeFilter: "#FFC83A",
@@ -88,59 +89,45 @@ export const themes = {
 		text: "#fff",
 	}
 };
-export default function LightDarkToggle({ token: propToken, initialMode, onThemeChange, navigation }) {
+
+// LightsdarkToggle component voor ZWART en WIT thema wisselen of systeem standaard
+export default function LightDarkToggle({ token, initialMode, onThemeChange, navigation }) {
 	const [mode, setMode] = useState(initialMode || "light");
-	const [token, setToken] = useState(propToken || null);
 	const [systemDefault, setSystemDefault] = useState(false);
 	const colorScheme = useColorScheme();
 	const [theme, setTheme] = useState(themes[initialMode || "light"]);
 	const fadeAnim = useRef(new Animated.Value(1)).current;
 	const { t } = useTranslation();
 
-	// Ophalen van token als die niet als prop wordt meegegeven
+	// Haal de Theme op bij het laden van de component
 	useEffect(() => {
-		if (token) return;
-		async function fetchJwtToken() {
-			try {
-				const response = await fetch(`${API_URL}/api/login`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						"username": "jasper.wesseling@student.nhlstenden.com",
-						"password": "wesselingjasper"
-					})
-				});
-				const data = await response.json();
-				if (!response.ok || !data.token) throw new Error("Login mislukt");
-				setToken(data.token);
-			} catch (error) {
-				Alert.alert("Fout", error.message || "Kon niet inloggen.");
-			}
-		}
-		fetchJwtToken();
-	}, [token]);
-
-	// Ophalen van huidige theme uit database
-	useEffect(() => {
+		// Als er geen token is, dan kunnen we geen thema ophalen
 		if (!token) return;
+		// Haal het thema op van de gebruiker
 		async function fetchUserTheme() {
 			try {
+				// Haal het thema op van de API
 				const response = await fetch(`${API_URL}/api/lightdark/gettheme`, {
 					headers: { Authorization: "Bearer " + token }
 				});
+				// Als de response niet ok is, dan gooien we een error
 				if (!response.ok) throw new Error("Kan thema niet ophalen");
+				// Parse de response als JSON
 				const data = await response.json();
+				// Als het thema null is, dan zetten we het op de systeem standaard
 				if (data.theme === null) {
 					setSystemDefault(true);
 					setMode(colorScheme === "dark" ? "dark" : "light");
 					setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
 					if (onThemeChange) onThemeChange(themes[colorScheme === "dark" ? "dark" : "light"]);
+				// Zet de mode op de systeem standaard
 				} else if (data.theme === "dark" || data.theme === "light") {
 					setSystemDefault(false);
 					setMode(data.theme);
 					setTheme(themes[data.theme]);
 					if (onThemeChange) onThemeChange(themes[data.theme]);
 				}
+			// Erro als het thema niet is gevonden
 			} catch (error) {
 				Alert.alert("Fout", "Kon thema niet ophalen.");
 			}
@@ -148,24 +135,25 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 		fetchUserTheme();
 	}, [token]);
 
-	// Theme wisselen en opslaan in database
+	// Toggle de thema tussen light en dark
 	const toggleTheme = async () => {
 		if (!token) return;
 		const newMode = mode === "light" ? "dark" : "light";
 
+		// Start de animatie voor het wisselen van thema
 		Animated.sequence([
 			Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
 			Animated.timing(fadeAnim, { toValue: 1, duration: 80, useNativeDriver: true }),
 		]).start();
 
-		// Eerst lokaal theme updaten
+		// Zet de systeem standaard uit en verander het thema
 		setSystemDefault(false);
 		setMode(newMode);
 		setTheme(themes[newMode]);
 		if (onThemeChange) onThemeChange(themes[newMode]);
 
-		// Daarna pas naar de database sturen (asynchroon)
 		try {
+			// Stuur de nieuwe thema naar de API om op te slaan
 			const response = await fetch(`${API_URL}/api/lightdark/settheme`, {
 				method: "PUT",
 				headers: {
@@ -174,21 +162,25 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 				},
 				body: JSON.stringify({ theme: newMode }),
 			});
+			// Als de response niet ok is, dan gooien we een error
 			if (!response.ok) {
 				const data = await response.json();
 				throw new Error(data.error || "Thema kon niet worden opgeslagen");
 			}
 		} catch (error) {
+			// Toon een alert als er een error is
 			Alert.alert("Fout", error.message || "Kon thema niet opslaan.");
 		}
 	};
 
-	// Handler voor system default switch
+	// Functie om de systeem standaard te zetten
 	const handleSystemDefault = async (value) => {
+		// Als er geen token of API_URL is, dan kunnen we niet verder
 		if (!token || !API_URL) return;
 		setSystemDefault(value);
 		if (value) {
 			try {
+				// Stuur een verzoek naar de API om het systeem standaard thema op te slaan
 				await fetch(`${API_URL}/api/lightdark/settheme`, {
 					method: "PUT",
 					headers: {
@@ -197,14 +189,17 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 					},
 					body: JSON.stringify({ theme: null }),
 				});
+				// Zet de mode en theme op de systeem standaard
 				setMode(colorScheme === "dark" ? "dark" : "light");
 				setTheme(themes[colorScheme === "dark" ? "dark" : "light"]);
 				if (onThemeChange) onThemeChange(themes[colorScheme === "dark" ? "dark" : "light"]);
 			} catch (error) {
+				// Toon een alert als er een error is
 				Alert.alert("Fout", "Kon system default niet opslaan.");
 			}
 		} else {
 			try {
+				// Als systeem standaard uit is, dan slaan we het huidige thema op
 				await fetch(`${API_URL}/api/lightdark/settheme`, {
 					method: "PUT",
 					headers: {
@@ -213,9 +208,11 @@ export default function LightDarkToggle({ token: propToken, initialMode, onTheme
 					},
 					body: JSON.stringify({ theme: mode }),
 				});
+				// Zet de mode en theme op de huidige mode
 				setTheme(themes[mode]);
 				if (onThemeChange) onThemeChange(themes[mode]);
 			} catch (error) {
+				// Toon een alert als er een error is
 				Alert.alert("Fout", "Kon thema niet opslaan.");
 				setSystemDefault(true);
 			}

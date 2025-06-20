@@ -1,11 +1,11 @@
-import { use, useEffect, useRef, useState } from "react";
-import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, Keyboard } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Keyboard } from "react-native";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { Icon } from 'react-native-elements';
 import { API_URL } from '@env';
 import { useTranslation } from "react-i18next";
 
-
+// Chat met de user die een product of bounty heeft geplaatst
 export default function ProductChat({ navigation, token, user, route, theme }) {
     const userIDReciever = userToChat;
     const [chats, setChats] = useState([]);
@@ -14,38 +14,44 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
     const { product, userToChat, productTitle, receiverName, bountyTitle, bounty } = route.params;
     const styles = createProductChatStyles(theme);
     const { t } = useTranslation();
+
+    // Haal de chats op van de users
     const fetchChats = async () => {
         let query = '';
         if (bountyTitle) {
-            query+=`&bounty=${bounty['id']}`
+            query += `&bounty=${bounty['id']}`
         }
 
         if (productTitle) {
-            query+=`&product=${product}`
+            query += `&product=${product}`
         }
         try {
+            // haal de chats op van de user
             const chatsRes = await fetch(API_URL + `/api/messages/get?reciever=${encodeURIComponent(userToChat)}` + query, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
+            // check of de response ok is
+            // als de response niet ok is, gooi een error
+            // en log de error in de console
+            // zoals het hoort
             if (!chatsRes.ok) {
                 const errorText = await chatsRes.text();
                 console.error("Backend error:", errorText);
                 throw new Error("messages fetch failed");
             };
 
+            // parse de response als json
             const chatData = await chatsRes.json();
             setChats(chatData.messages);
         } catch (err) {
-            console.error("API error:", err);   
+            console.error("API error:", err);
         }
 
     }
 
-    // useEffect(() => {
-    //     fetchChats();
-    // }, [userIDReciever]);
+    // Chat elke 3 seconden ophalen
     useEffect(() => {
         const interval = setInterval(() => {
             fetchChats();
@@ -53,10 +59,13 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
         return () => clearInterval(interval);
     }, [userIDReciever]);
 
+    // Haal de chats op bij het laden van de component
     useEffect(() => {
         fetchChats();
     }, [userIDReciever]);
 
+    // Stuur een bericht naar de user
+    // en voeg het toe aan de chats
     const sendMessage = async () => {
         if (!message || !userToChat) {
             return;
@@ -66,13 +75,13 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
         setChats(prevChats => [
             ...prevChats,
             {
-            id: tempId,
-            content: messageContent,
-            sender: user.id,
-            // add other fields if needed (e.g., timestamp)
+                id: tempId,
+                content: messageContent,
+                sender: user.id,
             }
         ]);
         try {
+            // Reset the message input
             setMessage('');
             const body = {
                 content: messageContent,
@@ -80,7 +89,8 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
             };
             if (product) body.product = product;
             if (bounty) body.bounty = bounty['id'];
-            
+
+            // Stuur het bericht naar de API
             const response = await fetch(API_URL + `/api/messages/new`, {
                 method: 'POST',
                 headers: {
@@ -89,14 +99,16 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
                 },
                 body: JSON.stringify(body),
             });
+            // Als de response niet ok is, voeg een foutmelding toe aan de chat
             if (!response.ok) {
-                setChats(prevChats => prevChats.map(msg => msg.id === tempId ? {...msg,  content: '[Failed to send] ' + msg.content } : msg));
+                setChats(prevChats => prevChats.map(msg => msg.id === tempId ? { ...msg, content: '[Failed to send] ' + msg.content } : msg));
             }
             fetchChats();
         } catch (err) {
             console.error("API error:", err);
         }
     }
+    // Scroll naar beneden als er nieuwe chats zijn
     const scrollViewRef = useRef(null);
     useEffect(() => {
         if (scrollViewRef.current) {
@@ -104,22 +116,19 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
         }
     }, [chats]);
 
-    const name = user && user.full_name ? user.full_name.split(' ')[0] : "";                               //fix fetching user and product
-
-
-    return(
+    return (
         <View style={styles.container}>
-            <View style={[styles.topBar, {height: 125, backgroundColor: theme.headerBg, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingTop:32 }]}>
-                <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
-                <View style={{ width: '80%', alignItems: 'flex-start', justifyContent: 'center'}}>
+            <View style={[styles.topBar, { height: 125, backgroundColor: theme.headerBg, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, paddingTop: 32 }]}>
+                <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()} />
+                <View style={{ width: '80%', alignItems: 'flex-start', justifyContent: 'center' }}>
                     {/* profile picture */}
-                    <Text style={{fontSize: 24, color: '#fff'}}>{receiverName}</Text>
-                    <Text style={{fontSize: 16, color: '#fff'}}>{productTitle ? productTitle : bountyTitle}</Text>
+                    <Text style={{ fontSize: 24, color: '#fff' }}>{receiverName}</Text>
+                    <Text style={{ fontSize: 16, color: '#fff' }}>{productTitle ? productTitle : bountyTitle}</Text>
                 </View>
             </View>
             <View
                 style={{
-                    flex:1,
+                    flex: 1,
                     padding: 32,
                     backgroundColor: theme.background,
                     transform: [{ translateY: -pageHeight }]
@@ -140,8 +149,8 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
                         contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 40, paddingTop: 100 }}
                         keyboardShouldPersistTaps="handled"
                     >
-                        {chats.map((msg, idx) => 
-                            msg && msg.content ?(
+                        {chats.map((msg, idx) =>
+                            msg && msg.content ? (
                                 <Text
                                     key={idx}
                                     style={msg.sender === user.id ? styles.sentMessage : styles.recievedMessage}
@@ -152,9 +161,9 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
                         )}
                     </ScrollView>
                 </TouchableOpacity>
-                <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-                    <TextInput 
-                        style={[styles.input, {width: '80%'}]}
+                <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                    <TextInput
+                        style={[styles.input, { width: '80%' }]}
                         onChangeText={setMessage}
                         value={message}
                         placeholder={t("productChat.typeSomething")}
@@ -168,13 +177,13 @@ export default function ProductChat({ navigation, token, user, route, theme }) {
                         }}
                     />
                     <TouchableOpacity
-                        style={{ backgroundColor: theme.backCircle, justifyContent: "center", borderRadius: 100, width: 50}}
-                        onPress={()=> {
+                        style={{ backgroundColor: theme.backCircle, justifyContent: "center", borderRadius: 100, width: 50 }}
+                        onPress={() => {
                             sendMessage();
                             scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
                         }}
                     >
-                        <Icon name='paper-airplane' type='octicon' size={32} style={{marginRight: -5}} color='#fff'/>
+                        <Icon name='paper-airplane' type='octicon' size={32} style={{ marginRight: -5 }} color='#fff' />
                     </TouchableOpacity>
                 </View>
             </View>

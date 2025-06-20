@@ -4,10 +4,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
 import { Icon } from "react-native-elements";
 import DropDownPicker from 'react-native-dropdown-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { useTranslation } from 'react-i18next';
 
-// Accept token as prop
+// product toevoegen component
 export default function AddProduct({ navigation, token, theme }) {
     const { t } = useTranslation();
 
@@ -25,61 +24,75 @@ export default function AddProduct({ navigation, token, theme }) {
     const [loading, setLoading] = useState(false);
     const styles = createAddProductsStyles(theme);
 
-const showPhotoOptions = () => {
-    Alert.alert(
-        'Foto toevoegen',
-        'Kies een optie',
-        [
-            { text: 'Annuleren', style: 'cancel' },
-            { text: 'Foto maken', onPress: takePhoto },
-            { text: 'Selecteer uit galerij', onPress: selectPhoto },
-        ]
-    );
-};
+    // opties voor het kiezen of maken van een foto
+    const showPhotoOptions = () => {
+        Alert.alert(
+            'Foto toevoegen',
+            'Kies een optie',
+            [
+                { text: 'Annuleren', style: 'cancel' },
+                { text: 'Foto maken', onPress: takePhoto },
+                { text: 'Selecteer uit galerij', onPress: selectPhoto },
+            ]
+        );
+    };
 
+    // foto maken met camera of selecteren uit galerij
     const takePhoto = async () => {
+        // camera permissies aanvragen
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        // als de permissie niet is gegeven, toon een alert
         if (status !== 'granted') {
             Alert.alert('Sorry, we hebben camera toegang nodig!');
             return;
         }
+        // camera openen en foto maken
         const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
+        // wanneer geannuleerd, foto weer op null zetten
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            setPhoto(result.assets[0]); // <-- Set photo for preview and upload
+            setPhoto(result.assets[0]);
         }
     };
 
+    // foto selecteren uit galerij
     const selectPhoto = async () => {
+        // camera permissies aanvragen
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        // als de permissie niet is gegeven, toon een alert
         if (status !== 'granted') {
             Alert.alert('Sorry, we hebben galerij toegang nodig!');
             return;
         }
+        // galerij openen en foto selecteren
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
+        // wanneer geannuleerd, foto weer op null zetten
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            setPhoto(result.assets[0]); // <-- Set photo for preview and upload
+            setPhoto(result.assets[0]);
         }
     };
 
     const uploadProduct = async () => {
+        // wanneeer alle velden niet zijn ingevuld, alert tonen
         if (!photo || !title || !description || !value || !price) {
             Alert.alert(t('error'), t('fill_all_fields'));
             return;
         }
+        // wanneer de prijs niet een heel getal is, alert tonen
         if (price.charAt(0) === '0' && price.length > 1) {
             Alert.alert(t('error'), t('price_leading_zero'));
             return;
         }
+        // wanneer de prijs een comma bevat, checken of het een geldig getal is
         if (price.includes(",")) {
             if ((price.split(",").length - 1) > 1 || price.split(",")[1]?.length !== 2) {
                 Alert.alert(t('error'), t('invalid_price'));
@@ -87,8 +100,10 @@ const showPhotoOptions = () => {
             }
         }
         let priceToDb = price;
+        // wanneer de prijs een comma bevat, haal comma weg
         priceToDb = parseInt(priceToDb.trim().replace(",", ""));
 
+        // formdata aanmaken voor de API call
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
@@ -101,10 +116,12 @@ const showPhotoOptions = () => {
         });
 
         try {
+            // token checken
             if (!token) {
                 Alert.alert(t('not_logged_in'), t('login_required'));
                 return;
             }
+            // API call om product toe te voegen
             const response = await fetch(API_URL + '/api/products/new', {
                 method: 'POST',
                 headers: {
@@ -113,6 +130,7 @@ const showPhotoOptions = () => {
                 body: formData,
             });
 
+            // alles weer leeg zetten en laden uitzetten
             const data = await response.text();
             setLoading(false);
             setPhoto(null);
@@ -120,22 +138,27 @@ const showPhotoOptions = () => {
             setDescription('');
             setValue('');
             setPrice('');
+            // wanneer de response goed is, toon positieve alert
             Alert.alert(t('success'), t('product_uploaded'), [{
                 text: t('ok'),
                 onPress: () => navigation.goBack()
             }]);
         } catch (error) {
+            // wanneer er een error is, laden uitzetten en foutmelding tonen
             console.error(error);
             Alert.alert(t('upload_failed'), t('try_again'));
         }
     }
 
+    // state voor de hoogte van de pagina, zodat de input velden niet onder de topbar vallen
     const [pageHeight, setPageHeight] = useState(0);
 
+    // refs voor de input velden, zodat we ze kunnen focussen
     const descriptionInputRef = useRef(null);
     const categoryInputRef = useRef(null);
     const priceInputRef = useRef(null);
 
+    // functie om een input veld te focussen
     const focusInput = (inputRef) => {
         inputRef.current?.focus();
     };
