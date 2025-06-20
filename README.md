@@ -40,7 +40,7 @@ got to studenthubweb folder
 * copy .env and make a .env.local version and add you credentia etc
 
 ## to run the admin panel frontend
-* expo
+* npm run 
   ```sh
   npm run dev
   ```
