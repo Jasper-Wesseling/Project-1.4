@@ -292,7 +292,7 @@ export default function BussinessPage({ navigation, token, theme }) {
                                 <View style={{marginBottom: 8, width: '100%'}}>
                                     <Text style={{fontWeight: 'bold', color: '#2A4BA0'}}>{t("businessPage.dateTime")}</Text>
                                     <Text style={styles.eventModalDate}>
-                                        {selectedEvent.date ? format(parseISO(selectedEvent.date), "EEEE, MMMM d, yyyy HH:mm") : ""}
+                                        {selectedEvent.date ? format(parseISO(selectedEvent.date), "EEEE, MMMM d, yyyy") : ""}
                                     </Text>
                                 </View>
                                 {selectedEvent.company && (

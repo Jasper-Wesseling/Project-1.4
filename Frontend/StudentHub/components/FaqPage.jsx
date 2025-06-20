@@ -45,7 +45,7 @@ export default function FaqPage({ token, user, theme, navigation }) {
 
   return (
     <View style={styles.container}>
-      /* Static Top Bar */
+      {/* Static Top Bar */}
         <View style={styles.topBar}>
           <View>
               <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
