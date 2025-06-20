@@ -3,6 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, S
 import { Icon } from "react-native-elements";
 import { useTranslation } from "react-i18next";
 import { API_URL } from '@env';
+import { hasRole } from "../utils/roleUtils";
 
 export default function BountyBoardModal({ visible, bounty, onClose, user, token, onPostDeleted, navigation, theme }) {
     const { t } = useTranslation();
@@ -164,6 +165,7 @@ export default function BountyBoardModal({ visible, bounty, onClose, user, token
                                         onClose();
                                     }}
                                     style={styles.filledButton}
+                                    disabled={hasRole(user, "ROLE_TEMP")}
                                 >
                                     <Text style={styles.filledButtonText}>{t('chatNow')}</Text>
                                 </TouchableOpacity>
