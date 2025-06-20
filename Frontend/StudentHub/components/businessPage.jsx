@@ -1,19 +1,17 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState, useRef, useEffect } from "react";
 import { SafeAreaView, View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity, Pressable, Modal } from "react-native";
-import { Icon, ThemeContext } from "react-native-elements";
+import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 import { MaterialIcons } from '@expo/vector-icons';
-import { format, parseISO } from "date-fns"; // Add this import at the top
+import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
-//  export default function BountyBoard({ navigation,  }) {
-
+// business page component
 export default function BussinessPage({ navigation, token, theme }) {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    // Fetch companies for filters
     const [filters, setFilters] = useState([]);
     const [activeFilter, setActiveFilter] = useState(null);
     const [agendaVisible, setAgendaVisible] = useState(false);
@@ -22,7 +20,7 @@ export default function BussinessPage({ navigation, token, theme }) {
     const styles = createBusinessPageStyles(theme);
     const { t } = useTranslation();
 
-    // Fetch all companies for filters
+    // Fetch companies van API
     const fetchCompanies = async () => {
         try {
             const res = await fetch(API_URL + '/api/companies/get', {
@@ -32,54 +30,65 @@ export default function BussinessPage({ navigation, token, theme }) {
                     'Authorization': `Bearer ${token}`
                 }
             });
+            // checken of de response ok is
             if (!res.ok) throw new Error('Failed to fetch companies');
             const companies = await res.json();
-            // Use id and name for filters
+            // checken of er bedrijven voldoen aan de filter
             if (Array.isArray(companies) && companies.length > 0) {
                 setFilters(companies.map(c => ({ id: c.id, name: c.name })));
             } else {
+                // Als er geen bedrijven zijn, zet filters op leeg
                 setFilters([]);
             }
         } catch (err) {
-            console.error('Error fetching companies:', err); // Debug log
+            // Foutmelding tonen in de console en filters op leeg zetten
+            console.error('Error fetching companies:', err);
             setFilters([]);
         }
     };
 
-    // Fetch events (filtered by company id if selected)
+    // Haal events op
     const fetchEvents = async () => {
         try {
+            // Check de token 
             let eventsUrl = API_URL + '/api/events/get';
             if (activeFilter) {
                 eventsUrl += `?company_id=${activeFilter}`;
             }
+            // Haal events op van de API
             const eventsRes = await fetch(eventsUrl, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
+            // Check of de response ok is
             if (!eventsRes.ok) throw new Error("Events fetch failed");
 
+            // Zet de events in de state
             const eventsData = await eventsRes.json();
             setEvents(eventsData);
             setLoading(false);
         } catch (err) {
+            // Foutmelding tonen in de console en laden uitzetten
             console.error("API error:", err);
             setLoading(false);
         }
     };
 
+    // fetch bedrijven en events bij focus
     useFocusEffect(
         useCallback(() => {
             fetchCompanies();
         }, [])
     );
+    // fetch events bij focus en bij filter wijziging
     useFocusEffect(
         useCallback(() => {
             fetchEvents();
         }, [activeFilter])
     );
 
+    // Overgangen voor de animaties
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [150, 0],
@@ -92,39 +101,40 @@ export default function BussinessPage({ navigation, token, theme }) {
         extrapolate: "clamp",
     });
 
-    // Filter row position (sticky below header)
     const filterTop = scrollY.interpolate({
         inputRange: [0, 100],
-        outputRange: [250, 100], // 100 is top bar height, 150 is max header height
+        outputRange: [250, 100],
         extrapolate: "clamp",
     });
 
-    // Group events by date for agenda
+    // Functie om events te groeperen op datum
     const getEventsByDate = () => {
+        // Groepeer de events op datum
         const grouped = {};
         events.forEach(event => {
-            // Try to parse date, fallback to raw string
             let dateKey = event.date;
             try {
+                // Probeer de datum te parseren en te formatteren
                 dateKey = format(parseISO(event.date), "yyyy-MM-dd");
-            } catch {}
+            } catch { }
+            // Als de datum niet bestaat, gebruik de originele datum
             if (!grouped[dateKey]) grouped[dateKey] = [];
             grouped[dateKey].push(event);
         });
-        // Sort by date ascending
+        // sorteer de data bij datum
         return Object.keys(grouped)
             .sort()
             .map(date => ({ date, events: grouped[date] }));
     };
 
-    // Helper to close event modal and clear selected event
+    // Sluit de event modal en reset de state
     const closeEventModal = () => {
         setEventModalVisible(false);
         setSelectedEvent(null);
-        setAgendaVisible(true); // Reopen agenda modal when closing event modal
+        setAgendaVisible(true);
     };
 
-    // Place this useEffect INSIDE the component, not after the styles!
+    // Effect om agenda te sluiten als de event modal zichtbaar is
     useEffect(() => {
         if (eventModalVisible) {
             setAgendaVisible(false);
@@ -413,7 +423,7 @@ function createBusinessPageStyles(theme) {
             backgroundColor: theme.activeFilter,
         },
         scrollViewContent: {
-            paddingTop: 260, // 100 topbar + 150 header + margin
+            paddingTop: 260,
             paddingBottom: 0,
         },
         loadingText: {
@@ -467,7 +477,6 @@ function createBusinessPageStyles(theme) {
             fontWeight: "bold",
             marginRight: 5,
         },
-        // Modal styles
         modalOverlay: {
             flex: 1,
             backgroundColor: theme.modalOverlay,
@@ -479,7 +488,7 @@ function createBusinessPageStyles(theme) {
             borderRadius: 16,
             padding: 24,
             width: '85%',
-            alignItems: 'flex-start', // left align for agenda
+            alignItems: 'flex-start',
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.2,
@@ -556,7 +565,6 @@ function createBusinessPageStyles(theme) {
             fontSize: 16,
             fontWeight: 'bold'
         },
-        // Event detail modal styles
         eventModalContent: {
             backgroundColor: theme.background,
             borderRadius: 16,

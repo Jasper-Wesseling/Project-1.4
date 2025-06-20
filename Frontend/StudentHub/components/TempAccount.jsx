@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { API_URL } from '@env';
 import { useTranslation } from "react-i18next";
 
+// TempAccount Component
 export default function TempAccount({ navigation, onLogin, theme })
 {
     const [username, setUsername] = useState("");
@@ -11,6 +12,7 @@ export default function TempAccount({ navigation, onLogin, theme })
     const { t } = useTranslation();
     const styles = createTempAccountStyles(theme);
 
+    // Functie om een tijdelijke account aan te maken
     const handleGetTempAccount = async () => {
         setLoading(true);
         try {
@@ -28,6 +30,7 @@ export default function TempAccount({ navigation, onLogin, theme })
         setLoading(false);
     }
 
+    // Functie om in te loggen met de tijdelijke account
     const handleLogin = async () => {
         setLoading(true);
         try {
@@ -117,7 +120,6 @@ export default function TempAccount({ navigation, onLogin, theme })
         );
     }
 
-    // Show initial screen to create temp account
     return (
         <View style={styles.container}>
             <View style={styles.welcomeContainer}>
@@ -204,8 +206,6 @@ function createTempAccountStyles(theme) {
             fontSize: 16,
             textDecorationLine: "underline",
         },
-    
-        // Success screen styles
         successContainer: {
             flex: 1,
             backgroundColor: theme.background,

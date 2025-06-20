@@ -3,14 +3,15 @@ import { View, Text, Animated, StyleSheet, TextInput, TouchableOpacity } from "r
 import { Icon } from "react-native-elements";
 import { useTranslation } from "react-i18next";
 
-// Use translation keys for FAQ
+// Haal de FAQ data op. In een echte app zou dit van een API komen.
 const faqs = Array.from({ length: 40 }, (_, i) => ({
   id: i + 1,
   question: `faq.q${i + 1}`,
   answer: `faq.a${i + 1}`,
 }));
 
-export default function FaqPage({ token, user, theme, navigation }) {
+// heilige FAQ component voor niet zo slimme mensen met vragen
+export default function FaqPage({ theme, navigation }) {
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -18,27 +19,26 @@ export default function FaqPage({ token, user, theme, navigation }) {
 
   const styles = createFaqStyles(theme);
 
-  // Animated header height (from 249 to 0)
+  // Overgang voor de animaties
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 249],
     outputRange: [166, 0],
     extrapolate: "clamp",
   });
 
-  // Animated header opacity (for big text)
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 40],
     outputRange: [1, 0],
     extrapolate: "clamp",
   });
 
-  // StickyBar marginTop animatie zodat hij altijd direct onder de header blijft
   const stickyBarMarginTop = headerHeight.interpolate({
     inputRange: [0, 166],
-    outputRange: [120, 290], // 100(topBar) + headerHeight
+    outputRange: [120, 290],
     extrapolate: "clamp",
   });
 
+  // Filter de FAQ's op basis van de zoekterm
   const filteredFaqs = faqs.filter(faq =>
     t(faq.question).toLowerCase().includes(search.toLowerCase())
   );
@@ -116,7 +116,6 @@ export default function FaqPage({ token, user, theme, navigation }) {
   );
 }
 
-// Dynamische styles generator
 function createFaqStyles(theme) {
   return StyleSheet.create({
     container: {
@@ -236,7 +235,7 @@ function createFaqStyles(theme) {
     },
     faqQuestion: {
       fontSize: 16,
-      fontWeight: "600", //semi-bold
+      fontWeight: "600",
       color: theme.text,
       flex: 1,
       flexWrap: "wrap",

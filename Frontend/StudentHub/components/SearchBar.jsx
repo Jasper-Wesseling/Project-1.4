@@ -1,7 +1,7 @@
 import { Modal, TextInput, View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
-// to prevent run time error undifind
+// Zoekbalk component voor het zoeken naar items in de app.
 export default function SearchBar({ visible, value, onChange, onClose, theme = { searchBg: "#fff" } }) {
     const styles = createSearchBarStyles(theme);
     const { t } = useTranslation();
@@ -29,6 +29,7 @@ export default function SearchBar({ visible, value, onChange, onClose, theme = {
     );
 }
 
+// Functie om de stijlen voor de zoekbalk te maken.
 function createSearchBarStyles(theme) {
     return StyleSheet.create({
         modalOverlay: {

@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, SafeAreaView, ScrollView, TextInput, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { API_URL } from '@env';
 import { hasRole } from "../utils/roleUtils";
-// Add translation import
 import { useTranslation } from "react-i18next";
 
+// ProductModal Component
 export default function ProductModal({ visible, product, onClose, formatPrice, navigation, productUser, productUserName, user, token, theme }) {
     const [fullscreenImg, setFullscreenImg] = useState(false);
     const [sellerData, setSellerData] = useState(null);
-
-    // Edit mode state
     const [editMode, setEditMode] = useState(false);
     const [editTitle, setEditTitle] = useState('');
     const [editDescription, setEditDescription] = useState('');
@@ -18,13 +16,15 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
     const styles = createProductModalStyles(theme);
     const { t } = useTranslation();
 
+    // Reset velden als het product verandert
     useEffect(() => {
-        setEditMode(false); // Reset edit mode when product changes
+        setEditMode(false);
         setEditTitle(product?.title || '');
         setEditDescription(product?.description || '');
         setEditPrice(product?.price ? String(product.price) : '');
     }, [product]);
 
+    // Fetch verkoper data wanneer het product of token verandert
     useEffect(() => {
         const fetchSeller = async () => {
             try {
@@ -48,6 +48,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
         fetchSeller();
     }, [product, token]);
 
+    // Sla de wijzigingen op
     const handleSave = async () => {
         setSaving(true);
         try {
@@ -72,7 +73,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
         setSaving(false);
     };
 
-    // Add delete handler
+    // Verwijder het product
     const handleDelete = async () => {
         Alert.alert(
             t("productModal.deleteTitle"),
@@ -103,6 +104,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
         );
     };
 
+    // Als er geen product is, toon dan niets
     if (!product) return null;
     const isCreator = user && user.id === product.product_user_id;
     return (
@@ -116,7 +118,7 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                 <KeyboardAvoidingView
                     style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24} // adjust if needed
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
                 >
                     <View style={styles.card}>
                         {/* Back Arrow Button */}
@@ -169,10 +171,6 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                             
                             {/* Buttons */}
                             <View style={styles.buttonRow}>
-
-                                 {/* <TouchableOpacity style={styles.outlineButton}><Text style={styles.outlineButtonText}>{t("productModal.addToCart")}</Text></TouchableOpacity>
-                                 <TouchableOpacity style={styles.filledButton} onPress={() => { navigation.navigate('ProductChat', { product: product.id, userToChat: productUser, productTitle: product.title, receiverName: productUserName }); onClose();  }}><Text style={styles.filledButtonText}>{t("productModal.buyNow")}</Text></TouchableOpacity> */}
-
                                 <TouchableOpacity
                                     style={[
                                         styles.filledButton,
@@ -240,8 +238,8 @@ export default function ProductModal({ visible, product, onClose, formatPrice, n
                                             backgroundColor: '#f4f5f7',
                                             borderRadius: 8,
                                             padding: 4,
-                                            minHeight: 100, // Increased for better scrolling
-                                            maxHeight: 200, // Optional: limit max height
+                                            minHeight: 100,
+                                            maxHeight: 200,
                                         }
                                     ]}
                                     multiline
@@ -527,7 +525,6 @@ function createProductModalStyles(theme) {
             fontSize: 14,
             marginLeft: 4,
         },
-        // --- Added styles below ---
         reviewContainer: {
             marginBottom: 12,
         },
@@ -541,7 +538,6 @@ function createProductModalStyles(theme) {
             flex: 1,
         },
         stars: {
-            // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
             color: "#ffcc00",
             fontSize: 18,
         },

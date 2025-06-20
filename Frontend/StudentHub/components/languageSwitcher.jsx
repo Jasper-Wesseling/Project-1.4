@@ -1,13 +1,16 @@
-import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+
+// Component om de taal van de app te wisselen (super handig!)
 export default function LanguageSwitcher({ theme }) {
   const { t, i18n } = useTranslation();
 
+  // Functie om de taal te veranderen
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
 
+  // Huidige taal ophalen
   const currentLanguage = i18n.language;
 
   return (

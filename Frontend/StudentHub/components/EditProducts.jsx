@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
-import SearchBar from "./SearchBar";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
@@ -8,6 +7,7 @@ import ProductPreview from "./ProductPreview";
 import ProductModal from "./ProductModal";
 import { useTranslation } from "react-i18next";
 
+// Bewerk producten component
 export default function EditProducts({ navigation, token, user, theme }) {
    const [products, setProducts] = useState([]);
    const [loading, setLoading] = useState(true);
@@ -16,6 +16,7 @@ export default function EditProducts({ navigation, token, user, theme }) {
    const styles = createEditProductsStyles(theme);
    const { t } = useTranslation();
 
+   // Functie om producten op te halen van de API
    const fetchProducts = async () => {
       try {
          if (!token) {
@@ -26,22 +27,28 @@ export default function EditProducts({ navigation, token, user, theme }) {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
          });
+         // Controleer of de response ok is
          if (!res.ok) throw new Error(t("editProducts.errorFetch"));
+         // Parse de response en zet de producten
          const data = await res.json();
          setProducts(data);
+         // Laden uitzetten
          setLoading(false);
       } catch (err) {
+         // Toon een foutmelding in de console en zet laden uit
          console.error("API error:", err);
          setLoading(false);
       }
    };
 
+   // gebruikt useFocusEffect om producten te laden wanneer de component in focus is
    useFocusEffect(
       useCallback(() => {
          fetchProducts();
       }, [token])
    );
 
+   // Formatteer de prijs naar de Nederlandse notatie
    function formatPrice(price) {
       let priceFormat = new Intl.NumberFormat('nl-NL', {
          style: 'currency',
@@ -51,12 +58,12 @@ export default function EditProducts({ navigation, token, user, theme }) {
       return price ? priceFormat.format(price / 100) : '';
    }
 
-   return(
+   return (
       <View style={styles.container}>
          {/* Static Top Bar */}
          <View style={styles.topBar}>
             <View style={styles.topBarRow}>
-               <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()}/>
+               <Icon name='arrow-left' type='feather' size={24} color='#fff' onPress={() => navigation.goBack()} />
                <Text style={styles.topBarText}>{t("editProducts.title")}</Text>
                <View style={styles.topBarIcons}>
                   <TouchableOpacity>
@@ -140,7 +147,7 @@ function createEditProductsStyles(theme) {
          alignContent: 'center'
       },
       scrollViewContent: {
-         alignItems: "center", // Center cards horizontally
+         alignItems: "center",
       },
       chatCard: {
          flexDirection: "row",

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { View, Text, TextInput, StyleSheet, SafeAreaView, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Animated } from "react-native";
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { Dimensions } from "react-native";
 
 const { height: screenHeight } = Dimensions.get('window');
 
+// Login component
 export default function Login({ navigation, onLogin, theme }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -15,7 +16,7 @@ export default function Login({ navigation, onLogin, theme }) {
     const styles = createLoginStyles(theme);
     const { t } = useTranslation();
 
-    // Replace pageHeight state with Animated.Value
+    // animatie voor het in- en uitvliegen van de login view
     const animatedTranslateY = useRef(new Animated.Value(0)).current;
 
     const animateTranslateY = (toValue) => {
@@ -26,9 +27,11 @@ export default function Login({ navigation, onLogin, theme }) {
         }).start();
     };
 
+    // Functie om in te loggen
     const handleLogin = async () => {
         setLoading(true);
         try {
+            // Haal de token op van de API
             const res = await fetch(API_URL + '/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -37,15 +40,16 @@ export default function Login({ navigation, onLogin, theme }) {
                     password,
                 }),
             });
+            // Controleer of de response succesvol is
             if (!res.ok) throw new Error(t("login.errorLogin"));
             const data = await res.json();
             const token = data.token || data.access_token;
             if (token) {
-                // Fetch user info after login
                 const userRes = await fetch(API_URL + '/api/users/get', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                // Controleer of de gebruiker succesvol is opgehaald
                 if (!userRes.ok) throw new Error(t("login.errorUserFetch"));
                 const user = await userRes.json();
                 onLogin(token, user);
@@ -131,15 +135,15 @@ function createLoginStyles(theme) {
             backgroundColor: theme.headerBg,
         },
         topHalf: {
-            height: 320, // increased for more space
+            height: 320,
             backgroundColor: theme.headerBg,
             alignItems: "center",
             justifyContent: "center",
         },
         imagePlaceholder: {
-            width: 240, // increased for more space
-            height: 240, // increased for more space
-            borderRadius: 40, // increased for more space
+            width: 240,
+            height: 240,
+            borderRadius: 40,
             borderWidth: 2,
             borderColor: "#bfc8e6",
             alignItems: "center",
@@ -148,7 +152,7 @@ function createLoginStyles(theme) {
         },
         bottomHalf: {
             backgroundColor: theme.background,
-            marginTop: -24, // less negative so it doesn't overlap the image
+            marginTop: -24,
             paddingTop: 32,
             alignItems: "center",
             paddingHorizontal: 24,

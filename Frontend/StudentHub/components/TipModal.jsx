@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Modal, View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, ActivityIndicator, SafeAreaView, TextInput } from "react-native";
 import { API_URL } from "@env";
-import ThemedAvatar from "react-native-elements/dist/avatar/Avatar";
 import { useTranslation } from "react-i18next";
 import { hasRole } from "../utils/roleUtils";
 
+// Tipmodal component 
 export default function TipModal({ visible, tip, onClose, onLike, onDislike, onReplyLike, onReplyDislike, user, onAddReply, token, theme }) {
     const [loading, setLoading] = useState(false);
     const [localTip, setLocalTip] = useState(tip);
@@ -14,7 +14,6 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
     const styles = createTipModalStyles(theme);
     const { t } = useTranslation();
 
-    // Synchroniseer lokale tip met prop-tip bij openen of tip-wijziging
     useEffect(() => {
         setLocalTip(tip);
     }, [tip, visible]);
@@ -26,6 +25,7 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
     const hasLiked = localTip.likes?.includes(currentUserId);
     const hasDisliked = localTip.dislikes?.includes(currentUserId);
 
+    // Functie om de tijd sinds de tip is geplaatst te berekenen
     function getTimeAgo(dateString) {
         if (!dateString) return "";
         const now = new Date();
@@ -37,12 +37,11 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
         return t("tipCard.daysAgo", { count: Math.floor(diff / 86400) });
     }
 
-    // Handler voor togglen van like/dislike
+    // Like functie
     const handleLikePress = async () => {
         if (typeof onLike === "function" && localTip?.id) {
             setLoading(true);
             await onLike(hasLiked ? "undo" : "like");
-            // Altijd de nieuwste versie ophalen mét token
             const updatedTip = await fetch(`${API_URL}/api/forums/${localTip.id}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -54,11 +53,11 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
         }
     };
 
+    // Dislike functie
     const handleDislikePress = async () => {
         if (typeof onDislike === "function" && localTip?.id) {
             setLoading(true);
             await onDislike(hasDisliked ? "undo" : "dislike");
-            // Altijd de nieuwste versie ophalen
             const updatedTip = await fetch(`${API_URL}/api/forums/${localTip.id}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -70,12 +69,12 @@ export default function TipModal({ visible, tip, onClose, onLike, onDislike, onR
         }
     };
 
+    // Functie om een reactie toe te voegen
     const handleAddReply = async () => {
         if (!replyText.trim() || !localTip?.id) return;
         setSendingReply(true);
         if (typeof onAddReply === "function") {
             await onAddReply(replyText);
-            // Alleen ophalen als localTip.id bestaat
             if (localTip.id) {
                 const updatedTip = await fetch(`${API_URL}/api/forums/${localTip.id}`, {
                     headers: {

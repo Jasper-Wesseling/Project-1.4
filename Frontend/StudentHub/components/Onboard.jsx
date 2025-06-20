@@ -3,12 +3,14 @@ import { StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, Modal, T
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import { useTranslation } from "react-i18next";
 
-export default function Onboard({ navigation, theme }) {
+// component om nieuwe gebruikers te onboarden
+export default function Onboard({ theme }) {
   const [activeCarousel, setActiveCarousel] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const styles = createOnboardStyles(theme);
   const { t } = useTranslation();
 
+  // functie om de carousel te verhogen
   const incrementCarousel = () => {
     setActiveCarousel((prevActiveCarousel) => {
       if (prevActiveCarousel >= 3) {
@@ -19,10 +21,12 @@ export default function Onboard({ navigation, theme }) {
     });
   };
 
+  // effect om de modal zichtbaar te maken bij de tweede carousel
   useEffect(() => {
   setModalVisible(activeCarousel === 2);
   }, [activeCarousel])
 
+  // onboard pagina's met titels, subtitels en afbeeldingen
   const onboardPages = [
     {
       title: t('onboard.page1Title'),
@@ -41,7 +45,7 @@ export default function Onboard({ navigation, theme }) {
     },
   ];
 
-
+  // component voor de popup modal
   function PopUp() {
     return (
       <Modal 
@@ -55,7 +59,6 @@ export default function Onboard({ navigation, theme }) {
         <TouchableWithoutFeedback
           onPress={() => {
             setModalVisible(false);
-            // incrementCarousel();
           }}
         >
           <View style={{flex: 1}}>

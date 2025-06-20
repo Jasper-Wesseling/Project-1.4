@@ -24,35 +24,37 @@ class MessagesController extends AbstractController
     private $jwtManager;
     private $tokenStorageInterface;
 
+    // Constructor: zet JWT en TokenStorage klaar
     public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
     }
 
+    // Haal berichten op tussen twee gebruikers (optioneel met product of bounty)
     #[Route('/get', name: 'get_messages', methods: ['GET'])]
     public function getMessages(Request $request, MessagesRepository $messagesRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
     {
-        
+        // Haal de ingelogde gebruiker op via JWT
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $sendUser = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
-        
-        $reciever= $request->query->get('reciever', 1);
+
+        // Haal de ontvanger op uit de query
+        $reciever = $request->query->get('reciever', 1);
         $recieveUser = $usersRepository->findOneBy(['id' => $reciever]);
 
+        // Haal eventueel product of bounty op
         $productId = $request->query->has('product') ? $request->query->get('product') : null;
         $bountyId = $request->query->has('bounty') ? $request->query->get('bounty') : null;
         $product = $productId ? $entityManager->getRepository(Products::class)->find($productId) : null;
         $bounty = $bountyId ? $entityManager->getRepository(Posts::class)->find($bountyId) : null;
 
-
-        if (!$recieveUser || !$sendUser) 
-        {
+        // Controleer of gebruikers bestaan
+        if (!$recieveUser || !$sendUser) {
             return new JsonResponse(['error' => 'User not found'], 401);
         }
 
-
-        // Determine whether to use product or bounty for the query
+        // Zoek berichten tussen deze twee gebruikers (en eventueel product/bounty)
         $qb = $messagesRepository->createQueryBuilder('m')
             ->orderBy('m.timestamp', 'ASC')
             ->andWhere('
@@ -65,21 +67,22 @@ class MessagesController extends AbstractController
 
         if ($bounty) {
             $qb->andWhere('m.post_id = :bounty')
-               ->setParameter('bounty', $bounty);
+                ->setParameter('bounty', $bounty);
         } elseif ($product) {
             $qb->andWhere('m.product_id = :product')
-               ->setParameter('product', $product);
+                ->setParameter('product', $product);
         }
 
         $message = $qb->getQuery()->getResult();
 
-
+        // Geef het eerste bericht terug (of leeg als er geen is)
         return new JsonResponse([
             'messages' => isset($message[0]) ? $message[0]->getContent() : [''],
             'receiver' => $recieveUser->getFullName(),
         ], 200);
     }
 
+    // Maak een nieuw bericht aan (of voeg toe aan bestaand gesprek)
     #[Route('/new', name: 'new_message', methods: ['POST'])]
     public function newMessage(Request $request, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -92,30 +95,26 @@ class MessagesController extends AbstractController
         $bountyId = $data['bounty'] ?? null;
         if ($bountyId) {
             $bounty = $entityManager->getRepository(Posts::class)->find($bountyId);
-
         }
         if ($productId) {
             $product = $entityManager->getRepository(Products::class)->find($productId);
-
         }
-        if (!$receiver || !$content || (!$product && !$bounty))
-        {
+        // Controleer of alles is ingevuld
+        if (!$receiver || !$content || (!$product && !$bounty)) {
             return new JsonResponse('Missing content,reciever or item', 402);
         }
 
+        // Haal de verzender op via JWT
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $sendUser = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
-
-
-        
         $receiverUser = $usersRepository->findOneBy(['id' => $receiver]);
 
-        if (!$receiverUser || !$sendUser)
-        {
+        // Controleer of gebruikers bestaan
+        if (!$receiverUser || !$sendUser) {
             return new JsonResponse(['error' => 'User not found'], 401);
         }
 
-
+        // Zoek of er al een gesprek bestaat tussen deze gebruikers (en product/bounty)
         $message = new Messages();
         $message->setSenderId($sendUser);
         $message->setReceiverId($receiverUser);
@@ -127,8 +126,7 @@ class MessagesController extends AbstractController
             $message->setProductId($product);
         }
         $currentContent = $message->getContent();
-        if (empty($currentContent)) 
-        {
+        if (empty($currentContent)) {
             $currentContent = [];
         }
 
@@ -146,6 +144,7 @@ class MessagesController extends AbstractController
         $message = $entityManager->getRepository(Messages::class)->findOneBy($criteria);
 
         if (!$message) {
+            // Kijk ook andersom (ontvanger/verzender omgedraaid)
             $criteriaSwapped = [
                 'sender_id' => $receiverUser,
                 'receiver_id' => $sendUser,
@@ -160,34 +159,32 @@ class MessagesController extends AbstractController
         }
 
         if (!$message) {
+            // Nog geen gesprek, maak nieuw aan
             $message = new Messages();
             $message->setSenderId($sendUser);
             $message->setReceiverId($receiverUser);
             $message->setTimestamp(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
             if ($bounty) {
                 $message->setPostId($bounty);
-
             }
             if ($product) {
                 $message->setProductId($product);
             }
             $currentContent = [];
         } else {
+            // Gesprek bestaat, haal bestaande berichten op
             $currentContent = $message->getContent();
             if (empty($currentContent)) {
                 $currentContent = [];
             }
         }
 
-
+        // Voeg het nieuwe bericht toe aan de conversatie
         $currentContent[] = [
             "content" => $content,
             "timestamp" => (new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')))->format('Y-m-d H:i:s'),
             "sender" => $sendUser->getId(),
         ];
-
-
-
 
         $message->setContent($currentContent);
 
@@ -199,12 +196,15 @@ class MessagesController extends AbstractController
         ], 201);
     }
 
+    // Haal een lijst met previews van alle gesprekken van de gebruiker op
     #[Route('/get_preview', name: 'get_messages_preview', methods: ['GET'])]
     public function getMessagesPreview(Request $request, MessagesRepository $messagesRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): JsonResponse
     {
+        // Haal de ingelogde gebruiker op via JWT
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
 
+        // Zoek alle berichten waar deze gebruiker bij betrokken is
         $qb = $messagesRepository->createQueryBuilder('m')
             ->orderBy('m.timestamp', 'ASC')
             ->andWhere('
@@ -213,7 +213,6 @@ class MessagesController extends AbstractController
                 (m.receiver_id = :user)
             ')
             ->setParameter('user', $user);
-
 
         $messages = $qb->getQuery()->getResult();
 
@@ -227,7 +226,7 @@ class MessagesController extends AbstractController
                 $senderUser = $message->getSenderId();
                 $receiverUser = $message->getReceiverId();
 
-                // Determine the other user
+                // Bepaal wie de andere gebruiker is
                 if ($senderUser->getId() == $senderId) {
                     $otherUser = $receiverUser;
                 } else {
@@ -248,8 +247,6 @@ class MessagesController extends AbstractController
                     'days_ago' => date_diff(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')), new \DateTime($latestMessage['timestamp']))->days
                 ];
             }
-
-
         }
 
         return new JsonResponse($messagesArray, 200);

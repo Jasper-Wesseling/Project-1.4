@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Companies;
@@ -19,21 +20,23 @@ class CompaniesController extends AbstractController
     private $jwtManager;
     private $tokenStorageInterface;
 
+    // Constructor, hier worden JWT en TokenStorage ingesteld
     public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
     }
 
+    // Haal bedrijven op, met optionele zoekfunctie en paginering
     #[Route('/get', name: 'api_companies_get', methods: ['GET'])]
     public function getCompanies(Request $request, CompaniesRepository $companiesRepository): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
 
-        $page = max(1, (int)$request->query->get('page', 1));
-        $limit = 20;
-        $offset = ($page - 1) * $limit;
-        $search = $request->query->get('search', '');
+        $page = max(1, (int)$request->query->get('page', 1)); // Huidige pagina
+        $limit = 20; // Aantal bedrijven per pagina
+        $offset = ($page - 1) * $limit; // Offset voor paginering
+        $search = $request->query->get('search', ''); // Zoekterm
 
         $qb = $companiesRepository->createQueryBuilder('c')
             ->orderBy('c.created_at', 'DESC')
@@ -41,14 +44,16 @@ class CompaniesController extends AbstractController
             ->setMaxResults($limit);
 
         if ($search) {
+            // Zoek op naam of beschrijving
             $qb->andWhere('LOWER(c.name) LIKE :search OR LOWER(c.description) LIKE :search')
-               ->setParameter('search', '%' . strtolower($search) . '%');
+                ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
         $companies = $qb->getQuery()->getResult();
 
         $companiesArray = [];
         foreach ($companies as $company) {
+            // Zet elk bedrijf om naar een array
             $companiesArray[] = [
                 'id' => $company->getId(),
                 'name' => $company->getName(),
@@ -64,6 +69,7 @@ class CompaniesController extends AbstractController
         return new JsonResponse($companiesArray, 200);
     }
 
+    // Voeg een nieuw bedrijf toe
     #[Route('/new', name: 'api_companies_new', methods: ['POST'])]
     public function addCompany(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -73,14 +79,14 @@ class CompaniesController extends AbstractController
         $type = $data['type'] ?? null;
         $location_id = $data['location_id'] ?? null;
 
+        // Controleer of verplichte velden zijn ingevuld
         if (!$name || !$type || !$location_id) {
             return new JsonResponse(['error' => 'Missing required fields'], 400);
         }
 
         $company = new Companies();
         $company->setName($name);
-        // You may need to fetch the location entity if needed
-        // $company->setLocationId($location);
+        // Haal locatie op uit database
         $location = $entityManager->getRepository(Locations::class)->find($location_id);
         $company->setLocationId($location);
         $company->setDescription($data['description'] ?? null);
@@ -97,6 +103,7 @@ class CompaniesController extends AbstractController
         ], 201);
     }
 
+    // Toon details van één bedrijf
     #[Route('/{id}', name: 'api_companies_show', methods: ['GET'])]
     public function showCompany(Companies $company): Response
     {
@@ -112,6 +119,7 @@ class CompaniesController extends AbstractController
         ]);
     }
 
+    // Werk een bestaand bedrijf bij
     #[Route('/{id}', name: 'api_companies_update', methods: ['PUT', 'PATCH'])]
     public function updateCompany(Companies $company, Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -124,7 +132,7 @@ class CompaniesController extends AbstractController
             $company->setType($data['type']);
         }
         if (isset($data['location_id'])) {
-            // You may need to fetch the location entity if needed
+            // Hier kun je eventueel de locatie aanpassen
             // $company->setLocationId($location);
         }
         if (isset($data['description'])) {
@@ -140,6 +148,7 @@ class CompaniesController extends AbstractController
         return new JsonResponse(['message' => 'Company updated']);
     }
 
+    // Verwijder een bedrijf
     #[Route('/{id}', name: 'api_companies_delete', methods: ['DELETE'])]
     public function deleteCompany(Companies $company, EntityManagerInterface $entityManager): Response
     {

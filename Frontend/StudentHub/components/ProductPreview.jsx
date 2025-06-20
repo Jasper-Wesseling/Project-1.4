@@ -1,8 +1,8 @@
 import { Image, Text, View, StyleSheet } from "react-native";
 import { API_URL } from '@env';
-import { ThemeContext } from "react-native-elements";
 import { useTranslation } from "react-i18next";
 
+// Product preview component 
 export default function ProductPreview({ product, formatPrice, theme }) {
     const styles = createProductPreviewStyles(theme);
     const { t } = useTranslation();
@@ -11,7 +11,6 @@ export default function ProductPreview({ product, formatPrice, theme }) {
     return (
         <View style={styles.card}>
             <Image 
-                // if env file contains url with / or product is empty prefent error 
                 source={product.photo ? { uri: API_URL + product.photo } : { uri: 'https://placecats.com/300/200' }}
                 style={{ height: '100%', width: '50%' }}
                 resizeMode="cover"

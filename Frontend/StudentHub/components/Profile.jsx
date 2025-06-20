@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "react-native-elements";
 import { hasRole } from "../utils/roleUtils";
 
+// Profiel component
 export default function Profile({ token, navigation, route, user, theme, onLogout }) {
   const [userProfile, setUserProfile] = useState(null);
   const product = route.params?.product || null;
@@ -29,8 +30,10 @@ export default function Profile({ token, navigation, route, user, theme, onLogou
   const styles = createProfileStyles(theme);
   const { t } = useTranslation();
 
+  // Default avatar URL
   const DEFAULT_AVATAR_URL = "https://www.gravatar.com/avatar/?d=mp&s=120";
 
+  // Haal de profielgegevens op
   const fetchProfile = async (targetUserId) => {
     try {
       const res = await fetch(API_URL + `/api/users/getbyid?id=${targetUserId}`, {
@@ -59,12 +62,12 @@ export default function Profile({ token, navigation, route, user, theme, onLogou
   
 const firstLoad = useRef(true);
 
+// Gebruik useFocusEffect om profielgegevens op te halen wanneer de component in focus komt
 useFocusEffect(
   useCallback(() => {
     setProfile(null);
     let targetUserId;
 
-    // Alleen bij de eerste keer laden of als params veranderen
     if (product && product.product_user_id) {
       targetUserId = product.product_user_id;
     } else if (route.params && route.params.userToChat) {
@@ -75,7 +78,6 @@ useFocusEffect(
       targetUserId = user.id;
     }
 
-    // Voorkom dubbele fetch bij eerste render
     if (firstLoad.current || userProfile !== targetUserId) {
       setUserProfile(targetUserId);
       if (token && targetUserId) {
@@ -92,6 +94,7 @@ useFocusEffect(
   }, [token, product, route.params?.userToChat, route.params?.userProfile, user.id])
 );
 
+  // Bewerk de profielgegevens bij
   const startEditing = () => {
     if (profile) {
       setEditedProfile({
@@ -102,6 +105,8 @@ useFocusEffect(
       setIsEditing(true);
     }
   };
+
+  // Annuleer het bewerken van profielgegevens
   const cancelEditing = () => {
     Alert.alert(
       t("profile.cancelTitle"),
@@ -113,13 +118,13 @@ useFocusEffect(
     );
   };
   
+  // Sla de wijzigingen op
   const saveChanges = async () => {
     if (profile === editedProfile) {
       setIsEditing(false);
       return;
     }
     try {
-      // Send editedProfile directly with full_name constructed from first_name and last_name
       const body = {
         ...editedProfile,
         full_name: `${editedProfile.first_name} ${editedProfile.last_name}`
@@ -136,7 +141,6 @@ useFocusEffect(
 
       if (!res.ok) throw new Error("Failed to update profile");
       
-      // Refetch the profile to get the latest data
       await fetchProfile(userProfile);
       setIsEditing(false);
     } catch (err) {
@@ -144,6 +148,7 @@ useFocusEffect(
     }
   };
 
+  // Maak een nieuw profiel aan
   const createProfile = async () => {
     try {
       const res = await fetch(API_URL + "/api/profile", {
@@ -157,6 +162,7 @@ useFocusEffect(
 
       if (!res.ok) throw new Error("Failed to create profile");
 
+      // Haal het nieuwe profiel op en update de state
       const newProfile = await res.json();
       setProfile(newProfile);
       setProfileMissing(false);
@@ -520,7 +526,6 @@ function createProfileStyles(theme) {
       flex: 1,
     },
     stars: {
-      // oude style voor sterren, nu niet meer gebruikt voor individuele sterren
       color: "#ffcc00",
       fontSize: 18,
     },

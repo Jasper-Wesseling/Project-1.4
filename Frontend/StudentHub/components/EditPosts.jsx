@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
-import SearchBar from "./SearchBar";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Icon } from "react-native-elements";
 import { API_URL } from '@env';
 import { useFocusEffect } from "@react-navigation/native";
@@ -8,6 +7,7 @@ import PostPreview from "./PostPreview";
 import BountyBoardModal from "./BountyBoardModal";
 import { useTranslation } from "react-i18next";
 
+// EditPosts Component
 export default function EditPosts({ navigation, token, user, theme }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,26 +16,34 @@ export default function EditPosts({ navigation, token, user, theme }) {
     const styles = createEditPostsStyles(theme);
     const { t } = useTranslation();
 
+    // Haal de posts op van de huidige gebruiker
     const fetchPosts = async () => {
         try {
+            // Controleer of de token bestaat
             if (!token) {
                 setLoading(false);
                 return;
             }
+            // fetch de posts van de API
             const res = await fetch(API_URL + `/api/posts/get/fromCurrentUser`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            // Controleer of de response ok is
             if (!res.ok) throw new Error(t("editPosts.errorFetch"));
+            // Parse de response en zet de posts
             const data = await res.json();
             setPosts(data);
+            // Laden uitzetten
             setLoading(false);
         } catch (err) {
+            // Toon een foutmelding in de console en zet laden uit
             console.error("API error:", err);
             setLoading(false);
         }
     };
 
+    // Gebruik useFocusEffect om posts te laden wanneer de component in focus is
     useFocusEffect(
         useCallback(() => {
             fetchPosts();
@@ -97,7 +105,7 @@ export default function EditPosts({ navigation, token, user, theme }) {
                 theme={theme}
                 onPostDeleted={() => {
                     setModalVisible(false);
-                    fetchPosts(); // Refresh the posts list
+                    fetchPosts();
                 }}
             />
         </View>
@@ -136,7 +144,7 @@ function createEditPostsStyles(theme) {
         scrollViewContent: {
             paddingTop: 16,
             paddingBottom: 40,
-            paddingHorizontal: 0, // Remove horizontal padding
+            paddingHorizontal: 0,
         },
         chatCard: {
             flexDirection: "row",
@@ -144,8 +152,7 @@ function createEditPostsStyles(theme) {
             backgroundColor: theme.background,
             borderRadius: 16,
             padding: 16,
-            marginBottom: 12, // Only bottom margin for spacing
-            // Remove marginHorizontal and marginVertical
+            marginBottom: 12,
         },
         loadingContainer: {
             flex: 1,

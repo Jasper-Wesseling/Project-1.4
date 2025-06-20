@@ -20,12 +20,14 @@ class PostsController extends AbstractController
     private $jwtManager;
     private $tokenStorageInterface;
 
+    // Constructor: zet JWT en TokenStorage klaar
     public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager)
     {
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
-    }    
-    
+    }
+
+    // Haal een lijst met posts op (met zoeken en paginering)
     #[Route('/get', name: 'api_posts_get', methods: ['GET'])]
     public function getPreviewposts(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository): Response
     {
@@ -35,29 +37,29 @@ class PostsController extends AbstractController
             return new JsonResponse(['error' => 'User not found'], 401);
         }
 
-        $page = max(1, (int)$request->query->get('page', 1));
-        $limit = 20;
-        $offset = ($page - 1) * $limit;
-        $search = $request->query->get('search', '');
-        $type = $request->query->get('type', null);
+        $page = max(1, (int)$request->query->get('page', 1)); // Huidige pagina
+        $limit = 20; // Aantal posts per pagina
+        $offset = ($page - 1) * $limit; // Vanaf waar beginnen
+        $search = $request->query->get('search', ''); // Zoekterm
+        $type = $request->query->get('type', null); // Type post
 
-        // Get total count first
+        // Haal totaal aantal posts op
         $countQb = $postsRepository->createQueryBuilder('p')
             ->select('COUNT(p.id)');
 
         if ($type) {
             $countQb->andWhere('p.type = :type')
-                    ->setParameter('type', $type);
+                ->setParameter('type', $type);
         }
         if ($search) {
             $countQb->andWhere('LOWER(p.title) LIKE :search OR LOWER(p.description) LIKE :search')
-                   ->setParameter('search', '%' . strtolower($search) . '%');
+                ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
         $totalPosts = $countQb->getQuery()->getSingleScalarResult();
         $totalPages = max(1, ceil($totalPosts / $limit));
 
-        // Get posts for current page
+        // Haal posts op voor de huidige pagina
         $qb = $postsRepository->createQueryBuilder('p')
             ->orderBy('p.created_at', 'DESC')
             ->setFirstResult($offset)
@@ -65,14 +67,15 @@ class PostsController extends AbstractController
 
         if ($type) {
             $qb->andWhere('p.type = :type')
-               ->setParameter('type', $type);
+                ->setParameter('type', $type);
         }
         if ($search) {
             $qb->andWhere('LOWER(p.title) LIKE :search OR LOWER(p.description) LIKE :search')
-            ->setParameter('search', '%' . strtolower($search) . '%');
+                ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        $posts = $qb->getQuery()->getResult();        $postsArray = [];
+        $posts = $qb->getQuery()->getResult();
+        $postsArray = [];
         foreach ($posts as $post) {
             $postUser = $post->getUserId();
             $postsArray[] = [
@@ -100,8 +103,9 @@ class PostsController extends AbstractController
         ], 200);
     }
 
+    // Voeg een nieuwe post toe
     #[Route('/new', name: 'api_posts_new', methods: ['POST'])]
-    public function addpost(Request $request, EntityManagerInterface $entityManager, UsersRepository $usersRepository) : Response
+    public function addpost(Request $request, EntityManagerInterface $entityManager, UsersRepository $usersRepository): Response
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $usersRepository->findOneBy(['email' => $decodedJwtToken["username"]]);
@@ -111,12 +115,12 @@ class PostsController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        // Get fields from FormData
+        // Haal velden uit het formulier
         $title = $data['title'];
         $description = $data['description'];
         $type = $data['type'];
 
-        // Validation (add more as needed)
+        // Controleer of alles is ingevuld
         if (!$title || !$description || !$type) {
             return new JsonResponse(['error' => 'Missing required fields'], 400);
         }
@@ -130,15 +134,15 @@ class PostsController extends AbstractController
         $post->setCreatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
         $post->setUpdatedAt(new \DateTime('now', new \DateTimeZone('Europe/Amsterdam')));
 
-
         $entityManager->persist($post);
         $entityManager->flush();
 
         return new JsonResponse([
             'message' => 'Successfully added!',
         ], 201);
-    }    
-    
+    }
+
+    // Haal posts op van gebruikers met een bepaald e-mailadres
     #[Route('/get/user/{email}', name: 'api_posts_get_by_email', methods: ['GET'])]
     public function getPostsByEmail(string $email, Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository): Response
     {
@@ -147,18 +151,20 @@ class PostsController extends AbstractController
             ->setParameter('email', '%' . strtolower($email) . '%')
             ->getQuery()
             ->getResult();
-        
+
         if (!$users) {
             return new JsonResponse(['error' => 'No users found'], 404);
         }
 
-        $userIds = array_map(function($user) { return $user->getId(); }, $users);
-        
+        $userIds = array_map(function ($user) {
+            return $user->getId();
+        }, $users);
+
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
-        // Get total count
+        // Haal totaal aantal posts op
         $totalPosts = $postsRepository->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->where('p.user_id IN (:userIds)')
@@ -167,7 +173,7 @@ class PostsController extends AbstractController
             ->getSingleScalarResult();
 
         $totalPages = max(1, ceil($totalPosts / $limit));
-        
+
         $posts = $postsRepository->createQueryBuilder('p')
             ->where('p.user_id IN (:userIds)')
             ->setParameter('userIds', $userIds)
@@ -203,8 +209,9 @@ class PostsController extends AbstractController
             'totalPosts' => $totalPosts,
             'postsPerPage' => $limit
         ], 200);
-    }    
-    
+    }
+
+    // Haal posts op met bepaalde tekst in titel of beschrijving
     #[Route('/get/content/{content}', name: 'api_posts_get_by_content', methods: ['GET'])]
     public function getPostsByContent(string $content, Request $request, PostsRepository $postsRepository): Response
     {
@@ -212,7 +219,7 @@ class PostsController extends AbstractController
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
-        // Get total count
+        // Haal totaal aantal posts op
         $totalPosts = $postsRepository->createQueryBuilder('p')
             ->select('COUNT(p.id)')
             ->where('LOWER(p.title) LIKE :content OR LOWER(p.description) LIKE :content')
@@ -259,6 +266,7 @@ class PostsController extends AbstractController
         ], 200);
     }
 
+    // Verwijder een post op basis van id
     #[Route('/delete/{id}', name: 'api_posts_delete', methods: ['DELETE'])]
     public function deletePost(int $id, PostsRepository $postsRepository, EntityManagerInterface $entityManager): Response
     {
@@ -272,6 +280,8 @@ class PostsController extends AbstractController
 
         return new JsonResponse(['message' => 'Post deleted successfully'], 200);
     }
+
+    // Bewerk een bestaande post
     #[Route('/edit', name: 'api_posts_edit', methods: ['PUT'])]
     public function editPost(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
     {
@@ -281,17 +291,17 @@ class PostsController extends AbstractController
             return new JsonResponse(['error' => 'User not found'], 401);
         }
 
-        // get post
+        // Haal post op
         $id = $request->query->get('id');
         if (!$id) {
             return new JsonResponse(['error' => 'Post ID missing'], 400);
         }
         $post = $postsRepository->find($id);
         if (!$post) {
-            return new JsonResponse(['error' => 'Post not found'], 404);       
+            return new JsonResponse(['error' => 'Post not found'], 404);
         }
 
-        // check if post owner is the same as the user making the request
+        // Controleer of de gebruiker de eigenaar is van de post
         $postUser = $post->getUserId();
         if (!$postUser || $postUser->getId() !== $user->getId()) {
             return new JsonResponse(['error' => 'Unauthorized'], 403);
@@ -299,7 +309,7 @@ class PostsController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        // change the fields that are changed
+        // Pas de velden aan die zijn gewijzigd
         if (isset($data['title'])) {
             $post->setTitle($data['title']);
         }
@@ -318,6 +328,7 @@ class PostsController extends AbstractController
         return new JsonResponse("Post updated", 200);
     }
 
+    // Verwijder een post van de huidige gebruiker
     #[Route('/delete', name: 'api_posts_delete_by_id', methods: ['DELETE'])]
     public function deletePostById(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository, EntityManagerInterface $entityManager): Response
     {
@@ -327,16 +338,17 @@ class PostsController extends AbstractController
             return new JsonResponse(['error' => 'User not found'], 401);
         }
 
-        // get post
+        // Haal post op
         $id = $request->query->get('id');
         if (!$id) {
             return new JsonResponse(['error' => 'Post ID missing'], 400);
         }
         $post = $postsRepository->find($id);
         if (!$post) {
-            return new JsonResponse(['error' => 'Post not found'], 404);        }
+            return new JsonResponse(['error' => 'Post not found'], 404);
+        }
 
-        // check if post owner is the same as the user making the request
+        // Controleer of de gebruiker de eigenaar is van de post
         $postUser = $post->getUserId();
         if (!$postUser || $postUser->getId() !== $user->getId()) {
             return new JsonResponse(['error' => 'Unauthorized'], 403);
@@ -346,10 +358,12 @@ class PostsController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'Post deleted'], 200);
-    }    
-    
+    }
+
+    // Haal posts op van de huidige gebruiker
     #[Route('/get/fromCurrentUser', name: 'api_posts_get_from_current_user', methods: ['GET'])]
-    public function getPostsFromUser( Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository ): Response {
+    public function getPostsFromUser(Request $request, PostsRepository $postsRepository, UsersRepository $usersRepository): Response
+    {
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = 20;
         $offset = ($page - 1) * $limit;
@@ -362,7 +376,7 @@ class PostsController extends AbstractController
 
         $search = $request->query->get('search', '');
 
-        // Get posts from current user
+        // Haal posts op van de huidige gebruiker
         $qb = $postsRepository->createQueryBuilder('p')
             ->where('p.user_id = :user')
             ->setParameter('user', $user->getId())
@@ -372,12 +386,13 @@ class PostsController extends AbstractController
 
         if ($search) {
             $qb->andWhere('LOWER(p.title) LIKE :search OR LOWER(p.description) LIKE :search')
-               ->setParameter('search', '%' . strtolower($search) . '%');
+                ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        $posts = $qb->getQuery()->getResult();        $postsArray = [];
+        $posts = $qb->getQuery()->getResult();
+        $postsArray = [];
         $now = new \DateTime('now', new \DateTimeZone('Europe/Amsterdam'));
-        
+
         foreach ($posts as $post) {
             $postUser = $post->getUserId();
             $postsArray[] = [

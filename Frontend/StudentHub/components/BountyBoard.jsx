@@ -11,7 +11,7 @@ import BountyBoardModal from "./BountyBoardModal";
 import { useTranslation } from "react-i18next";
 import { hasRole } from "../utils/roleUtils";
 
-
+// BountyBoard component
 export default function BountyBoard({ navigation, token, theme, user }) {
     const { t } = useTranslation();
 
@@ -29,14 +29,19 @@ export default function BountyBoard({ navigation, token, theme, user }) {
     const [bountyModalVisible, setBountyModalVisible] = useState(false);
     const styles = createBountyStyles(theme);
 
+    // Fetch alle posts en user data
     const fetchAll = async (pageToLoad = 1, append = false, searchValue = search, filterValue = activeFilter) => {
         try {
+            // token checken
             if (!token) throw new Error("No token received");
 
+            // Query parameters voor de API
             let query = `?page=${pageToLoad}`;
+            // wanneer filter of search ingesteld is, de query aanpassen
             if (searchValue) query += `&search=${encodeURIComponent(searchValue)}`;
             if (filterValue) query += `&type=${encodeURIComponent(filterValue)}`;
 
+            // Fetch posts en user authorizatie
             const [postsRes, userRes] = await Promise.all([
                 fetch(API_URL + `/api/posts/get${query}`, {
                     method: 'GET',
@@ -48,12 +53,15 @@ export default function BountyBoard({ navigation, token, theme, user }) {
                 })
             ]);
 
+            // Checken of de responses succesvol zijn
             if (!postsRes.ok) throw new Error("posts fetch failed");
             if (!userRes.ok) throw new Error("User fetch failed");
 
+            // JSON data ophalen
             const postsData = await postsRes.json();
             const currentUser = await userRes.json();
 
+            // Controleren of de postsData geldig is
             setHasMorePages(postsData.length === 20);
             setPosts(prev =>
                 append
@@ -63,11 +71,13 @@ export default function BountyBoard({ navigation, token, theme, user }) {
             setCurrentUser(currentUser);
             setLoading(false);
         } catch (err) {
+            // Foutafhandeling
             console.error("API error:", err);
             setLoading(false);
         }
     };
-
+    
+    // Focus effect om posts te laden wanneer de component in focus komt
     useFocusEffect(
         useCallback(() => {
             setPage(1);
@@ -75,6 +85,7 @@ export default function BountyBoard({ navigation, token, theme, user }) {
         }, [search, activeFilter])
     );
 
+    // Functie om meer posts te laden bij scrollen
     const loadMore = () => {
         if (hasMorePages && !loading) {
             const nextPage = page + 1;
@@ -83,11 +94,13 @@ export default function BountyBoard({ navigation, token, theme, user }) {
         }
     };
 
+    // Functie om de bounty modal te openen
     const openBountyModal = (post) => {
         setSelectedPost(post);
         setBountyModalVisible(true);
     };
 
+    // Overgang voor de header en plakkende bar (sticky (dan weet je het even) :=D)
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 249],
         outputRange: [166, 0],
@@ -105,6 +118,7 @@ export default function BountyBoard({ navigation, token, theme, user }) {
     });
 
     const name = currentUser && currentUser.full_name ? currentUser.full_name.split(' ')[0] : "";
+    // Filteren van posts
     const filteredPosts = posts
         .filter(post => post && typeof post === 'object' && post.title)
         .filter(post =>
@@ -259,7 +273,7 @@ function createBountyStyles(theme) {
         },
         header: {
             position: "absolute",
-            top: 100, // below topBar
+            top: 100,
             left: 0,
             right: 0,
             backgroundColor: theme.headerBg,

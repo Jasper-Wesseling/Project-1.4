@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
     Text,
     View,
@@ -10,9 +10,10 @@ import {
 import { API_URL } from "@env";
 import { useTranslation } from "react-i18next";
 
+// StarRating Component
 export default function StarRating({ navigation, token, route, theme }) {
-    const [rating, setRating] = useState(0);
-    const { userProfile, onGoBack } = route.params;
+  const [rating, setRating] = useState(0);
+  const { userProfile, onGoBack } = route.params;
   const [hoveredRating, setHoveredRating] = useState(0);
   const styles = createStarRatingStyles(theme);
   const { t } = useTranslation();
@@ -21,12 +22,14 @@ export default function StarRating({ navigation, token, route, theme }) {
         setRating(starValue);
     };
 
+    // Verstuur de rating 
     const submitRating = async() => {
         if (rating === 0) {
             Alert.alert(t("starRating.selectTitle"), t("starRating.selectMsg"));
             return;
         }
         try {
+          // Controleer of de gebruiker een profiel heeft
             const response = await fetch(`${API_URL}/api/reviews/new?user=${userProfile}`, {
                 method: 'POST',
                 headers: {
@@ -60,9 +63,12 @@ export default function StarRating({ navigation, token, route, theme }) {
         }
     };
 
+  // Reset de rating naar 0
   const resetRating = () => {
     setRating(0);
   };
+
+  // Render de sterren interactief
   const renderInteractiveStars = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
