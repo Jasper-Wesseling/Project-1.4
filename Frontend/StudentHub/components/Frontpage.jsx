@@ -9,6 +9,7 @@ import {
 	View,
 	Image,
 	Switch,
+	TextInput,
 } from "react-native";
 import { Icon } from "react-native-elements";
 import ProductModal from "./ProductModal";
@@ -17,6 +18,7 @@ import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 
 export default function Frontpage({ token, user, navigation, theme }) {
+  	const [search, setSearch] = useState("");
 	const [widgets, setWidgets] = useState({});
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -149,6 +151,8 @@ export default function Frontpage({ token, user, navigation, theme }) {
 		);
 	}
 
+	console.log(recommended)
+
 	return (
 		<View style={styles.container}>
 			{/* Static Top Bar */}
@@ -180,18 +184,21 @@ export default function Frontpage({ token, user, navigation, theme }) {
 						color="#A3A3A3"
 						style={{ marginRight: 8 }}
 					/>
-					<Text style={styles.searchPlaceholder}>
-						{t("frontpage.searchPlaceholder")}
-					</Text>
+					<TextInput
+					placeholder={t("faq.searchHelp")}
+					value={search}
+					onChangeText={setSearch}
+					style={[styles.searchBarInput, {width: "85%"}]}
+					placeholderTextColor="#A0A0A0"
+					/>
+				 	<TouchableOpacity onPress={() => setSearch("")}>
+						<Icon name="remove" size={22} color="#A3A3A3" style={{ alignSelf:"flex-end" }} type="font-awesome"/>
+					</TouchableOpacity>
 				</View>
 				<View style={styles.headerOptions}>
 					<View style={styles.optionBlock}>
 						<Text style={styles.optionLabel}>{t("frontpage.addressLabel")}</Text>
 						<Text style={styles.optionValue}>{t("frontpage.addressValue")}</Text>
-					</View>
-					<View style={styles.optionBlock}>
-						<Text style={styles.optionLabel}>{t("frontpage.languageLabel")}</Text>
-						<Text style={styles.optionValue}>{t("frontpage.languageValue")}</Text>
 					</View>
 				</View>
 			</Animated.View>
@@ -259,7 +266,7 @@ export default function Frontpage({ token, user, navigation, theme }) {
 						<View style={styles.recommendedBox}>
 							<Text style={styles.recommendedTitle}>{t("frontpage.recommended")}</Text>
 							<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-								{recommended.map((product) => (
+								{recommended.filter(product => product.title?.toLowerCase().includes(search.toLowerCase())).map((product) => (
 									<TouchableOpacity
 										key={product.id}
 										style={styles.productCard}
